@@ -119,39 +119,43 @@ function getQuoteStyles(fontFamily = "'Heebo', 'Assistant', 'Segoe UI', Tahoma, 
       direction: rtl;
       color: #1a1a1a;
       background: #fff;
-      padding: 0 28px 28px;
+      padding: 0 20px 20px;
       font-size: 12px;
-      line-height: 1.5;
+      line-height: 1.4;
       width: 560px;
+      min-height: 297mm;
+      display: flex;
+      flex-direction: column;
     }
-    .container { max-width: 560px; margin: 0 auto; }
-    .header-band { height: 6px; background: #1e3a5f; margin: 0 -28px 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .container { max-width: 560px; margin: 0 auto; min-height: 297mm; display: flex; flex-direction: column; flex: 1; }
+    .container .content-block { flex: 1; }
+    .header-band { height: 4px; background: #1e3a5f; margin: 0 -20px 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .header-top {
-      display: flex; justify-content: space-between; align-items: flex-start; gap: 24px;
-      padding: 20px 0 18px; border-bottom: 1px solid #e0e0e0; margin-bottom: 18px;
+      display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;
+      padding: 10px 0 8px; border-bottom: 1px solid #e0e0e0; margin-bottom: 10px;
     }
     .header-company-wrap { text-align: right; flex: 1; }
-    .header-company { font-size: 12px; color: #333; line-height: 1.7; }
-    .header-company .company-name { font-weight: 600; font-size: 14px; color: #1a1a1a; margin-bottom: 4px; }
-    .header-company .company-line { margin-top: 2px; color: #555; }
-    .header-logo-wrap { flex: 1; min-width: 100px; max-height: 88px; display: flex; align-items: center; justify-content: center; }
-    .header-logo { width: 100%; height: 100%; max-height: 88px; object-fit: contain; display: block; }
+    .header-company { font-size: 11px; color: #333; line-height: 1.5; }
+    .header-company .company-name { font-weight: 600; font-size: 13px; color: #1a1a1a; margin-bottom: 2px; }
+    .header-company .company-line { margin-top: 1px; color: #555; }
+    .header-logo-wrap { flex-shrink: 0; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; }
+    .header-logo { width: 56px; height: 56px; object-fit: contain; display: block; }
     .header-logo-placeholder {
-      width: 100%; height: 100%; max-height: 88px; min-height: 48px; background: #f5f5f5; border: 1px solid #ddd;
-      display: flex; align-items: center; justify-content: center; font-size: 11px; color: #1e3a5f; font-weight: 600;
+      width: 56px; height: 56px; background: #f5f5f5; border: 1px solid #ddd;
+      display: flex; align-items: center; justify-content: center; font-size: 10px; color: #1e3a5f; font-weight: 600;
     }
-    .title-row { margin-bottom: 20px; }
-    .quote-title { font-size: 20px; font-weight: 700; color: #1a1a1a; text-align: center; margin-bottom: 10px; letter-spacing: -0.02em; }
-    .title-meta { display: flex; justify-content: space-between; font-size: 11px; color: #555; }
-    .for-block { margin-bottom: 20px; padding: 14px 0; border-bottom: 1px solid #eee; font-size: 12px; color: #333; text-align: right; }
+    .title-row { margin-bottom: 10px; }
+    .quote-title { font-size: 18px; font-weight: 700; color: #1a1a1a; text-align: center; margin-bottom: 6px; letter-spacing: -0.02em; }
+    .title-meta { display: flex; justify-content: space-between; font-size: 10px; color: #555; }
+    .for-block { margin-bottom: 10px; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 11px; color: #333; text-align: right; }
     .for-label { font-weight: 600; color: #1a1a1a; }
-    .for-details { font-size: 11px; color: #555; margin-top: 6px; display: block; line-height: 1.6; }
-    .table-summary-wrap { display: block; margin-bottom: 20px; }
-    .table-summary-wrap .items-table { margin-bottom: 10px; }
+    .for-details { font-size: 10px; color: #555; margin-top: 4px; display: block; line-height: 1.5; }
+    .table-summary-wrap { display: block; margin-bottom: 12px; }
+    .table-summary-wrap .items-table { margin-bottom: 8px; }
     .table-summary-wrap .summary-below { display: flex; justify-content: flex-end; direction: rtl; }
-    .items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; table-layout: fixed; font-size: 12px; }
+    .items-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; table-layout: fixed; font-size: 11px; }
     .items-table thead th {
-      background: #1e3a5f; color: #fff; padding: 11px 12px; text-align: right; font-weight: 600; font-size: 11px;
+      background: #1e3a5f; color: #fff; padding: 8px 10px; text-align: right; font-weight: 600; font-size: 10px;
       -webkit-print-color-adjust: exact; print-color-adjust: exact;
     }
     .items-table thead th:nth-child(2) { text-align: center; }
@@ -159,33 +163,33 @@ function getQuoteStyles(fontFamily = "'Heebo', 'Assistant', 'Segoe UI', Tahoma, 
     .items-table thead th:nth-child(1) { width: 50%; }
     .items-table thead th:nth-child(2) { width: 12%; }
     .items-table thead th:nth-child(3), .items-table thead th:nth-child(4) { width: 19%; }
-    .items-table tbody td { padding: 11px 12px; vertical-align: middle; border-bottom: 1px solid #e5e5e5; }
+    .items-table tbody td { padding: 8px 10px; vertical-align: middle; border-bottom: 1px solid #e5e5e5; }
     .items-table tbody tr:nth-child(even) { background: #f8f9fa; }
     .items-table tbody tr:last-child td { border-bottom: 2px solid #1e3a5f; }
     .item-name { font-weight: 500; color: #1a1a1a; }
     .item-extras { font-size: 11px; color: #555; margin-top: 3px; }
     .price-cell { text-align: center; font-weight: 600; color: #1a1a1a; white-space: nowrap; }
-    .summary { width: 200px; border: 1px solid #e5e5e5; font-size: 11px; }
-    .summary-row { display: flex; justify-content: space-between; padding: 6px 10px; align-items: center; gap: 8px; }
-    .summary-row.subtotal, .summary-row.vat { background: #fefde7; font-weight: 600; color: #1a1a1a; font-size: 11px; }
+    .summary { width: 180px; border: 1px solid #e5e5e5; font-size: 10px; }
+    .summary-row { display: flex; justify-content: space-between; padding: 5px 8px; align-items: center; gap: 6px; }
+    .summary-row.subtotal, .summary-row.vat { background: #fefde7; font-weight: 600; color: #1a1a1a; font-size: 10px; }
     .summary-row.total {
-      background: #facc15; font-weight: 700; color: #1a1a1a; font-size: 12px; border-top: 1px solid #e5e5e5; padding: 8px 10px;
+      background: #facc15; font-weight: 700; color: #1a1a1a; font-size: 11px; border-top: 1px solid #e5e5e5; padding: 6px 8px;
       -webkit-print-color-adjust: exact; print-color-adjust: exact;
     }
     .summary-row .amount { font-weight: 600; }
-    .summary-row.total .amount { font-size: 13px; font-weight: 700; }
-    .notes-section { margin-top: 24px; padding-top: 18px; border-top: 1px solid #e0e0e0; text-align: right; }
-    .notes-title { font-size: 12px; font-weight: 700; color: #1a1a1a; margin-bottom: 8px; }
-    .notes-list { list-style: disc; padding-right: 20px; margin: 0 0 8px; font-size: 12px; color: #555; line-height: 1.65; }
-    .notes-list li { margin-bottom: 4px; }
-    .notes-content { font-size: 12px; color: #555; margin-bottom: 8px; }
-    .notes-validity { font-size: 11px; color: #777; margin-top: 6px; }
-    .pdf-footer { margin-top: 28px; padding-top: 20px; border-top: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; }
-    .footer-sig-block { flex: 1; max-width: 240px; text-align: center; }
+    .summary-row.total .amount { font-size: 12px; font-weight: 700; }
+    .notes-section { margin-top: 12px; padding-top: 10px; border-top: 1px solid #e0e0e0; text-align: right; }
+    .notes-title { font-size: 11px; font-weight: 700; color: #1a1a1a; margin-bottom: 4px; }
+    .notes-list { list-style: disc; padding-right: 18px; margin: 0 0 4px; font-size: 11px; color: #555; line-height: 1.5; }
+    .notes-list li { margin-bottom: 2px; }
+    .notes-content { font-size: 11px; color: #555; margin-bottom: 4px; }
+    .notes-validity { font-size: 10px; color: #777; margin-top: 4px; }
+    .pdf-footer { margin-top: auto; padding-top: 16px; border-top: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; }
+    .footer-sig-block { flex: 1; max-width: 220px; text-align: center; }
     .footer-sig-block.footer-sig-client { text-align: right; }
     .footer-sig-block.footer-sig-business { text-align: left; }
-    .footer-sig-label { display: block; font-weight: 600; color: #1a1a1a; margin-bottom: 8px; font-size: 12px; }
-    .footer-sig-line { display: block; height: 2px; background: #333; width: 100%; min-width: 140px; margin-top: 4px; }
+    .footer-sig-label { display: block; font-weight: 600; color: #1a1a1a; margin-bottom: 6px; font-size: 11px; }
+    .footer-sig-line { display: block; height: 2px; background: #333; width: 100%; min-width: 120px; margin-top: 2px; }
     @media print {
       body, .quote-pdf-body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .header-band, .items-table thead th, .summary-row.total { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -252,61 +256,63 @@ export const generateQuotePDF = (
   <style>
     @page { size: A4; margin: 20mm; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Heebo', 'Assistant', 'Segoe UI', Tahoma, sans-serif; direction: rtl; color: #1a1a1a; background: #fff; padding: 0 28px 28px; font-size: 12px; line-height: 1.5; }
-    .container { max-width: 560px; margin: 0 auto; }
-    .header-band { height: 6px; background: #1e3a5f; margin: 0 -28px 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .header-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; padding: 20px 0 18px; border-bottom: 1px solid #e0e0e0; margin-bottom: 18px; }
+    body { font-family: 'Heebo', 'Assistant', 'Segoe UI', Tahoma, sans-serif; direction: rtl; color: #1a1a1a; background: #fff; padding: 0 20px 20px; font-size: 12px; line-height: 1.4; min-height: 297mm; }
+    .container { max-width: 560px; margin: 0 auto; min-height: 297mm; display: flex; flex-direction: column; }
+    .container .content-block { flex: 1; }
+    .header-band { height: 4px; background: #1e3a5f; margin: 0 -20px 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .header-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 10px 0 8px; border-bottom: 1px solid #e0e0e0; margin-bottom: 10px; }
     .header-company-wrap { text-align: right; flex: 1; }
-    .header-company { font-size: 12px; color: #333; line-height: 1.7; }
-    .header-company .company-name { font-weight: 600; font-size: 14px; color: #1a1a1a; margin-bottom: 4px; }
-    .header-company .company-line { margin-top: 2px; color: #555; }
-    .header-logo-wrap { flex: 1; min-width: 100px; max-height: 88px; display: flex; align-items: center; justify-content: center; }
-    .header-logo { width: 100%; height: 100%; max-height: 88px; object-fit: contain; display: block; }
-    .header-logo-placeholder { width: 100%; height: 100%; max-height: 88px; min-height: 48px; background: #f5f5f5; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #1e3a5f; font-weight: 600; }
-    .title-row { margin-bottom: 20px; }
-    .quote-title { font-size: 20px; font-weight: 700; color: #1a1a1a; text-align: center; margin-bottom: 10px; letter-spacing: -0.02em; }
-    .title-meta { display: flex; justify-content: space-between; font-size: 11px; color: #555; }
-    .for-block { margin-bottom: 20px; padding: 14px 0; border-bottom: 1px solid #eee; font-size: 12px; color: #333; text-align: right; }
+    .header-company { font-size: 11px; color: #333; line-height: 1.5; }
+    .header-company .company-name { font-weight: 600; font-size: 13px; color: #1a1a1a; margin-bottom: 2px; }
+    .header-company .company-line { margin-top: 1px; color: #555; }
+    .header-logo-wrap { flex-shrink: 0; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; }
+    .header-logo { width: 56px; height: 56px; object-fit: contain; display: block; }
+    .header-logo-placeholder { width: 56px; height: 56px; background: #f5f5f5; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #1e3a5f; font-weight: 600; }
+    .title-row { margin-bottom: 10px; }
+    .quote-title { font-size: 18px; font-weight: 700; color: #1a1a1a; text-align: center; margin-bottom: 6px; letter-spacing: -0.02em; }
+    .title-meta { display: flex; justify-content: space-between; font-size: 10px; color: #555; }
+    .for-block { margin-bottom: 10px; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 11px; color: #333; text-align: right; }
     .for-label { font-weight: 600; color: #1a1a1a; }
-    .for-details { font-size: 11px; color: #555; margin-top: 6px; display: block; line-height: 1.6; }
-    .table-summary-wrap { display: block; margin-bottom: 20px; }
-    .table-summary-wrap .items-table { margin-bottom: 10px; }
+    .for-details { font-size: 10px; color: #555; margin-top: 4px; display: block; line-height: 1.5; }
+    .table-summary-wrap { display: block; margin-bottom: 12px; }
+    .table-summary-wrap .items-table { margin-bottom: 8px; }
     .table-summary-wrap .summary-below { display: flex; justify-content: flex-end; direction: rtl; }
-    .items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; table-layout: fixed; font-size: 12px; }
-    .items-table thead th { background: #1e3a5f; color: #fff; padding: 11px 12px; text-align: right; font-weight: 600; font-size: 11px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .items-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; table-layout: fixed; font-size: 11px; }
+    .items-table thead th { background: #1e3a5f; color: #fff; padding: 8px 10px; text-align: right; font-weight: 600; font-size: 10px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .items-table thead th:nth-child(2), .items-table thead th:nth-child(3), .items-table thead th:nth-child(4) { text-align: center; }
     .items-table thead th:nth-child(1) { width: 50%; }
     .items-table thead th:nth-child(2) { width: 12%; }
     .items-table thead th:nth-child(3), .items-table thead th:nth-child(4) { width: 19%; }
-    .items-table tbody td { padding: 11px 12px; vertical-align: middle; border-bottom: 1px solid #e5e5e5; }
+    .items-table tbody td { padding: 8px 10px; vertical-align: middle; border-bottom: 1px solid #e5e5e5; }
     .items-table tbody tr:nth-child(even) { background: #f8f9fa; }
     .items-table tbody tr:last-child td { border-bottom: 2px solid #1e3a5f; }
     .item-name { font-weight: 500; color: #1a1a1a; }
-    .item-extras { font-size: 11px; color: #555; margin-top: 3px; }
+    .item-extras { font-size: 10px; color: #555; margin-top: 2px; }
     .price-cell { text-align: center; font-weight: 600; color: #1a1a1a; white-space: nowrap; }
-    .summary { width: 200px; border: 1px solid #e5e5e5; font-size: 11px; }
-    .summary-row { display: flex; justify-content: space-between; padding: 6px 10px; align-items: center; gap: 8px; }
-    .summary-row.subtotal, .summary-row.vat { background: #fefde7; font-weight: 600; color: #1a1a1a; font-size: 11px; }
-    .summary-row.total { background: #facc15; font-weight: 700; color: #1a1a1a; font-size: 12px; border-top: 1px solid #e5e5e5; padding: 8px 10px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .summary { width: 180px; border: 1px solid #e5e5e5; font-size: 10px; }
+    .summary-row { display: flex; justify-content: space-between; padding: 5px 8px; align-items: center; gap: 6px; }
+    .summary-row.subtotal, .summary-row.vat { background: #fefde7; font-weight: 600; color: #1a1a1a; font-size: 10px; }
+    .summary-row.total { background: #facc15; font-weight: 700; color: #1a1a1a; font-size: 11px; border-top: 1px solid #e5e5e5; padding: 6px 8px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .summary-row .amount { font-weight: 600; }
-    .summary-row.total .amount { font-size: 13px; font-weight: 700; }
-    .notes-section { margin-top: 24px; padding-top: 18px; border-top: 1px solid #e0e0e0; text-align: right; }
-    .notes-title { font-size: 12px; font-weight: 700; color: #1a1a1a; margin-bottom: 8px; }
-    .notes-list { list-style: disc; padding-right: 20px; margin: 0 0 8px; font-size: 12px; color: #555; line-height: 1.65; }
-    .notes-list li { margin-bottom: 4px; }
-    .notes-content { font-size: 12px; color: #555; margin-bottom: 8px; }
-    .notes-validity { font-size: 11px; color: #777; margin-top: 6px; }
-    .pdf-footer { margin-top: 28px; padding-top: 20px; border-top: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; }
-    .footer-sig-block { flex: 1; max-width: 240px; text-align: center; }
+    .summary-row.total .amount { font-size: 12px; font-weight: 700; }
+    .notes-section { margin-top: 12px; padding-top: 10px; border-top: 1px solid #e0e0e0; text-align: right; }
+    .notes-title { font-size: 11px; font-weight: 700; color: #1a1a1a; margin-bottom: 4px; }
+    .notes-list { list-style: disc; padding-right: 18px; margin: 0 0 4px; font-size: 11px; color: #555; line-height: 1.5; }
+    .notes-list li { margin-bottom: 2px; }
+    .notes-content { font-size: 11px; color: #555; margin-bottom: 4px; }
+    .notes-validity { font-size: 10px; color: #777; margin-top: 4px; }
+    .pdf-footer { margin-top: auto; padding-top: 16px; border-top: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; }
+    .footer-sig-block { flex: 1; max-width: 220px; text-align: center; }
     .footer-sig-block.footer-sig-client { text-align: right; }
     .footer-sig-block.footer-sig-business { text-align: left; }
-    .footer-sig-label { display: block; font-weight: 600; color: #1a1a1a; margin-bottom: 8px; font-size: 12px; }
-    .footer-sig-line { display: block; height: 2px; background: #333; width: 100%; min-width: 140px; margin-top: 4px; }
+    .footer-sig-label { display: block; font-weight: 600; color: #1a1a1a; margin-bottom: 6px; font-size: 11px; }
+    .footer-sig-line { display: block; height: 2px; background: #333; width: 100%; min-width: 120px; margin-top: 2px; }
     @media print { body { padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; } .container { max-width: 100%; } .header-band, .items-table thead th, .summary-row.total { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
   </style>
 </head>
 <body>
   <div class="container">
+    <div class="content-block">
     ${profileBlock}
     <div class="table-summary-wrap">
       <table class="items-table">
@@ -329,6 +335,7 @@ export const generateQuotePDF = (
       </div>
     </div>
     ${notesBlock}
+    </div>
     ${footerBlock}
   </div>
   <script>window.onload = function() { setTimeout(function() { window.print(); }, 250); };</script>
@@ -427,6 +434,7 @@ export async function generateQuotePDFAsBlob(
           </div>
         </div>
         ${notesBlock}
+        </div>
         ${footerBlock}
       </div>
     </div>
