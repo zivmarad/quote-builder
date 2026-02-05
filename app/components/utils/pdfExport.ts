@@ -123,12 +123,8 @@ function getQuoteStyles(fontFamily = "'Heebo', 'Assistant', 'Segoe UI', Tahoma, 
       font-size: 12px;
       line-height: 1.4;
       width: 560px;
-      min-height: 297mm;
-      display: flex;
-      flex-direction: column;
     }
-    .container { max-width: 560px; margin: 0 auto; min-height: 297mm; display: flex; flex-direction: column; flex: 1; }
-    .container .content-block { flex: 1; }
+    .container { max-width: 560px; margin: 0 auto; }
     .header-band { height: 4px; background: #1e3a5f; margin: 0 -20px 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .header-top {
       display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;
@@ -184,7 +180,7 @@ function getQuoteStyles(fontFamily = "'Heebo', 'Assistant', 'Segoe UI', Tahoma, 
     .notes-list li { margin-bottom: 2px; }
     .notes-content { font-size: 11px; color: #555; margin-bottom: 4px; }
     .notes-validity { font-size: 10px; color: #777; margin-top: 4px; }
-    .pdf-footer { margin-top: auto; padding-top: 16px; border-top: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; }
+    .pdf-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; }
     .footer-sig-block { flex: 1; max-width: 220px; text-align: center; }
     .footer-sig-block.footer-sig-client { text-align: right; }
     .footer-sig-block.footer-sig-business { text-align: left; }
@@ -256,9 +252,8 @@ export const generateQuotePDF = (
   <style>
     @page { size: A4; margin: 20mm; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Heebo', 'Assistant', 'Segoe UI', Tahoma, sans-serif; direction: rtl; color: #1a1a1a; background: #fff; padding: 0 20px 20px; font-size: 12px; line-height: 1.4; min-height: 297mm; }
-    .container { max-width: 560px; margin: 0 auto; min-height: 297mm; display: flex; flex-direction: column; }
-    .container .content-block { flex: 1; }
+    body { font-family: 'Heebo', 'Assistant', 'Segoe UI', Tahoma, sans-serif; direction: rtl; color: #1a1a1a; background: #fff; padding: 0 20px 20px; font-size: 12px; line-height: 1.4; }
+    .container { max-width: 560px; margin: 0 auto; }
     .header-band { height: 4px; background: #1e3a5f; margin: 0 -20px 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .header-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 10px 0 8px; border-bottom: 1px solid #e0e0e0; margin-bottom: 10px; }
     .header-company-wrap { text-align: right; flex: 1; }
@@ -301,7 +296,7 @@ export const generateQuotePDF = (
     .notes-list li { margin-bottom: 2px; }
     .notes-content { font-size: 11px; color: #555; margin-bottom: 4px; }
     .notes-validity { font-size: 10px; color: #777; margin-top: 4px; }
-    .pdf-footer { margin-top: auto; padding-top: 16px; border-top: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; }
+    .pdf-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; }
     .footer-sig-block { flex: 1; max-width: 220px; text-align: center; }
     .footer-sig-block.footer-sig-client { text-align: right; }
     .footer-sig-block.footer-sig-business { text-align: left; }
