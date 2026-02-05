@@ -62,7 +62,7 @@ function buildQuoteContent(params: {
   const days = validityDays != null && validityDays >= 1 ? validityDays : 30;
   const validityText = `הצעת מחיר זו תקפה ל-${days} יום מיום הנפקתה`;
   const quoteNumText = quoteNumber != null ? `מס' הצעה: #${quoteNumber}` : '';
-  const titleOnly = quoteTitle?.trim() || 'הצעת מחיר';
+  const titleOnly = quoteTitle?.trim() || 'הצעת מחיר לשיפוץ כללי';
 
   const companyLines: string[] = [];
   if (profile?.businessName) companyLines.push(`<div class="company-name">${escapeHtml(profile.businessName)}</div>`);
@@ -87,9 +87,14 @@ function buildQuoteContent(params: {
   const profileBlock = `${headerTop}${titleRow}${forBlock}`;
 
   const notesText = notes?.trim() ?? '';
-  const notesBlock = `<div class="notes-section"><div class="notes-title">הערות:</div>${notesText ? `<div class="notes-content">${escapeHtml(notesText).replace(/\n/g, '<br>')}</div>` : '<div class="notes-content">—</div>'}${validityText ? `<p class="notes-validity">${escapeHtml(validityText)}</p>` : ''}</div>`;
+  const notesItems = notesText ? notesText.split(/\n/).filter((l) => l.trim()) : [];
+  const notesListHtml = notesItems.length > 0
+    ? `<ul class="notes-list">${notesItems.map((line) => `<li>${escapeHtml(line.trim())}</li>`).join('')}</ul>`
+    : '<div class="notes-content">—</div>';
+  const notesBlock = `<div class="notes-section"><div class="notes-title">הערות:</div>${notesListHtml}${validityText ? `<p class="notes-validity">${escapeHtml(validityText)}</p>` : ''}</div>`;
 
-  const footerBlock = `<div class="pdf-footer"><span class="footer-company">${hasProfile(profile) ? escapeHtml(profile!.businessName || '') : ''}</span><span class="footer-signature"><span class="footer-client-name">${escapeHtml(customerNameVal)}</span><span class="footer-line">_________________________</span></span></div>`;
+  const businessLabel = hasProfile(profile) && profile!.businessName ? escapeHtml(profile!.businessName) : 'חתימת בעל העסק';
+  const footerBlock = `<div class="pdf-footer"><div class="footer-sig-block footer-sig-client"><span class="footer-sig-label">${escapeHtml(customerNameVal)}</span><span class="footer-sig-line"></span></div><div class="footer-sig-block footer-sig-business"><span class="footer-sig-label">${businessLabel}</span><span class="footer-sig-line"></span></div></div>`;
 
   const VAT = totalBeforeVAT * 0.18;
   return {
@@ -105,8 +110,8 @@ function buildQuoteContent(params: {
   };
 }
 
-/** עיצוב מקצועי להצעת מחיר – לוגו משמאל, פרטי עסק מימין, טבלה עם פסים, סיכום קומפקטי. */
-function getQuoteStyles(fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif") {
+/** עיצוב מקצועי להצעת מחיר – RTL, Heebo/Assistant, Navy header, טבלה, סיכום צהוב בולט, הערות כרשימה, קווי חתימה. */
+function getQuoteStyles(fontFamily = "'Heebo', 'Assistant', 'Segoe UI', Tahoma, sans-serif") {
   return `
     * { margin: 0; padding: 0; box-sizing: border-box; }
     .quote-pdf-body {
@@ -120,7 +125,7 @@ function getQuoteStyles(fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-
       width: 560px;
     }
     .container { max-width: 560px; margin: 0 auto; }
-    .header-band { height: 6px; background: #1e3a5f; margin: 0 -28px 0; }
+    .header-band { height: 6px; background: #1e3a5f; margin: 0 -28px 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .header-top {
       display: flex; justify-content: space-between; align-items: flex-start; gap: 24px;
       padding: 20px 0 18px; border-bottom: 1px solid #e0e0e0; margin-bottom: 18px;
@@ -144,36 +149,44 @@ function getQuoteStyles(fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-
     .items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; table-layout: fixed; font-size: 12px; }
     .items-table thead th {
       background: #1e3a5f; color: #fff; padding: 11px 12px; text-align: right; font-weight: 600; font-size: 11px;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
     }
     .items-table thead th:nth-child(2) { text-align: center; }
     .items-table thead th:nth-child(3), .items-table thead th:nth-child(4) { text-align: center; }
     .items-table thead th:nth-child(1) { width: 50%; }
     .items-table thead th:nth-child(2) { width: 12%; }
     .items-table thead th:nth-child(3), .items-table thead th:nth-child(4) { width: 19%; }
-    .items-table tbody td { padding: 11px 12px; vertical-align: middle; border-bottom: 1px solid #eee; }
+    .items-table tbody td { padding: 11px 12px; vertical-align: middle; border-bottom: 1px solid #e5e5e5; }
     .items-table tbody tr:nth-child(even) { background: #f8f9fa; }
     .items-table tbody tr:last-child td { border-bottom: 2px solid #1e3a5f; }
     .item-name { font-weight: 500; color: #1a1a1a; }
     .item-extras { font-size: 11px; color: #555; margin-top: 3px; }
     .price-cell { text-align: center; font-weight: 600; color: #1a1a1a; white-space: nowrap; }
-    .summary {
-      width: 220px; margin-right: 0; margin-left: auto; border: 1px solid #e5e5e5;
-      font-size: 12px;
-    }
+    .summary { width: 220px; margin-right: 0; margin-left: auto; border: 1px solid #e5e5e5; font-size: 12px; }
     .summary-row { display: flex; justify-content: space-between; padding: 8px 12px; align-items: center; gap: 12px; }
     .summary-row.subtotal, .summary-row.vat { background: #fefde7; font-weight: 600; color: #1a1a1a; font-size: 12px; }
-    .summary-row.total { background: #fef9c3; font-weight: 700; color: #1a1a1a; font-size: 13px; border-top: 1px solid #e5e5e5; padding: 10px 12px; }
+    .summary-row.total {
+      background: #facc15; font-weight: 700; color: #1a1a1a; font-size: 13px; border-top: 1px solid #e5e5e5; padding: 10px 12px;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
     .summary-row .amount { font-weight: 600; }
     .summary-row.total .amount { font-size: 14px; font-weight: 700; }
     .notes-section { margin-top: 24px; padding-top: 18px; border-top: 1px solid #e0e0e0; text-align: right; }
     .notes-title { font-size: 12px; font-weight: 700; color: #1a1a1a; margin-bottom: 8px; }
-    .notes-content { font-size: 12px; color: #555; line-height: 1.65; white-space: pre-line; margin-bottom: 8px; }
+    .notes-list { list-style: disc; padding-right: 20px; margin: 0 0 8px; font-size: 12px; color: #555; line-height: 1.65; }
+    .notes-list li { margin-bottom: 4px; }
+    .notes-content { font-size: 12px; color: #555; margin-bottom: 8px; }
     .notes-validity { font-size: 11px; color: #777; margin-top: 6px; }
-    .pdf-footer { margin-top: 28px; padding-top: 16px; border-top: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: flex-end; font-size: 12px; }
-    .footer-company { font-weight: 600; color: #1a1a1a; }
-    .footer-signature { text-align: left; }
-    .footer-client-name { display: block; font-weight: 600; color: #1a1a1a; margin-bottom: 6px; }
-    .footer-line { display: block; font-size: 11px; color: #999; letter-spacing: 1px; border-bottom: 1px solid #ccc; width: 120px; padding-bottom: 2px; }
+    .pdf-footer { margin-top: 28px; padding-top: 20px; border-top: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; }
+    .footer-sig-block { flex: 1; max-width: 240px; text-align: center; }
+    .footer-sig-block.footer-sig-client { text-align: right; }
+    .footer-sig-block.footer-sig-business { text-align: left; }
+    .footer-sig-label { display: block; font-weight: 600; color: #1a1a1a; margin-bottom: 8px; font-size: 12px; }
+    .footer-sig-line { display: block; height: 2px; background: #333; width: 100%; min-width: 140px; margin-top: 4px; }
+    @media print {
+      body, .quote-pdf-body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .header-band, .items-table thead th, .summary-row.total { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
   `;
 }
 
@@ -232,12 +245,13 @@ export const generateQuotePDF = (
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>הצעת מחיר ${today}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     @page { size: A4; margin: 20mm; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; direction: rtl; color: #1a1a1a; background: #fff; padding: 0 28px 28px; font-size: 12px; line-height: 1.5; }
+    body { font-family: 'Heebo', 'Assistant', 'Segoe UI', Tahoma, sans-serif; direction: rtl; color: #1a1a1a; background: #fff; padding: 0 28px 28px; font-size: 12px; line-height: 1.5; }
     .container { max-width: 560px; margin: 0 auto; }
-    .header-band { height: 6px; background: #1e3a5f; margin: 0 -28px 0; }
+    .header-band { height: 6px; background: #1e3a5f; margin: 0 -28px 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .header-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; padding: 20px 0 18px; border-bottom: 1px solid #e0e0e0; margin-bottom: 18px; }
     .header-company-wrap { text-align: right; flex: 1; }
     .header-company { font-size: 12px; color: #333; line-height: 1.7; }
@@ -253,12 +267,12 @@ export const generateQuotePDF = (
     .for-label { font-weight: 600; color: #1a1a1a; }
     .for-details { font-size: 11px; color: #555; margin-top: 6px; display: block; line-height: 1.6; }
     .items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; table-layout: fixed; font-size: 12px; }
-    .items-table thead th { background: #1e3a5f; color: #fff; padding: 11px 12px; text-align: right; font-weight: 600; font-size: 11px; }
+    .items-table thead th { background: #1e3a5f; color: #fff; padding: 11px 12px; text-align: right; font-weight: 600; font-size: 11px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .items-table thead th:nth-child(2), .items-table thead th:nth-child(3), .items-table thead th:nth-child(4) { text-align: center; }
     .items-table thead th:nth-child(1) { width: 50%; }
     .items-table thead th:nth-child(2) { width: 12%; }
     .items-table thead th:nth-child(3), .items-table thead th:nth-child(4) { width: 19%; }
-    .items-table tbody td { padding: 11px 12px; vertical-align: middle; border-bottom: 1px solid #eee; }
+    .items-table tbody td { padding: 11px 12px; vertical-align: middle; border-bottom: 1px solid #e5e5e5; }
     .items-table tbody tr:nth-child(even) { background: #f8f9fa; }
     .items-table tbody tr:last-child td { border-bottom: 2px solid #1e3a5f; }
     .item-name { font-weight: 500; color: #1a1a1a; }
@@ -267,19 +281,22 @@ export const generateQuotePDF = (
     .summary { width: 220px; margin-right: 0; margin-left: auto; border: 1px solid #e5e5e5; font-size: 12px; }
     .summary-row { display: flex; justify-content: space-between; padding: 8px 12px; align-items: center; gap: 12px; }
     .summary-row.subtotal, .summary-row.vat { background: #fefde7; font-weight: 600; color: #1a1a1a; font-size: 12px; }
-    .summary-row.total { background: #fef9c3; font-weight: 700; color: #1a1a1a; font-size: 13px; border-top: 1px solid #e5e5e5; padding: 10px 12px; }
+    .summary-row.total { background: #facc15; font-weight: 700; color: #1a1a1a; font-size: 13px; border-top: 1px solid #e5e5e5; padding: 10px 12px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .summary-row .amount { font-weight: 600; }
     .summary-row.total .amount { font-size: 14px; font-weight: 700; }
     .notes-section { margin-top: 24px; padding-top: 18px; border-top: 1px solid #e0e0e0; text-align: right; }
     .notes-title { font-size: 12px; font-weight: 700; color: #1a1a1a; margin-bottom: 8px; }
-    .notes-content { font-size: 12px; color: #555; line-height: 1.65; white-space: pre-line; margin-bottom: 8px; }
+    .notes-list { list-style: disc; padding-right: 20px; margin: 0 0 8px; font-size: 12px; color: #555; line-height: 1.65; }
+    .notes-list li { margin-bottom: 4px; }
+    .notes-content { font-size: 12px; color: #555; margin-bottom: 8px; }
     .notes-validity { font-size: 11px; color: #777; margin-top: 6px; }
-    .pdf-footer { margin-top: 28px; padding-top: 16px; border-top: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: flex-end; font-size: 12px; }
-    .footer-company { font-weight: 600; color: #1a1a1a; }
-    .footer-signature { text-align: left; }
-    .footer-client-name { display: block; font-weight: 600; color: #1a1a1a; margin-bottom: 6px; }
-    .footer-line { display: block; font-size: 11px; color: #999; letter-spacing: 1px; border-bottom: 1px solid #ccc; width: 120px; padding-bottom: 2px; }
-    @media print { body { padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; } .container { max-width: 100%; } }
+    .pdf-footer { margin-top: 28px; padding-top: 20px; border-top: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; }
+    .footer-sig-block { flex: 1; max-width: 240px; text-align: center; }
+    .footer-sig-block.footer-sig-client { text-align: right; }
+    .footer-sig-block.footer-sig-business { text-align: left; }
+    .footer-sig-label { display: block; font-weight: 600; color: #1a1a1a; margin-bottom: 8px; font-size: 12px; }
+    .footer-sig-line { display: block; height: 2px; background: #333; width: 100%; min-width: 140px; margin-top: 4px; }
+    @media print { body { padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; } .container { max-width: 100%; } .header-band, .items-table thead th, .summary-row.total { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
   </style>
 </head>
 <body>
@@ -375,7 +392,7 @@ export async function generateQuotePDFAsBlob(
     .join('');
 
   const fragment = `
-    <style>${getQuoteStyles("'Heebo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif")}</style>
+    <style>${getQuoteStyles("'Heebo', 'Assistant', 'Segoe UI', Tahoma, sans-serif")}</style>
     <div class="quote-pdf-body" dir="rtl">
       <div class="container">
         ${profileBlock}
