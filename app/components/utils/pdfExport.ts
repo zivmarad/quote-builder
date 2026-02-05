@@ -127,18 +127,18 @@ function getQuoteStyles(fontFamily = "'Heebo', 'Assistant', 'Segoe UI', Tahoma, 
     .container { max-width: 560px; margin: 0 auto; }
     .header-band { height: 6px; background: #1e3a5f; margin: 0 -28px 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .header-top {
-      display: flex; justify-content: space-between; align-items: flex-start; gap: 24px;
-      padding: 20px 0 18px; border-bottom: 1px solid #e0e0e0; margin-bottom: 18px;
+      display: flex; justify-content: space-between; align-items: stretch; gap: 24px;
+      padding: 20px 0 18px; border-bottom: 1px solid #e0e0e0; margin-bottom: 18px; min-height: 140px;
     }
     .header-company-wrap { text-align: right; flex: 1; }
     .header-company { font-size: 12px; color: #333; line-height: 1.7; }
     .header-company .company-name { font-weight: 600; font-size: 14px; color: #1a1a1a; margin-bottom: 4px; }
     .header-company .company-line { margin-top: 2px; color: #555; }
-    .header-logo-wrap { flex-shrink: 0; }
-    .header-logo { width: 56px; height: 56px; object-fit: contain; display: block; }
+    .header-logo-wrap { flex: 1; min-width: 160px; display: flex; align-items: center; justify-content: center; }
+    .header-logo { width: 100%; height: 100%; min-height: 100px; object-fit: contain; display: block; }
     .header-logo-placeholder {
-      width: 56px; height: 56px; background: #f5f5f5; border: 1px solid #ddd;
-      display: flex; align-items: center; justify-content: center; font-size: 10px; color: #1e3a5f; font-weight: 600;
+      width: 100%; min-height: 80px; height: 100%; background: #f5f5f5; border: 1px solid #ddd;
+      display: flex; align-items: center; justify-content: center; font-size: 11px; color: #1e3a5f; font-weight: 600;
     }
     .title-row { margin-bottom: 20px; }
     .quote-title { font-size: 20px; font-weight: 700; color: #1a1a1a; text-align: center; margin-bottom: 10px; letter-spacing: -0.02em; }
@@ -146,6 +146,8 @@ function getQuoteStyles(fontFamily = "'Heebo', 'Assistant', 'Segoe UI', Tahoma, 
     .for-block { margin-bottom: 20px; padding: 14px 0; border-bottom: 1px solid #eee; font-size: 12px; color: #333; text-align: right; }
     .for-label { font-weight: 600; color: #1a1a1a; }
     .for-details { font-size: 11px; color: #555; margin-top: 6px; display: block; line-height: 1.6; }
+    .table-summary-wrap { display: flex; flex-direction: row; align-items: flex-start; gap: 20px; margin-bottom: 20px; direction: rtl; }
+    .table-summary-wrap .items-table { margin-bottom: 0; flex: 1; min-width: 0; }
     .items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; table-layout: fixed; font-size: 12px; }
     .items-table thead th {
       background: #1e3a5f; color: #fff; padding: 11px 12px; text-align: right; font-weight: 600; font-size: 11px;
@@ -162,7 +164,7 @@ function getQuoteStyles(fontFamily = "'Heebo', 'Assistant', 'Segoe UI', Tahoma, 
     .item-name { font-weight: 500; color: #1a1a1a; }
     .item-extras { font-size: 11px; color: #555; margin-top: 3px; }
     .price-cell { text-align: center; font-weight: 600; color: #1a1a1a; white-space: nowrap; }
-    .summary { width: 220px; margin-right: 0; margin-left: auto; border: 1px solid #e5e5e5; font-size: 12px; }
+    .summary { width: 220px; flex-shrink: 0; border: 1px solid #e5e5e5; font-size: 12px; }
     .summary-row { display: flex; justify-content: space-between; padding: 8px 12px; align-items: center; gap: 12px; }
     .summary-row.subtotal, .summary-row.vat { background: #fefde7; font-weight: 600; color: #1a1a1a; font-size: 12px; }
     .summary-row.total {
@@ -252,20 +254,22 @@ export const generateQuotePDF = (
     body { font-family: 'Heebo', 'Assistant', 'Segoe UI', Tahoma, sans-serif; direction: rtl; color: #1a1a1a; background: #fff; padding: 0 28px 28px; font-size: 12px; line-height: 1.5; }
     .container { max-width: 560px; margin: 0 auto; }
     .header-band { height: 6px; background: #1e3a5f; margin: 0 -28px 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .header-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; padding: 20px 0 18px; border-bottom: 1px solid #e0e0e0; margin-bottom: 18px; }
+    .header-top { display: flex; justify-content: space-between; align-items: stretch; gap: 24px; padding: 20px 0 18px; border-bottom: 1px solid #e0e0e0; margin-bottom: 18px; min-height: 140px; }
     .header-company-wrap { text-align: right; flex: 1; }
     .header-company { font-size: 12px; color: #333; line-height: 1.7; }
     .header-company .company-name { font-weight: 600; font-size: 14px; color: #1a1a1a; margin-bottom: 4px; }
     .header-company .company-line { margin-top: 2px; color: #555; }
-    .header-logo-wrap { flex-shrink: 0; }
-    .header-logo { width: 56px; height: 56px; object-fit: contain; display: block; }
-    .header-logo-placeholder { width: 56px; height: 56px; background: #f5f5f5; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #1e3a5f; font-weight: 600; }
+    .header-logo-wrap { flex: 1; min-width: 160px; display: flex; align-items: center; justify-content: center; }
+    .header-logo { width: 100%; height: 100%; min-height: 100px; object-fit: contain; display: block; }
+    .header-logo-placeholder { width: 100%; min-height: 100px; height: 100%; background: #f5f5f5; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #1e3a5f; font-weight: 600; }
     .title-row { margin-bottom: 20px; }
     .quote-title { font-size: 20px; font-weight: 700; color: #1a1a1a; text-align: center; margin-bottom: 10px; letter-spacing: -0.02em; }
     .title-meta { display: flex; justify-content: space-between; font-size: 11px; color: #555; }
     .for-block { margin-bottom: 20px; padding: 14px 0; border-bottom: 1px solid #eee; font-size: 12px; color: #333; text-align: right; }
     .for-label { font-weight: 600; color: #1a1a1a; }
     .for-details { font-size: 11px; color: #555; margin-top: 6px; display: block; line-height: 1.6; }
+    .table-summary-wrap { display: flex; flex-direction: row; align-items: flex-start; gap: 20px; margin-bottom: 20px; direction: rtl; }
+    .table-summary-wrap .items-table { margin-bottom: 0; flex: 1; min-width: 0; }
     .items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; table-layout: fixed; font-size: 12px; }
     .items-table thead th { background: #1e3a5f; color: #fff; padding: 11px 12px; text-align: right; font-weight: 600; font-size: 11px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .items-table thead th:nth-child(2), .items-table thead th:nth-child(3), .items-table thead th:nth-child(4) { text-align: center; }
@@ -278,7 +282,7 @@ export const generateQuotePDF = (
     .item-name { font-weight: 500; color: #1a1a1a; }
     .item-extras { font-size: 11px; color: #555; margin-top: 3px; }
     .price-cell { text-align: center; font-weight: 600; color: #1a1a1a; white-space: nowrap; }
-    .summary { width: 220px; margin-right: 0; margin-left: auto; border: 1px solid #e5e5e5; font-size: 12px; }
+    .summary { width: 220px; flex-shrink: 0; border: 1px solid #e5e5e5; font-size: 12px; }
     .summary-row { display: flex; justify-content: space-between; padding: 8px 12px; align-items: center; gap: 12px; }
     .summary-row.subtotal, .summary-row.vat { background: #fefde7; font-weight: 600; color: #1a1a1a; font-size: 12px; }
     .summary-row.total { background: #facc15; font-weight: 700; color: #1a1a1a; font-size: 13px; border-top: 1px solid #e5e5e5; padding: 10px 12px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -302,21 +306,23 @@ export const generateQuotePDF = (
 <body>
   <div class="container">
     ${profileBlock}
-    <table class="items-table">
-      <thead>
-        <tr>
-          <th>תיאור השירות / המוצר</th>
-          <th>יחידות</th>
-          <th>מחיר</th>
-          <th>סה"כ</th>
-        </tr>
-      </thead>
-      <tbody>${tableRows}</tbody>
-    </table>
-    <div class="summary">
-      <div class="summary-row subtotal"><span>סה"כ</span><span class="amount">₪${totalBeforeVAT.toLocaleString('he-IL')}</span></div>
-      <div class="summary-row vat"><span>מע"מ (18%)</span><span class="amount">₪${VAT.toLocaleString('he-IL')}</span></div>
-      <div class="summary-row total"><span>סה"כ לתשלום</span><span class="amount">₪${totalWithVAT.toLocaleString('he-IL')}</span></div>
+    <div class="table-summary-wrap">
+      <table class="items-table">
+        <thead>
+          <tr>
+            <th>תיאור השירות / המוצר</th>
+            <th>יחידות</th>
+            <th>מחיר</th>
+            <th>סה"כ</th>
+          </tr>
+        </thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+      <div class="summary">
+        <div class="summary-row subtotal"><span>סה"כ</span><span class="amount">₪${totalBeforeVAT.toLocaleString('he-IL')}</span></div>
+        <div class="summary-row vat"><span>מע"מ (18%)</span><span class="amount">₪${VAT.toLocaleString('he-IL')}</span></div>
+        <div class="summary-row total"><span>סה"כ לתשלום</span><span class="amount">₪${totalWithVAT.toLocaleString('he-IL')}</span></div>
+      </div>
     </div>
     ${notesBlock}
     ${footerBlock}
@@ -396,21 +402,23 @@ export async function generateQuotePDFAsBlob(
     <div class="quote-pdf-body" dir="rtl">
       <div class="container">
         ${profileBlock}
-        <table class="items-table">
-          <thead>
-            <tr>
-              <th>תיאור השירות / המוצר</th>
-              <th>יחידות</th>
-              <th>מחיר</th>
-              <th>סה"כ</th>
-            </tr>
-          </thead>
-          <tbody>${tableRows}</tbody>
-        </table>
-        <div class="summary">
-          <div class="summary-row subtotal"><span>סה"כ</span><span class="amount">₪${totalBeforeVAT.toLocaleString('he-IL')}</span></div>
-          <div class="summary-row vat"><span>מע"מ (18%)</span><span class="amount">₪${VAT.toLocaleString('he-IL')}</span></div>
-          <div class="summary-row total"><span>סה"כ לתשלום</span><span class="amount">₪${totalWithVAT.toLocaleString('he-IL')}</span></div>
+        <div class="table-summary-wrap">
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th>תיאור השירות / המוצר</th>
+                <th>יחידות</th>
+                <th>מחיר</th>
+                <th>סה"כ</th>
+              </tr>
+            </thead>
+            <tbody>${tableRows}</tbody>
+          </table>
+          <div class="summary">
+            <div class="summary-row subtotal"><span>סה"כ</span><span class="amount">₪${totalBeforeVAT.toLocaleString('he-IL')}</span></div>
+            <div class="summary-row vat"><span>מע"מ (18%)</span><span class="amount">₪${VAT.toLocaleString('he-IL')}</span></div>
+            <div class="summary-row total"><span>סה"כ לתשלום</span><span class="amount">₪${totalWithVAT.toLocaleString('he-IL')}</span></div>
+          </div>
         </div>
         ${notesBlock}
         ${footerBlock}
