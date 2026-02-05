@@ -60,17 +60,19 @@ export async function sendUsernameToEmail(to: string, username: string): Promise
   });
 }
 
-/** מייל לאדמין על הרשמה חדשה */
+/** מייל לאדמין על הרשמה חדשה – מקבל כתובת אחת או מערך (למשל מייל פרטי + אימייל-ל-SMS) */
 export async function sendNewUserNotificationEmail(
-  adminEmail: string,
+  to: string | string[],
   data: { email: string; username: string; createdAt: string }
 ): Promise<void> {
   const transporter = getTransporter();
   const fromEmail = getFromEmail();
   const dateStr = new Date(data.createdAt).toLocaleString('he-IL');
+  const toList = Array.isArray(to) ? to : [to];
+  if (toList.length === 0) return;
   await transporter.sendMail({
     from: `בונה הצעות מחיר <${fromEmail}>`,
-    to: adminEmail,
+    to: toList,
     subject: 'הרשמה חדשה – בונה הצעות מחיר',
     text: `נרשם משתמש חדש.\nאימייל: ${data.email}\nשם משתמש: ${data.username}\nתאריך: ${dateStr}`,
     html: `

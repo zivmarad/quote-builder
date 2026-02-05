@@ -32,9 +32,8 @@ export default function Cart() {
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [customerName, setCustomerName] = useState('');
-  const [customerPhone, setCustomerPhone] = useState('');
-  const [customerEmail, setCustomerEmail] = useState('');
-  const [customerAddress, setCustomerAddress] = useState('');
+  const [contactType, setContactType] = useState<'none' | 'phone' | 'email' | 'address'>('none');
+  const [contactValue, setContactValue] = useState('');
   const [notes, setNotes] = useState('');
   const lastShareBlobRef = useRef<Blob | null>(null);
   const [isMobile, setIsMobile] = useState(false);
@@ -104,27 +103,33 @@ export default function Cart() {
     setEditPrice('');
   };
 
+  const getCustomerContact = () => ({
+    customerPhone: contactType === 'phone' ? contactValue.trim() : undefined,
+    customerEmail: contactType === 'email' ? contactValue.trim() : undefined,
+    customerAddress: contactType === 'address' ? contactValue.trim() : undefined,
+  });
+
   const handleExportPDF = () => {
+    const { customerPhone, customerEmail, customerAddress } = getCustomerContact();
     addQuote({
       items,
       totalBeforeVAT,
       VAT,
       totalWithVAT,
       customerName: customerName.trim() || undefined,
-      customerPhone: customerPhone.trim() || undefined,
-      customerEmail: customerEmail.trim() || undefined,
-      customerAddress: customerAddress.trim() || undefined,
+      customerPhone,
+      customerEmail,
+      customerAddress,
       notes: notes.trim() || undefined,
       quoteNumber: nextQuoteNumber,
       status: 'download',
     });
-    generateQuotePDF(items, totalBeforeVAT, VAT, totalWithVAT, profile, customerName || undefined, notes || undefined, defaultQuoteTitle, nextQuoteNumber, customerPhone || undefined, customerEmail || undefined, customerAddress || undefined, validityDays ?? undefined);
+    generateQuotePDF(items, totalBeforeVAT, VAT, totalWithVAT, profile, customerName || undefined, notes || undefined, defaultQuoteTitle, nextQuoteNumber, customerPhone, customerEmail, customerAddress, validityDays ?? undefined);
     setNextQuoteNumber(nextQuoteNumber + 1);
     clearBasket();
     setCustomerName('');
-    setCustomerPhone('');
-    setCustomerEmail('');
-    setCustomerAddress('');
+    setContactType('none');
+    setContactValue('');
     setNotes('');
     setToast('ה-PDF הורד וההצעה נשמרה');
     setTimeout(() => router.push('/'), 2500);
@@ -133,21 +138,22 @@ export default function Cart() {
   /** שלב 1: הכנת PDF. שלב 2: במודל – לחיצה על "שתף עכשיו" קוראת ל-navigator.share() במחווה ישירה, כך שמסך השיתוף נפתח במובייל. */
   const handleShareToWhatsApp = async () => {
     setIsSharing(true);
+    const { customerPhone, customerEmail, customerAddress } = getCustomerContact();
     addQuote({
       items,
       totalBeforeVAT,
       VAT,
       totalWithVAT,
       customerName: customerName.trim() || undefined,
-      customerPhone: customerPhone.trim() || undefined,
-      customerEmail: customerEmail.trim() || undefined,
-      customerAddress: customerAddress.trim() || undefined,
+      customerPhone,
+      customerEmail,
+      customerAddress,
       notes: notes.trim() || undefined,
       quoteNumber: nextQuoteNumber,
       status: 'whatsapp',
     });
     try {
-      const blob = await generateQuotePDFAsBlob(items, totalBeforeVAT, VAT, totalWithVAT, profile, customerName || undefined, notes || undefined, defaultQuoteTitle, nextQuoteNumber, customerPhone || undefined, customerEmail || undefined, customerAddress || undefined, validityDays ?? undefined);
+      const blob = await generateQuotePDFAsBlob(items, totalBeforeVAT, VAT, totalWithVAT, profile, customerName || undefined, notes || undefined, defaultQuoteTitle, nextQuoteNumber, customerPhone, customerEmail, customerAddress, validityDays ?? undefined);
       setNextQuoteNumber(nextQuoteNumber + 1);
       lastShareBlobRef.current = blob;
       setShareError(null);
@@ -180,9 +186,8 @@ export default function Cart() {
       setShowWhatsAppModal(false);
       clearBasket();
       setCustomerName('');
-      setCustomerPhone('');
-      setCustomerEmail('');
-      setCustomerAddress('');
+      setContactType('none');
+      setContactValue('');
       setNotes('');
       setToast('ההצעה נשלחה בהצלחה');
       setTimeout(() => router.push('/'), 2500);
@@ -210,9 +215,8 @@ export default function Cart() {
     setShowWhatsAppModal(false);
     clearBasket();
     setCustomerName('');
-    setCustomerPhone('');
-    setCustomerEmail('');
-    setCustomerAddress('');
+    setContactType('none');
+    setContactValue('');
     setNotes('');
     setToast('ה-PDF הורד וההצעה נשמרה');
     setTimeout(() => router.push('/'), 2500);
@@ -234,9 +238,8 @@ export default function Cart() {
     setShowWhatsAppModal(false);
     clearBasket();
     setCustomerName('');
-    setCustomerPhone('');
-    setCustomerEmail('');
-    setCustomerAddress('');
+    setContactType('none');
+    setContactValue('');
     setNotes('');
     setToast('ה-PDF הורד – אפשר לשלוח בוואטסאפ Web');
     setTimeout(() => router.push('/'), 2500);
@@ -607,11 +610,11 @@ export default function Cart() {
           )}
         </div>
 
-        {/* שם הלקוח והערות – מופיעים בהצעת המחיר */}
+        {/* פרטי לקוח והערות – מופיעים בהצעת המחיר: רק שם + אמצעי קשר מרשימה */}
         <div className="px-6 py-4 bg-white border-t border-slate-100 space-y-4">
           <div>
             <label htmlFor="customerName" className="block text-sm font-bold text-slate-700 mb-2 text-right">
-              שם הלקוח (אופציונלי)
+              שם הלקוח
             </label>
             <input
               id="customerName"
@@ -622,46 +625,47 @@ export default function Cart() {
               className="w-full max-w-xs mr-0 ml-auto block px-4 py-3 min-h-[48px] rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
             />
           </div>
-          <div>
-            <label htmlFor="customerPhone" className="block text-sm font-bold text-slate-700 mb-2 text-right">
-              טלפון לקוח (אופציונלי)
-            </label>
-            <input
-              id="customerPhone"
-              type="tel"
-              value={customerPhone}
-              onChange={(e) => setCustomerPhone(e.target.value)}
-              placeholder="050-1234567"
-              className="w-full max-w-xs mr-0 ml-auto block px-4 py-3 min-h-[48px] rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
-              dir="ltr"
-            />
-          </div>
-          <div>
-            <label htmlFor="customerEmail" className="block text-sm font-bold text-slate-700 mb-2 text-right">
-              אימייל לקוח (אופציונלי)
-            </label>
-            <input
-              id="customerEmail"
-              type="email"
-              value={customerEmail}
-              onChange={(e) => setCustomerEmail(e.target.value)}
-              placeholder="customer@example.com"
-              className="w-full max-w-xs mr-0 ml-auto block px-4 py-3 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
-              dir="ltr"
-            />
-          </div>
-          <div>
-            <label htmlFor="customerAddress" className="block text-sm font-bold text-slate-700 mb-2 text-right">
-              כתובת לקוח (אופציונלי)
-            </label>
-            <input
-              id="customerAddress"
-              type="text"
-              value={customerAddress}
-              onChange={(e) => setCustomerAddress(e.target.value)}
-              placeholder="רחוב, עיר"
-              className="w-full max-w-xs mr-0 ml-auto block px-4 py-3 min-h-[48px] rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
-            />
+          <div className="flex flex-col sm:flex-row gap-3 sm:items-end max-w-md mr-0 ml-auto">
+            <div className="flex-1 min-w-0">
+              <label htmlFor="contactType" className="block text-sm font-bold text-slate-700 mb-2 text-right">
+                אמצעי ליצירת קשר
+              </label>
+              <select
+                id="contactType"
+                value={contactType}
+                onChange={(e) => {
+                  setContactType(e.target.value as 'none' | 'phone' | 'email' | 'address');
+                  setContactValue('');
+                }}
+                className="w-full px-4 py-3 min-h-[48px] rounded-xl border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right bg-white"
+              >
+                <option value="none">לא צוין</option>
+                <option value="phone">טלפון</option>
+                <option value="email">אימייל</option>
+                <option value="address">כתובת</option>
+              </select>
+            </div>
+            {contactType !== 'none' && (
+              <div className="flex-1 min-w-0">
+                <label htmlFor="contactValue" className="block text-sm font-bold text-slate-700 mb-2 text-right">
+                  {contactType === 'phone' && 'מספר טלפון'}
+                  {contactType === 'email' && 'כתובת אימייל'}
+                  {contactType === 'address' && 'כתובת'}
+                </label>
+                <input
+                  id="contactValue"
+                  type={contactType === 'email' ? 'email' : 'text'}
+                  value={contactValue}
+                  onChange={(e) => setContactValue(e.target.value)}
+                  placeholder={
+                    contactType === 'phone' ? '050-1234567' :
+                    contactType === 'email' ? 'customer@example.com' : 'רחוב, עיר'
+                  }
+                  className="w-full px-4 py-3 min-h-[48px] rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
+                  dir={contactType === 'phone' || contactType === 'email' ? 'ltr' : 'rtl'}
+                />
+              </div>
+            )}
           </div>
           <div>
             <label htmlFor="notes" className="block text-sm font-bold text-slate-700 mb-2 text-right">

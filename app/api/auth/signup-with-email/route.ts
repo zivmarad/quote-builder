@@ -50,9 +50,17 @@ export async function POST(request: Request) {
     users.push(newUser);
     await writeUsers(users);
 
-    const adminEmail = process.env.EMAIL_USER?.trim() || 'quotes.verify1@gmail.com';
+    const notifyEmails: string[] = [];
+    const adminNotify = process.env.NOTIFY_ADMIN_EMAIL?.trim();
+    const smsNotify = process.env.NOTIFY_SMS_EMAIL?.trim();
+    if (adminNotify) notifyEmails.push(adminNotify);
+    if (smsNotify) notifyEmails.push(smsNotify);
+    if (notifyEmails.length === 0) {
+      const fallback = process.env.EMAIL_USER?.trim() || 'quotes.verify1@gmail.com';
+      notifyEmails.push(fallback);
+    }
     try {
-      await sendNewUserNotificationEmail(adminEmail, {
+      await sendNewUserNotificationEmail(notifyEmails, {
         email: newUser.email!,
         username: newUser.username,
         createdAt: newUser.createdAt,
