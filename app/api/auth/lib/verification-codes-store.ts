@@ -1,5 +1,6 @@
-import { readFile, writeFile, mkdir } from 'fs/promises';
-import path from 'path';
+import { supabaseAdmin } from '../../../../lib/supabase-server';
+
+const TABLE = 'verification_codes';
 
 export interface VerificationEntry {
   email: string;
@@ -7,54 +8,55 @@ export interface VerificationEntry {
   expiresAt: string; // ISO
 }
 
-const DATA_DIR = path.join(process.cwd(), 'data');
-const CODES_FILE = path.join(DATA_DIR, 'verification-codes.json');
-
-async function readCodes(): Promise<VerificationEntry[]> {
-  try {
-    const raw = await readFile(CODES_FILE, 'utf-8');
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === 'ENOENT') return [];
-    throw err;
-  }
-}
-
-async function writeCodes(entries: VerificationEntry[]): Promise<void> {
-  await mkdir(DATA_DIR, { recursive: true });
-  await writeFile(CODES_FILE, JSON.stringify(entries, null, 2), 'utf-8');
-}
-
 export async function saveVerificationCode(email: string, code: string, ttlMinutes = 10): Promise<void> {
-  const entries = await readCodes();
+  if (!supabaseAdmin) return;
   const expiresAt = new Date(Date.now() + ttlMinutes * 60 * 1000).toISOString();
-  const filtered = entries.filter((e) => e.email.toLowerCase() !== email.toLowerCase());
-  filtered.push({ email: email.trim().toLowerCase(), code, expiresAt });
-  await writeCodes(filtered);
+  const { error } = await supabaseAdmin
+    .from(TABLE)
+    .upsert(
+      { email: email.trim().toLowerCase(), code, expires_at: expiresAt, used: false },
+      { onConflict: 'email,code' }
+    );
+  if (error) console.error('saveVerificationCode supabase error:', error);
 }
 
 /** בודק אם הקוד תקין (בלי למחוק) – לשימוש בשלב "המשך" בהרשמה */
 export async function checkVerificationCode(email: string, code: string): Promise<boolean> {
-  const entries = await readCodes();
-  const now = new Date().toISOString();
   const normalizedEmail = email.trim().toLowerCase();
-  return entries.some(
-    (e) => e.email === normalizedEmail && e.code === code && e.expiresAt > now
-  );
+  if (!supabaseAdmin) return false;
+  const { data, error } = await supabaseAdmin
+    .from(TABLE)
+    .select('code')
+    .eq('email', normalizedEmail)
+    .eq('code', code)
+    .eq('used', false)
+    .gte('expires_at', new Date().toISOString())
+    .maybeSingle();
+  if (error && error.code !== 'PGRST116') {
+    console.error('checkVerificationCode supabase error:', error);
+    return false;
+  }
+  return !!data;
 }
 
 export async function consumeVerificationCode(email: string, code: string): Promise<boolean> {
-  const entries = await readCodes();
-  const now = new Date().toISOString();
   const normalizedEmail = email.trim().toLowerCase();
-  const idx = entries.findIndex(
-    (e) => e.email === normalizedEmail && e.code === code && e.expiresAt > now
-  );
-  if (idx === -1) return false;
-  entries.splice(idx, 1);
-  await writeCodes(entries);
-  return true;
+  if (!supabaseAdmin) return false;
+  const nowIso = new Date().toISOString();
+  const { data, error } = await supabaseAdmin
+    .from(TABLE)
+    .update({ used: true })
+    .eq('email', normalizedEmail)
+    .eq('code', code)
+    .eq('used', false)
+    .gte('expires_at', nowIso)
+    .select('email')
+    .maybeSingle();
+  if (error && error.code !== 'PGRST116') {
+    console.error('consumeVerificationCode supabase error:', error);
+    return false;
+  }
+  return !!data;
 }
 
 export function generateSixDigitCode(): string {

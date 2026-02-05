@@ -50,5 +50,33 @@ ALTER TABLE user_profile ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE price_overrides ENABLE ROW LEVEL SECURITY;
 
+-- =======================
+-- Auth tables (custom)
+-- =======================
+
+-- טבלת משתמשים (ל-auth)
+CREATE TABLE IF NOT EXISTS app_users (
+  id TEXT PRIMARY KEY,
+  username TEXT UNIQUE NOT NULL,
+  email TEXT UNIQUE,
+  password_hash TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_app_users_email ON app_users(email);
+CREATE INDEX IF NOT EXISTS idx_app_users_username ON app_users(username);
+ALTER TABLE app_users ENABLE ROW LEVEL SECURITY;
+
+-- טבלת קודי אימות/שחזור
+CREATE TABLE IF NOT EXISTS verification_codes (
+  email TEXT NOT NULL,
+  code TEXT NOT NULL,
+  expires_at TIMESTAMPTZ NOT NULL,
+  used BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  PRIMARY KEY (email, code)
+);
+CREATE INDEX IF NOT EXISTS idx_verification_codes_email ON verification_codes(email);
+ALTER TABLE verification_codes ENABLE ROW LEVEL SECURITY;
+
 -- מדיניות: שירות (service_role) יכול הכל. לקוח (anon) לא יכול גישה ישירה
 -- אנחנו משתמשים רק ב־API routes עם service_role, אז זה תקין

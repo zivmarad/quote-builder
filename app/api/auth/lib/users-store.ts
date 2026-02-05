@@ -1,6 +1,5 @@
-import { readFile, writeFile, mkdir } from 'fs/promises';
-import path from 'path';
 import { createHash } from 'crypto';
+import { supabaseAdmin } from '../../../../lib/supabase-server';
 
 export interface StoredUser {
   id: string;
@@ -11,27 +10,40 @@ export interface StoredUser {
   createdAt: string;
 }
 
-const DATA_DIR = path.join(process.cwd(), 'data');
-const USERS_FILE = path.join(DATA_DIR, 'users.json');
-
-function getUsersFilePath(): string {
-  return USERS_FILE;
-}
-
 export async function readUsers(): Promise<StoredUser[]> {
-  try {
-    const raw = await readFile(getUsersFilePath(), 'utf-8');
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === 'ENOENT') return [];
-    throw err;
+  if (!supabaseAdmin) return [];
+  const { data, error } = await supabaseAdmin
+    .from('app_users')
+    .select('id, username, email, password_hash, created_at')
+    .order('created_at', { ascending: true });
+  if (error) {
+    console.error('readUsers supabase error:', error);
+    return [];
   }
+  return (
+    data?.map((u) => ({
+      id: u.id,
+      username: u.username,
+      email: u.email ?? undefined,
+      passwordHash: u.password_hash,
+      createdAt: u.created_at,
+    })) ?? []
+  );
 }
 
 export async function writeUsers(users: StoredUser[]): Promise<void> {
-  await mkdir(DATA_DIR, { recursive: true });
-  await writeFile(getUsersFilePath(), JSON.stringify(users, null, 2), 'utf-8');
+  if (!supabaseAdmin || !users?.length) return;
+  const rows = users.map((u) => ({
+    id: u.id,
+    username: u.username,
+    email: u.email ?? null,
+    password_hash: u.passwordHash,
+    created_at: u.createdAt,
+  }));
+  const { error } = await supabaseAdmin
+    .from('app_users')
+    .upsert(rows, { onConflict: 'id' });
+  if (error) console.error('writeUsers supabase error:', error);
 }
 
 export function hashPassword(password: string): string {
@@ -44,11 +56,17 @@ export function generateId(): string {
 
 /** מעדכן סיסמה למשתמש לפי אימייל (לשחזור סיסמה) */
 export async function updatePasswordByEmail(email: string, newPasswordHash: string): Promise<boolean> {
-  const users = await readUsers();
+  if (!supabaseAdmin) return false;
   const normalizedEmail = email.trim().toLowerCase();
-  const idx = users.findIndex((u) => u.email?.toLowerCase() === normalizedEmail);
-  if (idx === -1) return false;
-  users[idx] = { ...users[idx], passwordHash: newPasswordHash };
-  await writeUsers(users);
-  return true;
+  const { data, error } = await supabaseAdmin
+    .from('app_users')
+    .update({ password_hash: newPasswordHash })
+    .eq('email', normalizedEmail)
+    .select('id')
+    .maybeSingle();
+  if (error) {
+    console.error('updatePasswordByEmail supabase error:', error);
+    return false;
+  }
+  return !!data;
 }

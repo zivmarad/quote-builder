@@ -43,3 +43,6 @@ next-env.d.ts
 # local auth data (users stored server-side)
 /data/users.json
 /data/verification-codes.json
+
+# script with token - never commit
+push-to-github.ps1
