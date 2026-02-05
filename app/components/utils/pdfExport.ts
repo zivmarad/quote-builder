@@ -51,43 +51,47 @@ function buildQuoteContent(params: {
   });
   const titleText = [quoteTitle?.trim() || 'הצעת מחיר', quoteNumber != null ? `#${quoteNumber}` : ''].filter(Boolean).join(' ');
   const hasCustomer = customerName?.trim() || customerPhone?.trim() || customerEmail?.trim() || customerAddress?.trim();
+  const customerNameVal = customerName?.trim() ?? '—';
   const customerLines: string[] = [];
-  if (customerName?.trim()) customerLines.push(`שם: ${escapeHtml(customerName.trim())}`);
-  if (customerPhone?.trim()) customerLines.push(`טלפון: ${escapeHtml(customerPhone.trim())}`);
-  if (customerEmail?.trim()) customerLines.push(`אימייל: ${escapeHtml(customerEmail.trim())}`);
-  if (customerAddress?.trim()) customerLines.push(`כתובת: ${escapeHtml(customerAddress.trim())}`);
-  const clientBlock = hasCustomer
-    ? `<div class="client-block"><div class="client-label">ל:</div><div class="client-lines">${customerLines.join('<br>')}</div></div>`
-    : '<div class="client-block"><div class="client-label">ל:</div><div class="client-lines">—</div></div>';
+  if (customerPhone?.trim()) customerLines.push(`<span class="client-phone">${escapeHtml(customerPhone.trim())}</span>`);
+  if (customerAddress?.trim()) customerLines.push(`<span class="client-address">${escapeHtml(customerAddress.trim())}</span>`);
+  if (customerEmail?.trim() && !customerPhone?.trim() && !customerAddress?.trim()) customerLines.push(escapeHtml(customerEmail.trim()));
+  const clientDetails = customerLines.length > 0 ? customerLines.join(' &nbsp; ') : '—';
+  const forBlock = `<div class="for-block"><span class="for-label">עבור:</span> <strong>${escapeHtml(customerNameVal)}</strong><br><span class="for-details">${clientDetails}</span></div>`;
 
   const days = validityDays != null && validityDays >= 1 ? validityDays : 30;
   const validityText = `הצעת מחיר זו תקפה ל-${days} יום מיום הנפקתה`;
-  const invoiceNum = quoteNumber != null ? String(quoteNumber) : '—';
-  const metaLine = `חשבונית: ${invoiceNum} &nbsp; תאריך: ${today}`;
+  const quoteNumText = quoteNumber != null ? `מס' הצעה: #${quoteNumber}` : '';
+  const titleOnly = quoteTitle?.trim() || 'הצעת מחיר';
 
   const companyLines: string[] = [];
   if (profile?.businessName) companyLines.push(`<div class="company-name">${escapeHtml(profile.businessName)}</div>`);
-  if (profile?.address) companyLines.push(`<div class="company-line">${escapeHtml(profile.address)}</div>`);
   if (profile?.phone) companyLines.push(`<div class="company-line">${escapeHtml(profile.phone)}</div>`);
+  if (profile?.address) companyLines.push(`<div class="company-line">${escapeHtml(profile.address)}</div>`);
   if (profile?.email) companyLines.push(`<div class="company-line">${escapeHtml(profile.email)}</div>`);
   const companyBlock =
     companyLines.length > 0
-      ? `<div class="company-block">${companyLines.join('')}<div class="company-meta">${metaLine}</div></div>`
-      : `<div class="company-block"><div class="company-meta">${metaLine}</div></div>`;
+      ? `<div class="company-block">${companyLines.join('')}</div>`
+      : '';
 
-  const headerLeft = hasProfile(profile)
-    ? `<div class="header-left">${profile!.logo ? `<img src="${profile!.logo}" alt="לוגו" class="header-logo" />` : '<div class="header-logo-placeholder">לוגו</div>'}${clientBlock}</div>`
-    : `<div class="header-left">${clientBlock}</div>`;
-  const headerRight = `<div class="header-right"><h1 class="quote-title">${escapeHtml(titleText)}</h1>${companyBlock}</div>`;
-  const profileBlock = `<div class="letterhead">${headerLeft}${headerRight}</div>`;
+  const headerTop =
+    hasProfile(profile)
+      ? `<div class="header-top"><div class="header-top-inner">${profile!.logo ? `<img src="${profile!.logo}" alt="לוגו" class="header-logo" />` : '<div class="header-logo-placeholder">הלוגו שלך</div>'}${companyBlock}</div></div>`
+      : '<div class="header-top"></div>';
+  const titleRow = `<div class="title-row"><h1 class="quote-title">${escapeHtml(titleOnly)}</h1><div class="title-meta"><span class="quote-num">${quoteNumText}</span><span class="quote-date">תאריך: ${today}</span></div></div>`;
+
+  const profileBlock = `${headerTop}${titleRow}${forBlock}`;
 
   const notesText = notes?.trim() ?? '';
-  const notesBlock = `<div class="notes-section"><div class="notes-title">הערות:</div>${notesText ? `<div class="notes-content">${escapeHtml(notesText).replace(/\n/g, '<br>')}</div>` : '<div class="notes-content">—</div>'}${validityText ? `<p class="notes-validity">${escapeHtml(validityText)}</p>` : ''}<p class="notes-signature">בכפוף לחתימת חוזה בין הצדדים.</p><div class="signature-line">אישור הצעת מחיר</div></div>`;
+  const notesBlock = `<div class="notes-section"><div class="notes-title">הערות:</div>${notesText ? `<div class="notes-content">${escapeHtml(notesText).replace(/\n/g, '<br>')}</div>` : '<div class="notes-content">—</div>'}${validityText ? `<p class="notes-validity">${escapeHtml(validityText)}</p>` : ''}</div>`;
+
+  const footerBlock = `<div class="pdf-footer"><span class="footer-company">${hasProfile(profile) ? escapeHtml(profile!.businessName || '') : ''}</span><span class="footer-signature"><span class="footer-client-name">${escapeHtml(customerNameVal)}</span><span class="footer-line">_________________________</span></span></div>`;
 
   const VAT = totalBeforeVAT * 0.18;
   return {
     profileBlock,
     notesBlock,
+    footerBlock,
     validityText,
     today,
     items,
@@ -97,7 +101,7 @@ function buildQuoteContent(params: {
   };
 }
 
-/** מחזיר את מחרוזת ה-CSS להצעת המחיר – עיצוב נקי ופרופורציונלי לפי מוקאפ. */
+/** מחזיר את מחרוזת ה-CSS להצעת המחיר – לפי עיצוב "הצעת מחיר לשיפוץ" (לוגו מימין, כותרת במרכז, עבור, פוטר). */
 function getQuoteStyles(fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif") {
   return `
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -112,69 +116,51 @@ function getQuoteStyles(fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-
       width: 560px;
     }
     .container { max-width: 560px; margin: 0 auto; }
-    .letterhead {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 32px;
-      margin-bottom: 28px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid #e5e5e5;
-      text-align: right;
-    }
-    .header-left { flex-shrink: 0; text-align: right; }
-    .header-logo { width: 56px; height: 56px; object-fit: contain; display: block; margin: 0 0 14px 0; }
+    .header-top { position: relative; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #e5e5e5; text-align: right; }
+    .header-top-inner { display: inline-block; text-align: right; }
+    .header-logo { width: 52px; height: 52px; object-fit: contain; display: block; margin-bottom: 10px; }
     .header-logo-placeholder {
-      width: 56px; height: 56px; background: #f0f0f0; border: 1px dashed #ccc;
-      display: flex; align-items: center; justify-content: center; font-size: 11px; color: #737373; margin-bottom: 14px;
+      width: 52px; height: 52px; background: #f0f0f0; border: 1px dashed #ccc;
+      display: flex; align-items: center; justify-content: center; font-size: 10px; color: #737373; margin-bottom: 10px;
     }
-    .client-block { font-size: 12px; color: #333; }
-    .client-label { font-weight: 700; margin-bottom: 6px; color: #171717; }
-    .client-lines { line-height: 1.7; }
-    .header-right { flex: 1; }
-    .quote-title {
-      font-size: 24px;
-      font-weight: 700;
-      color: #171717;
-      margin-bottom: 14px;
-      letter-spacing: -0.02em;
-    }
-    .company-block { font-size: 12px; color: #525252; line-height: 1.7; }
-    .company-name { font-weight: 600; font-size: 14px; color: #171717; margin-bottom: 4px; }
-    .company-line { margin-top: 2px; }
-    .company-meta { margin-top: 10px; font-size: 11px; color: #737373; }
-    .items-table {
-      width: 100%; border-collapse: collapse; margin-bottom: 24px; table-layout: fixed;
-    }
+    .company-block { font-size: 12px; color: #333; line-height: 1.65; }
+    .company-name { font-weight: 600; font-size: 14px; color: #171717; margin-bottom: 2px; }
+    .company-line { margin-top: 1px; }
+    .title-row { margin-bottom: 18px; }
+    .quote-title { font-size: 22px; font-weight: 700; color: #171717; text-align: center; margin-bottom: 8px; letter-spacing: -0.02em; }
+    .title-meta { display: flex; justify-content: space-between; font-size: 12px; color: #525252; }
+    .quote-num { }
+    .quote-date { }
+    .for-block { margin-bottom: 22px; padding: 12px 0; font-size: 13px; color: #333; border-bottom: 1px solid #eee; }
+    .for-label { font-weight: 600; color: #171717; }
+    .for-details { font-size: 12px; color: #525252; margin-top: 4px; display: block; }
+    .items-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; table-layout: fixed; }
     .items-table thead th {
-      background: #1a1a2e; color: #fff; padding: 12px 14px; text-align: right;
-      font-weight: 600; font-size: 11px;
+      background: #1a1a2e; color: #fff; padding: 12px 14px; text-align: right; font-weight: 600; font-size: 11px;
     }
     .items-table thead th:nth-child(1) { width: 50%; }
     .items-table thead th:nth-child(2) { width: 14%; text-align: center; }
-    .items-table thead th:nth-child(3) { width: 18%; text-align: left; }
-    .items-table thead th:nth-child(4) { width: 18%; text-align: left; }
-    .items-table tbody td {
-      padding: 12px 14px; border-bottom: 1px solid #e5e5e5; vertical-align: middle; font-size: 12px; line-height: 1.5;
-    }
+    .items-table thead th:nth-child(3), .items-table thead th:nth-child(4) { width: 18%; text-align: left; }
+    .items-table tbody td { padding: 12px 14px; border-bottom: 1px solid #e5e5e5; vertical-align: middle; font-size: 12px; }
     .items-table tbody tr:last-child td { border-bottom: 2px solid #1a1a2e; }
     .item-name { font-weight: 600; color: #171717; }
     .item-extras { font-size: 11px; color: #525252; margin-top: 4px; }
-    .items-table .price-cell { text-align: left; font-weight: 600; color: #171717; white-space: nowrap; }
+    .price-cell { text-align: left; font-weight: 600; color: #171717; white-space: nowrap; }
     .summary { max-width: 260px; margin: 0 0 0 auto; border: 1px solid #e5e5e5; overflow: hidden; }
     .summary-row { display: flex; justify-content: space-between; padding: 10px 14px; font-size: 13px; gap: 16px; align-items: center; }
-    .summary-row.subtotal { background: #fef9c3; font-weight: 600; color: #171717; }
-    .summary-row.vat { background: #fef9c3; font-weight: 600; color: #171717; }
+    .summary-row.subtotal, .summary-row.vat { background: #fef9c3; font-weight: 600; color: #171717; }
     .summary-row.total { background: #fef9c3; font-size: 15px; font-weight: 700; color: #171717; border-top: 2px solid #e5e5e5; }
     .summary-row .amount { font-weight: 700; }
-    .notes-section { margin-top: 28px; padding: 16px 0 0; border-top: 1px solid #e5e5e5; text-align: right; }
+    .notes-section { margin-top: 28px; padding-top: 16px; border-top: 1px solid #e5e5e5; text-align: right; }
     .notes-title { font-size: 13px; font-weight: 700; color: #171717; margin-bottom: 8px; }
     .notes-content { font-size: 12px; color: #525252; line-height: 1.6; white-space: pre-line; margin-bottom: 10px; }
     .notes-validity { font-size: 11px; color: #737373; margin: 8px 0; }
-    .notes-signature { font-size: 12px; color: #525252; margin: 12px 0 8px; }
-    .signature-line { font-size: 12px; font-weight: 600; color: #171717; margin-top: 24px; padding-top: 8px; border-top: 1px solid #e5e5e5; }
-    .footer { margin-top: 28px; padding-top: 12px; border-top: 1px solid #e5e5e5; text-align: center; color: #a3a3a3; font-size: 11px; }
-    .footer p { margin: 2px 0; }
+    .pdf-footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #e5e5e5; display: flex; justify-content: space-between; align-items: flex-end; font-size: 12px; }
+    .footer-company { font-weight: 600; color: #171717; }
+    .footer-signature { text-align: left; }
+    .footer-client-name { display: block; font-weight: 600; color: #171717; margin-bottom: 4px; }
+    .footer-line { display: block; font-size: 11px; color: #737373; letter-spacing: 2px; }
+    .footer { margin-top: 12px; }
   `;
 }
 
@@ -207,7 +193,7 @@ export const generateQuotePDF = (
     quoteNumber,
     validityDays,
   });
-  const { profileBlock, notesBlock, validityText, today, items: contentItems } = content;
+  const { profileBlock, notesBlock, footerBlock, validityText, today, items: contentItems } = content;
   const tableRows = contentItems.map((item) => {
     const extrasTotal = item.extras?.reduce((sum, extra) => sum + extra.price, 0) || 0;
     const calculatedPrice = item.basePrice + extrasTotal;
@@ -238,19 +224,19 @@ export const generateQuotePDF = (
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; direction: rtl; color: #171717; background: #fff; padding: 20px 24px; font-size: 12px; line-height: 1.5; }
     .container { max-width: 560px; margin: 0 auto; }
-    .letterhead { display: flex; align-items: flex-start; justify-content: space-between; gap: 32px; margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid #e5e5e5; text-align: right; }
-    .header-left { flex-shrink: 0; text-align: right; }
-    .header-logo { width: 56px; height: 56px; object-fit: contain; display: block; margin-bottom: 14px; }
-    .header-logo-placeholder { width: 56px; height: 56px; background: #f0f0f0; border: 1px dashed #ccc; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #737373; margin-bottom: 14px; }
-    .client-block { font-size: 12px; color: #333; }
-    .client-label { font-weight: 700; margin-bottom: 6px; color: #171717; }
-    .client-lines { line-height: 1.7; }
-    .header-right { flex: 1; }
-    .quote-title { font-size: 24px; font-weight: 700; color: #171717; margin-bottom: 14px; letter-spacing: -0.02em; }
-    .company-block { font-size: 12px; color: #525252; line-height: 1.7; }
-    .company-name { font-weight: 600; font-size: 14px; color: #171717; margin-bottom: 4px; }
-    .company-line { margin-top: 2px; }
-    .company-meta { margin-top: 10px; font-size: 11px; color: #737373; }
+    .header-top { position: relative; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #e5e5e5; text-align: right; }
+    .header-top-inner { display: inline-block; text-align: right; }
+    .header-logo { width: 52px; height: 52px; object-fit: contain; display: block; margin-bottom: 10px; }
+    .header-logo-placeholder { width: 52px; height: 52px; background: #f0f0f0; border: 1px dashed #ccc; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #737373; margin-bottom: 10px; }
+    .company-block { font-size: 12px; color: #333; line-height: 1.65; }
+    .company-name { font-weight: 600; font-size: 14px; color: #171717; margin-bottom: 2px; }
+    .company-line { margin-top: 1px; }
+    .title-row { margin-bottom: 18px; }
+    .quote-title { font-size: 22px; font-weight: 700; color: #171717; text-align: center; margin-bottom: 8px; letter-spacing: -0.02em; }
+    .title-meta { display: flex; justify-content: space-between; font-size: 12px; color: #525252; }
+    .for-block { margin-bottom: 22px; padding: 12px 0; font-size: 13px; color: #333; border-bottom: 1px solid #eee; }
+    .for-label { font-weight: 600; color: #171717; }
+    .for-details { font-size: 12px; color: #525252; margin-top: 4px; display: block; }
     .items-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; table-layout: fixed; }
     .items-table thead th { background: #1a1a2e; color: #fff; padding: 12px 14px; text-align: right; font-weight: 600; font-size: 11px; }
     .items-table thead th:nth-child(1) { width: 50%; }
@@ -270,10 +256,11 @@ export const generateQuotePDF = (
     .notes-title { font-size: 13px; font-weight: 700; color: #171717; margin-bottom: 8px; }
     .notes-content { font-size: 12px; color: #525252; line-height: 1.6; white-space: pre-line; margin-bottom: 10px; }
     .notes-validity { font-size: 11px; color: #737373; margin: 8px 0; }
-    .notes-signature { font-size: 12px; color: #525252; margin: 12px 0 8px; }
-    .signature-line { font-size: 12px; font-weight: 600; color: #171717; margin-top: 24px; padding-top: 8px; border-top: 1px solid #e5e5e5; }
-    .footer { margin-top: 28px; padding-top: 12px; border-top: 1px solid #e5e5e5; text-align: center; color: #a3a3a3; font-size: 11px; }
-    .footer p { margin: 2px 0; }
+    .pdf-footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #e5e5e5; display: flex; justify-content: space-between; align-items: flex-end; font-size: 12px; }
+    .footer-company { font-weight: 600; color: #171717; }
+    .footer-signature { text-align: left; }
+    .footer-client-name { display: block; font-weight: 600; color: #171717; margin-bottom: 4px; }
+    .footer-line { display: block; font-size: 11px; color: #737373; letter-spacing: 2px; }
     @media print { body { padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; } .container { max-width: 100%; } }
   </style>
 </head>
@@ -283,9 +270,9 @@ export const generateQuotePDF = (
     <table class="items-table">
       <thead>
         <tr>
-          <th>תיאור שירות/מוצר</th>
+          <th>תיאור השירות / המוצר</th>
           <th>יחידות</th>
-          <th>מחיר ליחידה</th>
+          <th>מחיר</th>
           <th>סה"כ</th>
         </tr>
       </thead>
@@ -297,7 +284,7 @@ export const generateQuotePDF = (
       <div class="summary-row total"><span>סה"כ לתשלום</span><span class="amount">₪${totalWithVAT.toLocaleString('he-IL')}</span></div>
     </div>
     ${notesBlock}
-    <div class="footer"></div>
+    ${footerBlock}
   </div>
   <script>window.onload = function() { setTimeout(function() { window.print(); }, 250); };</script>
 </body>
@@ -346,7 +333,7 @@ export async function generateQuotePDFAsBlob(
     quoteNumber,
     validityDays,
   });
-  const { profileBlock, notesBlock, validityText, items: contentItems } = content;
+  const { profileBlock, notesBlock, footerBlock, validityText, items: contentItems } = content;
 
   const tableRows = contentItems
     .map((item) => {
@@ -377,9 +364,9 @@ export async function generateQuotePDFAsBlob(
         <table class="items-table">
           <thead>
             <tr>
-              <th>תיאור שירות/מוצר</th>
+              <th>תיאור השירות / המוצר</th>
               <th>יחידות</th>
-              <th>מחיר ליחידה</th>
+              <th>מחיר</th>
               <th>סה"כ</th>
             </tr>
           </thead>
@@ -391,7 +378,7 @@ export async function generateQuotePDFAsBlob(
           <div class="summary-row total"><span>סה"כ לתשלום</span><span class="amount">₪${totalWithVAT.toLocaleString('he-IL')}</span></div>
         </div>
         ${notesBlock}
-        <div class="footer"></div>
+        ${footerBlock}
       </div>
     </div>
   `;
