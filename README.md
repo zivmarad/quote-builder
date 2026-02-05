@@ -16,6 +16,12 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+### דף אדמין
+
+- **כתובת:** `/admin` (מקומית: http://localhost:3000/admin)
+- **כניסה:** שם משתמש וסיסמה מהמשתנים `ADMIN_USERNAME` ו־`ADMIN_SECRET` ב־`.env.local` (כבר מוגדרים אצלך).
+- **בפריסה (Vercel):** ב־Project → Settings → Environment Variables הוסף `ADMIN_USERNAME` ו־`ADMIN_SECRET` עם אותם ערכים.
+
 ### התחברות מכל מכשיר (מחשב + טלפון)
 
 המשתמשים נשמרים בשרת בתיקייה `data/users.json`. כדי שהטלפון יוכל להתחבר עם אותו חשבון:
