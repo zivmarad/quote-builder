@@ -71,13 +71,17 @@ function buildQuoteContent(params: {
   if (profile?.email) companyLines.push(`<div class="company-line">${escapeHtml(profile.email)}</div>`);
   const companyBlock =
     companyLines.length > 0
-      ? `<div class="company-block">${companyLines.join('')}</div>`
-      : '';
+      ? `<div class="header-company">${companyLines.join('')}</div>`
+      : '<div class="header-company"></div>';
 
+  const logoBlock =
+    hasProfile(profile) && profile!.logo
+      ? `<img src="${profile!.logo}" alt="לוגו" class="header-logo" />`
+      : '<div class="header-logo-placeholder">הלוגו שלך</div>';
   const headerTop =
     hasProfile(profile)
-      ? `<div class="header-top"><div class="header-top-inner">${profile!.logo ? `<img src="${profile!.logo}" alt="לוגו" class="header-logo" />` : '<div class="header-logo-placeholder">הלוגו שלך</div>'}${companyBlock}</div></div>`
-      : '<div class="header-top"></div>';
+      ? `<div class="header-band"></div><div class="header-top"><div class="header-company-wrap">${companyBlock}</div><div class="header-logo-wrap">${logoBlock}</div></div>`
+      : '<div class="header-band"></div><div class="header-top"></div>';
   const titleRow = `<div class="title-row"><h1 class="quote-title">${escapeHtml(titleOnly)}</h1><div class="title-meta"><span class="quote-num">${quoteNumText}</span><span class="quote-date">תאריך: ${today}</span></div></div>`;
 
   const profileBlock = `${headerTop}${titleRow}${forBlock}`;
@@ -101,66 +105,75 @@ function buildQuoteContent(params: {
   };
 }
 
-/** מחזיר את מחרוזת ה-CSS להצעת המחיר – לפי עיצוב "הצעת מחיר לשיפוץ" (לוגו מימין, כותרת במרכז, עבור, פוטר). */
+/** עיצוב מקצועי להצעת מחיר – לוגו משמאל, פרטי עסק מימין, טבלה עם פסים, סיכום קומפקטי. */
 function getQuoteStyles(fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif") {
   return `
     * { margin: 0; padding: 0; box-sizing: border-box; }
     .quote-pdf-body {
       font-family: ${fontFamily};
       direction: rtl;
-      color: #171717;
+      color: #1a1a1a;
       background: #fff;
-      padding: 20px 24px;
+      padding: 0 28px 28px;
       font-size: 12px;
       line-height: 1.5;
       width: 560px;
     }
     .container { max-width: 560px; margin: 0 auto; }
-    .header-top { position: relative; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #e5e5e5; text-align: right; }
-    .header-top-inner { display: inline-block; text-align: right; }
-    .header-logo { width: 52px; height: 52px; object-fit: contain; display: block; margin-bottom: 10px; }
+    .header-band { height: 6px; background: #1e3a5f; margin: 0 -28px 0; }
+    .header-top {
+      display: flex; justify-content: space-between; align-items: flex-start; gap: 24px;
+      padding: 20px 0 18px; border-bottom: 1px solid #e0e0e0; margin-bottom: 18px;
+    }
+    .header-company-wrap { text-align: right; flex: 1; }
+    .header-company { font-size: 12px; color: #333; line-height: 1.7; }
+    .header-company .company-name { font-weight: 600; font-size: 14px; color: #1a1a1a; margin-bottom: 4px; }
+    .header-company .company-line { margin-top: 2px; color: #555; }
+    .header-logo-wrap { flex-shrink: 0; }
+    .header-logo { width: 56px; height: 56px; object-fit: contain; display: block; }
     .header-logo-placeholder {
-      width: 52px; height: 52px; background: #f0f0f0; border: 1px dashed #ccc;
-      display: flex; align-items: center; justify-content: center; font-size: 10px; color: #737373; margin-bottom: 10px;
+      width: 56px; height: 56px; background: #f5f5f5; border: 1px solid #ddd;
+      display: flex; align-items: center; justify-content: center; font-size: 10px; color: #1e3a5f; font-weight: 600;
     }
-    .company-block { font-size: 12px; color: #333; line-height: 1.65; }
-    .company-name { font-weight: 600; font-size: 14px; color: #171717; margin-bottom: 2px; }
-    .company-line { margin-top: 1px; }
-    .title-row { margin-bottom: 18px; }
-    .quote-title { font-size: 22px; font-weight: 700; color: #171717; text-align: center; margin-bottom: 8px; letter-spacing: -0.02em; }
-    .title-meta { display: flex; justify-content: space-between; font-size: 12px; color: #525252; }
-    .quote-num { }
-    .quote-date { }
-    .for-block { margin-bottom: 22px; padding: 12px 0; font-size: 13px; color: #333; border-bottom: 1px solid #eee; }
-    .for-label { font-weight: 600; color: #171717; }
-    .for-details { font-size: 12px; color: #525252; margin-top: 4px; display: block; }
-    .items-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; table-layout: fixed; }
+    .title-row { margin-bottom: 20px; }
+    .quote-title { font-size: 20px; font-weight: 700; color: #1a1a1a; text-align: center; margin-bottom: 10px; letter-spacing: -0.02em; }
+    .title-meta { display: flex; justify-content: space-between; font-size: 11px; color: #555; }
+    .for-block { margin-bottom: 20px; padding: 14px 0; border-bottom: 1px solid #eee; font-size: 12px; color: #333; text-align: right; }
+    .for-label { font-weight: 600; color: #1a1a1a; }
+    .for-details { font-size: 11px; color: #555; margin-top: 6px; display: block; line-height: 1.6; }
+    .items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; table-layout: fixed; font-size: 12px; }
     .items-table thead th {
-      background: #1a1a2e; color: #fff; padding: 12px 14px; text-align: right; font-weight: 600; font-size: 11px;
+      background: #1e3a5f; color: #fff; padding: 11px 12px; text-align: right; font-weight: 600; font-size: 11px;
     }
+    .items-table thead th:nth-child(2) { text-align: center; }
+    .items-table thead th:nth-child(3), .items-table thead th:nth-child(4) { text-align: center; }
     .items-table thead th:nth-child(1) { width: 50%; }
-    .items-table thead th:nth-child(2) { width: 14%; text-align: center; }
-    .items-table thead th:nth-child(3), .items-table thead th:nth-child(4) { width: 18%; text-align: left; }
-    .items-table tbody td { padding: 12px 14px; border-bottom: 1px solid #e5e5e5; vertical-align: middle; font-size: 12px; }
-    .items-table tbody tr:last-child td { border-bottom: 2px solid #1a1a2e; }
-    .item-name { font-weight: 600; color: #171717; }
-    .item-extras { font-size: 11px; color: #525252; margin-top: 4px; }
-    .price-cell { text-align: left; font-weight: 600; color: #171717; white-space: nowrap; }
-    .summary { max-width: 260px; margin: 0 0 0 auto; border: 1px solid #e5e5e5; overflow: hidden; }
-    .summary-row { display: flex; justify-content: space-between; padding: 10px 14px; font-size: 13px; gap: 16px; align-items: center; }
-    .summary-row.subtotal, .summary-row.vat { background: #fef9c3; font-weight: 600; color: #171717; }
-    .summary-row.total { background: #fef9c3; font-size: 15px; font-weight: 700; color: #171717; border-top: 2px solid #e5e5e5; }
-    .summary-row .amount { font-weight: 700; }
-    .notes-section { margin-top: 28px; padding-top: 16px; border-top: 1px solid #e5e5e5; text-align: right; }
-    .notes-title { font-size: 13px; font-weight: 700; color: #171717; margin-bottom: 8px; }
-    .notes-content { font-size: 12px; color: #525252; line-height: 1.6; white-space: pre-line; margin-bottom: 10px; }
-    .notes-validity { font-size: 11px; color: #737373; margin: 8px 0; }
-    .pdf-footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #e5e5e5; display: flex; justify-content: space-between; align-items: flex-end; font-size: 12px; }
-    .footer-company { font-weight: 600; color: #171717; }
+    .items-table thead th:nth-child(2) { width: 12%; }
+    .items-table thead th:nth-child(3), .items-table thead th:nth-child(4) { width: 19%; }
+    .items-table tbody td { padding: 11px 12px; vertical-align: middle; border-bottom: 1px solid #eee; }
+    .items-table tbody tr:nth-child(even) { background: #f8f9fa; }
+    .items-table tbody tr:last-child td { border-bottom: 2px solid #1e3a5f; }
+    .item-name { font-weight: 500; color: #1a1a1a; }
+    .item-extras { font-size: 11px; color: #555; margin-top: 3px; }
+    .price-cell { text-align: center; font-weight: 600; color: #1a1a1a; white-space: nowrap; }
+    .summary {
+      width: 220px; margin-right: 0; margin-left: auto; border: 1px solid #e5e5e5;
+      font-size: 12px;
+    }
+    .summary-row { display: flex; justify-content: space-between; padding: 8px 12px; align-items: center; gap: 12px; }
+    .summary-row.subtotal, .summary-row.vat { background: #fefde7; font-weight: 600; color: #1a1a1a; font-size: 12px; }
+    .summary-row.total { background: #fef9c3; font-weight: 700; color: #1a1a1a; font-size: 13px; border-top: 1px solid #e5e5e5; padding: 10px 12px; }
+    .summary-row .amount { font-weight: 600; }
+    .summary-row.total .amount { font-size: 14px; font-weight: 700; }
+    .notes-section { margin-top: 24px; padding-top: 18px; border-top: 1px solid #e0e0e0; text-align: right; }
+    .notes-title { font-size: 12px; font-weight: 700; color: #1a1a1a; margin-bottom: 8px; }
+    .notes-content { font-size: 12px; color: #555; line-height: 1.65; white-space: pre-line; margin-bottom: 8px; }
+    .notes-validity { font-size: 11px; color: #777; margin-top: 6px; }
+    .pdf-footer { margin-top: 28px; padding-top: 16px; border-top: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: flex-end; font-size: 12px; }
+    .footer-company { font-weight: 600; color: #1a1a1a; }
     .footer-signature { text-align: left; }
-    .footer-client-name { display: block; font-weight: 600; color: #171717; margin-bottom: 4px; }
-    .footer-line { display: block; font-size: 11px; color: #737373; letter-spacing: 2px; }
-    .footer { margin-top: 12px; }
+    .footer-client-name { display: block; font-weight: 600; color: #1a1a1a; margin-bottom: 6px; }
+    .footer-line { display: block; font-size: 11px; color: #999; letter-spacing: 1px; border-bottom: 1px solid #ccc; width: 120px; padding-bottom: 2px; }
   `;
 }
 
@@ -222,45 +235,50 @@ export const generateQuotePDF = (
   <style>
     @page { size: A4; margin: 20mm; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; direction: rtl; color: #171717; background: #fff; padding: 20px 24px; font-size: 12px; line-height: 1.5; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; direction: rtl; color: #1a1a1a; background: #fff; padding: 0 28px 28px; font-size: 12px; line-height: 1.5; }
     .container { max-width: 560px; margin: 0 auto; }
-    .header-top { position: relative; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #e5e5e5; text-align: right; }
-    .header-top-inner { display: inline-block; text-align: right; }
-    .header-logo { width: 52px; height: 52px; object-fit: contain; display: block; margin-bottom: 10px; }
-    .header-logo-placeholder { width: 52px; height: 52px; background: #f0f0f0; border: 1px dashed #ccc; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #737373; margin-bottom: 10px; }
-    .company-block { font-size: 12px; color: #333; line-height: 1.65; }
-    .company-name { font-weight: 600; font-size: 14px; color: #171717; margin-bottom: 2px; }
-    .company-line { margin-top: 1px; }
-    .title-row { margin-bottom: 18px; }
-    .quote-title { font-size: 22px; font-weight: 700; color: #171717; text-align: center; margin-bottom: 8px; letter-spacing: -0.02em; }
-    .title-meta { display: flex; justify-content: space-between; font-size: 12px; color: #525252; }
-    .for-block { margin-bottom: 22px; padding: 12px 0; font-size: 13px; color: #333; border-bottom: 1px solid #eee; }
-    .for-label { font-weight: 600; color: #171717; }
-    .for-details { font-size: 12px; color: #525252; margin-top: 4px; display: block; }
-    .items-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; table-layout: fixed; }
-    .items-table thead th { background: #1a1a2e; color: #fff; padding: 12px 14px; text-align: right; font-weight: 600; font-size: 11px; }
+    .header-band { height: 6px; background: #1e3a5f; margin: 0 -28px 0; }
+    .header-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; padding: 20px 0 18px; border-bottom: 1px solid #e0e0e0; margin-bottom: 18px; }
+    .header-company-wrap { text-align: right; flex: 1; }
+    .header-company { font-size: 12px; color: #333; line-height: 1.7; }
+    .header-company .company-name { font-weight: 600; font-size: 14px; color: #1a1a1a; margin-bottom: 4px; }
+    .header-company .company-line { margin-top: 2px; color: #555; }
+    .header-logo-wrap { flex-shrink: 0; }
+    .header-logo { width: 56px; height: 56px; object-fit: contain; display: block; }
+    .header-logo-placeholder { width: 56px; height: 56px; background: #f5f5f5; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #1e3a5f; font-weight: 600; }
+    .title-row { margin-bottom: 20px; }
+    .quote-title { font-size: 20px; font-weight: 700; color: #1a1a1a; text-align: center; margin-bottom: 10px; letter-spacing: -0.02em; }
+    .title-meta { display: flex; justify-content: space-between; font-size: 11px; color: #555; }
+    .for-block { margin-bottom: 20px; padding: 14px 0; border-bottom: 1px solid #eee; font-size: 12px; color: #333; text-align: right; }
+    .for-label { font-weight: 600; color: #1a1a1a; }
+    .for-details { font-size: 11px; color: #555; margin-top: 6px; display: block; line-height: 1.6; }
+    .items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; table-layout: fixed; font-size: 12px; }
+    .items-table thead th { background: #1e3a5f; color: #fff; padding: 11px 12px; text-align: right; font-weight: 600; font-size: 11px; }
+    .items-table thead th:nth-child(2), .items-table thead th:nth-child(3), .items-table thead th:nth-child(4) { text-align: center; }
     .items-table thead th:nth-child(1) { width: 50%; }
-    .items-table thead th:nth-child(2) { width: 14%; text-align: center; }
-    .items-table thead th:nth-child(3), .items-table thead th:nth-child(4) { width: 18%; text-align: left; }
-    .items-table tbody td { padding: 12px 14px; border-bottom: 1px solid #e5e5e5; vertical-align: middle; font-size: 12px; }
-    .items-table tbody tr:last-child td { border-bottom: 2px solid #1a1a2e; }
-    .item-name { font-weight: 600; color: #171717; }
-    .item-extras { font-size: 11px; color: #525252; margin-top: 4px; }
-    .price-cell { text-align: left; font-weight: 600; color: #171717; white-space: nowrap; }
-    .summary { max-width: 260px; margin: 0 0 0 auto; border: 1px solid #e5e5e5; }
-    .summary-row { display: flex; justify-content: space-between; padding: 10px 14px; font-size: 13px; gap: 16px; align-items: center; }
-    .summary-row.subtotal, .summary-row.vat { background: #fef9c3; font-weight: 600; color: #171717; }
-    .summary-row.total { background: #fef9c3; font-size: 15px; font-weight: 700; color: #171717; border-top: 2px solid #e5e5e5; }
-    .summary-row .amount { font-weight: 700; }
-    .notes-section { margin-top: 28px; padding-top: 16px; border-top: 1px solid #e5e5e5; text-align: right; }
-    .notes-title { font-size: 13px; font-weight: 700; color: #171717; margin-bottom: 8px; }
-    .notes-content { font-size: 12px; color: #525252; line-height: 1.6; white-space: pre-line; margin-bottom: 10px; }
-    .notes-validity { font-size: 11px; color: #737373; margin: 8px 0; }
-    .pdf-footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #e5e5e5; display: flex; justify-content: space-between; align-items: flex-end; font-size: 12px; }
-    .footer-company { font-weight: 600; color: #171717; }
+    .items-table thead th:nth-child(2) { width: 12%; }
+    .items-table thead th:nth-child(3), .items-table thead th:nth-child(4) { width: 19%; }
+    .items-table tbody td { padding: 11px 12px; vertical-align: middle; border-bottom: 1px solid #eee; }
+    .items-table tbody tr:nth-child(even) { background: #f8f9fa; }
+    .items-table tbody tr:last-child td { border-bottom: 2px solid #1e3a5f; }
+    .item-name { font-weight: 500; color: #1a1a1a; }
+    .item-extras { font-size: 11px; color: #555; margin-top: 3px; }
+    .price-cell { text-align: center; font-weight: 600; color: #1a1a1a; white-space: nowrap; }
+    .summary { width: 220px; margin-right: 0; margin-left: auto; border: 1px solid #e5e5e5; font-size: 12px; }
+    .summary-row { display: flex; justify-content: space-between; padding: 8px 12px; align-items: center; gap: 12px; }
+    .summary-row.subtotal, .summary-row.vat { background: #fefde7; font-weight: 600; color: #1a1a1a; font-size: 12px; }
+    .summary-row.total { background: #fef9c3; font-weight: 700; color: #1a1a1a; font-size: 13px; border-top: 1px solid #e5e5e5; padding: 10px 12px; }
+    .summary-row .amount { font-weight: 600; }
+    .summary-row.total .amount { font-size: 14px; font-weight: 700; }
+    .notes-section { margin-top: 24px; padding-top: 18px; border-top: 1px solid #e0e0e0; text-align: right; }
+    .notes-title { font-size: 12px; font-weight: 700; color: #1a1a1a; margin-bottom: 8px; }
+    .notes-content { font-size: 12px; color: #555; line-height: 1.65; white-space: pre-line; margin-bottom: 8px; }
+    .notes-validity { font-size: 11px; color: #777; margin-top: 6px; }
+    .pdf-footer { margin-top: 28px; padding-top: 16px; border-top: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: flex-end; font-size: 12px; }
+    .footer-company { font-weight: 600; color: #1a1a1a; }
     .footer-signature { text-align: left; }
-    .footer-client-name { display: block; font-weight: 600; color: #171717; margin-bottom: 4px; }
-    .footer-line { display: block; font-size: 11px; color: #737373; letter-spacing: 2px; }
+    .footer-client-name { display: block; font-weight: 600; color: #1a1a1a; margin-bottom: 6px; }
+    .footer-line { display: block; font-size: 11px; color: #999; letter-spacing: 1px; border-bottom: 1px solid #ccc; width: 120px; padding-bottom: 2px; }
     @media print { body { padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; } .container { max-width: 100%; } }
   </style>
 </head>
