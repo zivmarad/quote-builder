@@ -1,0 +1,106 @@
+@import "tailwindcss";
+
+/* תמיכה ב-safe area (מסכים עם notch / פינות מעוגלות) */
+:root {
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+}
+
+body {
+  margin: 0;
+  background: #fafafa;
+  padding-left: var(--safe-area-inset-left);
+  padding-right: var(--safe-area-inset-right);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+/* הדגשת טקסט – צבע עדין כדי שלא ייראה כמו רקע שחור */
+::selection {
+  background: rgba(59, 130, 246, 0.25);
+  color: inherit;
+}
+
+/* מניעת "hover דביק" במכשירי מגע – מסגרת כחולה שנשארת עד לחיצה נוספת */
+@media (hover: none) {
+  .card-hover-safe:hover,
+  .btn-hover-safe:hover {
+    border-color: rgb(226 232 240);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  }
+}
+
+
+.page {
+  max-width: 1000px;
+  margin: auto;
+  padding: 32px 20px;
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.subtitle {
+  margin-top: 6px;
+  color: #555;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  border: 1px solid #e5e5e5;
+  border-radius: 16px;
+  padding: 20px;
+  background: white;
+  text-decoration: none;
+  color: black;
+  text-align: center;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+.icon {
+  font-size: 40px;
+}
+
+.card-title {
+  margin-top: 12px;
+  font-weight: 700;
+}
+
+.card-sub {
+  margin-top: 4px;
+  font-size: 13px;
+  color: #666;
+}
+
+.btn {
+  margin-top: 14px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  background: #f5f5f5;
+  cursor: pointer;
+}
+
+.back {
+  display: inline-block;
+  margin-top: 24px;
+  color: #444;
+}
