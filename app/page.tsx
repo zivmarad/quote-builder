@@ -46,12 +46,12 @@ export default function HomePage() {
                 href={`/category/${cat.id}`}
                 className="card-hover-safe bg-white min-h-[120px] sm:aspect-square sm:min-h-0 rounded-2xl shadow-[0_4px_6px_-1px_rgb(0_0_0_/_0.1)] border border-[#E2E8F0] hover:border-blue-400 hover:shadow-lg transition-all flex flex-col items-center justify-center text-center group active:scale-[0.98] p-4 relative"
               >
-                <IconComponent size={28} className="text-[#475569] group-hover:text-blue-600 mb-2 sm:mb-3 transition-colors shrink-0" strokeWidth={1.75} />
+                <IconComponent size={28} className="text-[#475569] group-hover:text-blue-600 mb-2 sm:mb-3 transition-colors shrink-0" />
                 <span className="font-semibold text-[1.1rem] text-[#1E293B] leading-tight line-clamp-2">
                   {cat.name}
                 </span>
                 <span className="mt-2 text-slate-400 text-xs group-hover:text-blue-600 transition-colors">כניסה</span>
-                <ChevronRight size={18} className="absolute left-3 top-3 sm:left-4 sm:top-4 text-slate-300 group-hover:text-blue-500 transition-colors" strokeWidth={2} />
+                <ChevronRight size={18} className="absolute left-3 top-3 sm:left-4 sm:top-4 text-slate-300 group-hover:text-blue-500 transition-colors" />
               </Link>
             );
           })}
