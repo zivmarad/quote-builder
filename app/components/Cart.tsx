@@ -6,8 +6,8 @@ import { useQuoteBasket } from '../contexts/QuoteBasketContext';
 import { useProfile } from '../contexts/ProfileContext';
 import { useQuoteHistory } from '../contexts/QuoteHistoryContext';
 import { useSettings } from '../contexts/SettingsContext';
-import { Trash2, Edit2, Check, X, ShoppingBag, Plus, FileText, Share2 } from 'lucide-react';
-import { generateQuotePDF, generateQuotePDFAsBlob } from './utils/pdfExport';
+import { Trash2, Edit2, Check, X, ShoppingBag, Plus, FileText, Share2, Eye } from 'lucide-react';
+import { generateQuotePDF, generateQuotePDFAsBlob, getQuotePreviewHtml } from './utils/pdfExport';
 
 export default function Cart() {
   const router = useRouter();
@@ -43,6 +43,7 @@ export default function Cart() {
   const [customName, setCustomName] = useState('');
   const [customPrice, setCustomPrice] = useState('');
   const [customExtras, setCustomExtras] = useState<Array<{ text: string; price: number }>>([]);
+  const [showCartPreview, setShowCartPreview] = useState(false);
 
   useEffect(() => {
     if (!toast) return;
@@ -123,6 +124,7 @@ export default function Cart() {
       notes: notes.trim() || undefined,
       quoteNumber: nextQuoteNumber,
       status: 'download',
+      quoteStatus: 'draft',
     });
     generateQuotePDF(items, totalBeforeVAT, VAT, totalWithVAT, profile, customerName || undefined, notes || undefined, defaultQuoteTitle, nextQuoteNumber, customerPhone, customerEmail, customerAddress, validityDays ?? undefined);
     setNextQuoteNumber(nextQuoteNumber + 1);
@@ -151,6 +153,7 @@ export default function Cart() {
       notes: notes.trim() || undefined,
       quoteNumber: nextQuoteNumber,
       status: 'whatsapp',
+      quoteStatus: 'sent',
     });
     try {
       const blob = await generateQuotePDFAsBlob(items, totalBeforeVAT, VAT, totalWithVAT, profile, customerName || undefined, notes || undefined, defaultQuoteTitle, nextQuoteNumber, customerPhone, customerEmail, customerAddress, validityDays ?? undefined);
@@ -704,7 +707,15 @@ export default function Cart() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mt-6 sm:mt-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mt-6 sm:mt-8">
+        <button
+          type="button"
+          onClick={() => setShowCartPreview(true)}
+          className="flex items-center justify-center gap-2 sm:gap-3 bg-white text-slate-700 border-2 border-slate-200 py-4 sm:py-5 px-6 sm:px-8 rounded-xl sm:rounded-2xl font-black text-lg sm:text-xl hover:bg-slate-50 transition-all shadow-sm min-h-[52px] active:scale-[0.98]"
+          aria-label="תצוגה מקדימה"
+        >
+          <Eye size={22} className="shrink-0 sm:w-6 sm:h-6" /> תצוגה מקדימה
+        </button>
         <button
           type="button"
           onClick={handleShareToWhatsApp}
@@ -729,6 +740,49 @@ export default function Cart() {
           <FileText size={22} className="shrink-0 sm:w-6 sm:h-6" /> הורד כ-PDF
         </button>
       </div>
+
+      {showCartPreview && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+          dir="rtl"
+          onClick={(e) => e.target === e.currentTarget && setShowCartPreview(false)}
+        >
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-slate-50">
+              <h3 className="font-bold text-slate-900">תצוגה מקדימה</h3>
+              <button
+                type="button"
+                onClick={() => setShowCartPreview(false)}
+                className="px-4 py-2 rounded-xl font-bold text-slate-600 hover:bg-slate-200 transition-colors"
+              >
+                סגור
+              </button>
+            </div>
+            <div className="overflow-auto p-4 bg-slate-100 [&_.quote-preview-body]:mx-auto [&_.quote-preview-body]:shadow-lg [&_.quote-preview-body]:bg-white">
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: getQuotePreviewHtml({
+                    items,
+                    totalBeforeVAT,
+                    totalWithVAT,
+                    profile,
+                    customerName: customerName.trim() || undefined,
+                    customerPhone: contactType === 'phone' ? contactValue.trim() : undefined,
+                    customerEmail: contactType === 'email' ? contactValue.trim() : undefined,
+                    customerAddress: contactType === 'address' ? contactValue.trim() : undefined,
+                    notes: notes.trim() || undefined,
+                    quoteTitle: defaultQuoteTitle,
+                    quoteNumber: nextQuoteNumber,
+                    validityDays: validityDays ?? undefined,
+                  }),
+                }}
+                className="scale-[0.85] origin-top"
+                style={{ minWidth: 'fit-content' }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* מודל: במובייל – "שתף עכשיו" פותח את מסך השיתוף של המערכת. במחשב – הורד PDF או וואטסאפ Web. */}
       {showWhatsAppModal && (

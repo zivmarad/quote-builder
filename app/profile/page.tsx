@@ -1,18 +1,18 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useProfile } from '../contexts/ProfileContext';
-import { useQuoteHistory, type QuoteStatus } from '../contexts/QuoteHistoryContext';
+import { useQuoteHistory, type QuoteWorkflowStatus, type ExportMethod } from '../contexts/QuoteHistoryContext';
 import { useQuoteBasket } from '../contexts/QuoteBasketContext';
 import { useSettings } from '../contexts/SettingsContext';
-import { generateQuotePDFAsBlob } from '../components/utils/pdfExport';
+import { generateQuotePDFAsBlob, getQuotePreviewHtml } from '../components/utils/pdfExport';
 import RequireAuth from '../components/RequireAuth';
 import { useAuth } from '../contexts/AuthContext';
 import { usePriceOverrides } from '../contexts/PriceOverridesContext';
 import { categories } from '../service/services';
-import { ArrowRight, UserCircle, History, Settings, FileText, ChevronLeft, Download, Trash2, Copy, DollarSign, KeyRound } from 'lucide-react';
+import { ArrowRight, UserCircle, History, Settings, FileText, ChevronLeft, Download, Trash2, Copy, DollarSign, KeyRound, Eye, ChevronDown, Check } from 'lucide-react';
 
 type SectionId = 'details' | 'history' | 'settings';
 
@@ -25,16 +25,30 @@ const sections: { id: SectionId; label: string; icon: React.ReactNode }[] = [
 const formatPrice = (price: number) =>
   new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(price);
 
-const statusLabels: Record<QuoteStatus, string> = {
+const exportLabels: Record<ExportMethod, string> = {
   download: 'הורד למחשב',
   whatsapp: 'נשלח בוואטסאפ',
   email: 'נשלח במייל',
 };
 
+const quoteStatusLabels: Record<QuoteWorkflowStatus, string> = {
+  draft: 'טיוטה',
+  sent: 'נשלח',
+  approved: 'אושר',
+  paid: 'שולם',
+};
+
+const quoteStatusColors: Record<QuoteWorkflowStatus, string> = {
+  draft: 'bg-slate-100 text-slate-700',
+  sent: 'bg-blue-50 text-blue-700',
+  approved: 'bg-green-50 text-green-700',
+  paid: 'bg-emerald-600 text-white',
+};
+
 export default function ProfilePage() {
   const router = useRouter();
   const { profile, setProfile } = useProfile();
-  const { quotes, deleteQuote } = useQuoteHistory();
+  const { quotes, deleteQuote, updateQuoteStatus } = useQuoteHistory();
   const { loadBasket } = useQuoteBasket();
   const { defaultQuoteTitle, nextQuoteNumber, validityDays, setDefaultQuoteTitle, setNextQuoteNumber, setValidityDays } = useSettings();
   const { getBasePrice, setBasePrice } = usePriceOverrides();
@@ -48,6 +62,21 @@ export default function ProfilePage() {
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
+  const [previewQuoteId, setPreviewQuoteId] = useState<string | null>(null);
+  const [statusDropdownId, setStatusDropdownId] = useState<string | null>(null);
+  const [saveToast, setSaveToast] = useState(false);
+  const saveToastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => { if (saveToastTimeoutRef.current) clearTimeout(saveToastTimeoutRef.current); }, []);
+
+  const showSaveToast = () => {
+    if (saveToastTimeoutRef.current) clearTimeout(saveToastTimeoutRef.current);
+    setSaveToast(true);
+    saveToastTimeoutRef.current = setTimeout(() => {
+      setSaveToast(false);
+      saveToastTimeoutRef.current = null;
+    }, 2500);
+  };
 
   const handleDuplicateQuote = (quoteId: string) => {
     const quote = quotes.find((q) => q.id === quoteId);
@@ -210,6 +239,7 @@ export default function ProfilePage() {
                         type="text"
                         value={profile.businessName}
                         onChange={(e) => setProfile({ businessName: e.target.value })}
+                        onBlur={showSaveToast}
                         placeholder="למשל: משה שירותי מיזוג"
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
@@ -221,6 +251,7 @@ export default function ProfilePage() {
                         type="text"
                         value={profile.contactName ?? ''}
                         onChange={(e) => setProfile({ contactName: e.target.value || undefined })}
+                        onBlur={showSaveToast}
                         placeholder="למשל: משה כהן"
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
@@ -232,6 +263,7 @@ export default function ProfilePage() {
                         type="tel"
                         value={profile.phone}
                         onChange={(e) => setProfile({ phone: e.target.value })}
+                        onBlur={showSaveToast}
                         placeholder="050-1234567"
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         dir="ltr"
@@ -244,6 +276,7 @@ export default function ProfilePage() {
                         type="email"
                         value={profile.email ?? ''}
                         onChange={(e) => setProfile({ email: e.target.value || undefined })}
+                        onBlur={showSaveToast}
                         placeholder="example@email.com"
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         dir="ltr"
@@ -256,6 +289,7 @@ export default function ProfilePage() {
                         type="text"
                         value={profile.address ?? ''}
                         onChange={(e) => setProfile({ address: e.target.value || undefined })}
+                        onBlur={showSaveToast}
                         placeholder="רחוב, עיר"
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
@@ -309,14 +343,53 @@ export default function ProfilePage() {
                                 <span className="text-sm font-semibold text-blue-600">
                                   {formatPrice(q.totalWithVAT)} סה"כ
                                 </span>
+                                <div className="relative">
+                                  <button
+                                    type="button"
+                                    onClick={() => setStatusDropdownId(statusDropdownId === q.id ? null : q.id)}
+                                    className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full transition-colors ${quoteStatusColors[q.quoteStatus ?? 'draft']} hover:opacity-90`}
+                                  >
+                                    {quoteStatusLabels[q.quoteStatus ?? 'draft']}
+                                    <ChevronDown size={14} className="opacity-70" />
+                                  </button>
+                                  {statusDropdownId === q.id && (
+                                    <>
+                                      <div className="fixed inset-0 z-40" onClick={() => setStatusDropdownId(null)} aria-hidden />
+                                      <div className="absolute top-full right-0 mt-1 z-50 py-1 bg-white rounded-lg shadow-lg border border-slate-200 min-w-[100px]">
+                                        {(['draft', 'sent', 'approved', 'paid'] as const).map((st) => (
+                                          <button
+                                            key={st}
+                                            type="button"
+                                            onClick={() => {
+                                              updateQuoteStatus(q.id, st);
+                                              setStatusDropdownId(null);
+                                            }}
+                                            className={`block w-full text-right px-3 py-2 text-sm hover:bg-slate-50 ${q.quoteStatus === st ? 'font-bold text-blue-600' : 'text-slate-700'}`}
+                                          >
+                                            {quoteStatusLabels[st]}
+                                          </button>
+                                        ))}
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
                                 {q.status && (
-                                  <span className="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
-                                    {statusLabels[q.status]}
+                                  <span className="text-xs text-slate-500">
+                                    {exportLabels[q.status as ExportMethod]}
                                   </span>
                                 )}
                               </div>
                             </div>
                             <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                              <button
+                                type="button"
+                                onClick={() => setPreviewQuoteId(q.id)}
+                                className="inline-flex items-center gap-2 px-3 py-2 rounded-xl font-bold text-sm border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
+                                title="תצוגה מקדימה"
+                              >
+                                <Eye size={18} />
+                                תצוגה מקדימה
+                              </button>
                               <button
                                 type="button"
                                 onClick={() => handleDuplicateQuote(q.id)}
@@ -366,6 +439,7 @@ export default function ProfilePage() {
                         type="text"
                         value={defaultQuoteTitle}
                         onChange={(e) => setDefaultQuoteTitle(e.target.value)}
+                        onBlur={showSaveToast}
                         placeholder="הצעת מחיר"
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
@@ -383,6 +457,7 @@ export default function ProfilePage() {
                           const n = parseInt(e.target.value, 10);
                           if (!isNaN(n) && n >= 1) setNextQuoteNumber(n);
                         }}
+                        onBlur={showSaveToast}
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         dir="ltr"
                       />
@@ -400,6 +475,7 @@ export default function ProfilePage() {
                           const n = parseInt(e.target.value, 10);
                           if (!isNaN(n) && n >= 1) setValidityDays(n);
                         }}
+                        onBlur={showSaveToast}
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         dir="ltr"
                       />
@@ -503,6 +579,7 @@ export default function ProfilePage() {
                                         if (!isNaN(n) && n >= 0) setBasePrice(svc.id, n);
                                       }
                                     }}
+                                    onBlur={showSaveToast}
                                     placeholder={svc.basePrice.toString()}
                                     className="w-24 px-2 py-1.5 rounded-lg border border-slate-200 text-left text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     dir="ltr"
@@ -522,6 +599,59 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {saveToast && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-xl bg-slate-900 text-white font-medium shadow-xl border border-slate-700 flex items-center gap-2"
+        >
+          <Check size={20} className="shrink-0 text-green-400" />
+          נשמר בהצלחה
+        </div>
+      )}
+
+      {previewQuoteId && (() => {
+        const q = quotes.find((x) => x.id === previewQuoteId);
+        if (!q) return null;
+        const html = getQuotePreviewHtml({
+          items: q.items,
+          totalBeforeVAT: q.totalBeforeVAT,
+          totalWithVAT: q.totalWithVAT,
+          profile,
+          customerName: q.customerName,
+          customerPhone: q.customerPhone,
+          customerEmail: q.customerEmail,
+          customerAddress: q.customerAddress,
+          notes: q.notes,
+          quoteTitle: defaultQuoteTitle,
+          quoteNumber: q.quoteNumber,
+          validityDays,
+        });
+        return (
+          <div
+            className="fixed inset-0 z-[200] bg-black/50 flex items-center justify-center p-4"
+            dir="rtl"
+            onClick={(e) => e.target === e.currentTarget && setPreviewQuoteId(null)}
+          >
+            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-slate-50">
+                <h3 className="font-bold text-slate-900">תצוגה מקדימה – {q.customerName || 'הצעה'}</h3>
+                <button
+                  type="button"
+                  onClick={() => setPreviewQuoteId(null)}
+                  className="px-4 py-2 rounded-xl font-bold text-slate-600 hover:bg-slate-200 transition-colors"
+                >
+                  סגור
+                </button>
+              </div>
+              <div className="overflow-auto p-4 bg-slate-100 [&_.quote-preview-body]:mx-auto [&_.quote-preview-body]:shadow-lg [&_.quote-preview-body]:bg-white">
+                <div dangerouslySetInnerHTML={{ __html: html }} className="scale-[0.85] origin-top" style={{ minWidth: 'fit-content' }} />
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </main>
     </RequireAuth>
   );

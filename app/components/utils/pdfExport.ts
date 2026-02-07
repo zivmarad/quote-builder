@@ -110,6 +110,79 @@ function buildQuoteContent(params: {
   };
 }
 
+/** מחזיר HTML מלא לתצוגה מקדימה של הצעת מחיר */
+export function getQuotePreviewHtml(params: {
+  items: BasketItem[];
+  totalBeforeVAT: number;
+  totalWithVAT: number;
+  profile?: QuoteProfile | null;
+  customerName?: string | null;
+  customerPhone?: string | null;
+  customerEmail?: string | null;
+  customerAddress?: string | null;
+  notes?: string | null;
+  quoteTitle?: string | null;
+  quoteNumber?: number | null;
+  validityDays?: number | null;
+}): string {
+  const content = buildQuoteContent(params);
+  const { profileBlock, notesBlock, footerBlock, items: contentItems } = content;
+  const { totalBeforeVAT, totalWithVAT } = params;
+  const VAT = totalBeforeVAT * 0.18;
+
+  const tableRows = contentItems
+    .map((item) => {
+      const extrasTotal = item.extras?.reduce((sum, extra) => sum + extra.price, 0) || 0;
+      const calculatedPrice = item.basePrice + extrasTotal;
+      const currentPrice = item.overridePrice ?? calculatedPrice;
+      const hasExtras = item.extras && item.extras.length > 0;
+      const extrasDesc =
+        item.overridePrice === undefined && hasExtras
+          ? item.extras!.map((e) => `+ ${escapeHtml(e.text)}`).join(', ')
+          : '';
+      return `
+        <tr>
+          <td><div class="item-name">${escapeHtml(item.name)}</div>${extrasDesc ? `<div class="item-extras">${extrasDesc}</div>` : ''}</td>
+          <td style="text-align:center">1</td>
+          <td class="price-cell">₪${currentPrice.toLocaleString('he-IL')}</td>
+          <td class="price-cell">₪${currentPrice.toLocaleString('he-IL')}</td>
+        </tr>
+      `;
+    })
+    .join('');
+
+  return `
+    <style>${getQuoteStyles("'Heebo', 'Assistant', 'Segoe UI', Tahoma, sans-serif")}</style>
+    <div class="quote-pdf-body quote-preview-body" dir="rtl">
+      <div class="container">
+        ${profileBlock}
+        <div class="table-summary-wrap">
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th>תיאור השירות / המוצר</th>
+                <th>יחידות</th>
+                <th>מחיר</th>
+                <th>סה"כ</th>
+              </tr>
+            </thead>
+            <tbody>${tableRows}</tbody>
+          </table>
+          <div class="summary-below">
+            <div class="summary">
+              <div class="summary-row subtotal"><span>סה"כ</span><span class="amount">₪${totalBeforeVAT.toLocaleString('he-IL')}</span></div>
+              <div class="summary-row vat"><span>מע"מ (18%)</span><span class="amount">₪${VAT.toLocaleString('he-IL')}</span></div>
+              <div class="summary-row total"><span>סה"כ לתשלום</span><span class="amount">₪${totalWithVAT.toLocaleString('he-IL')}</span></div>
+            </div>
+          </div>
+        </div>
+        ${notesBlock}
+      </div>
+      ${footerBlock}
+    </div>
+  `;
+}
+
 /** עיצוב מקצועי להצעת מחיר – RTL, Heebo/Assistant, Navy header, טבלה, סיכום צהוב בולט, הערות כרשימה, קווי חתימה. */
 function getQuoteStyles(fontFamily = "'Heebo', 'Assistant', 'Segoe UI', Tahoma, sans-serif") {
   return `

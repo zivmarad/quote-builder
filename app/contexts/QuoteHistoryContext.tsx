@@ -7,8 +7,11 @@ import { fetchSync, postSync } from '../../lib/sync';
 const getStorageKey = (userId: string | null | undefined) =>
   `quoteBuilderHistory_${userId ?? 'guest'}`;
 
-/** סטטוס ההצעה – איך היא יוצאה (להיסטוריה) */
-export type QuoteStatus = 'download' | 'whatsapp' | 'email';
+/** איך ההצעה יוצאה – הורדה, וואטסאפ, מייל */
+export type ExportMethod = 'download' | 'whatsapp' | 'email';
+
+/** סטטוס עסקי להצעה – טיוטה, נשלח, אושר, שולם */
+export type QuoteWorkflowStatus = 'draft' | 'sent' | 'approved' | 'paid';
 
 export interface SavedQuote {
   id: string;
@@ -25,13 +28,16 @@ export interface SavedQuote {
   /** מספר ההצעה כפי שהופיע בראש המסמך */
   quoteNumber?: number;
   /** איך ההצעה יוצאה: הורדה, וואטסאפ, מייל */
-  status?: QuoteStatus;
+  status?: ExportMethod;
+  /** סטטוס עסקי: טיוטה, נשלח, אושר, שולם */
+  quoteStatus?: QuoteWorkflowStatus;
 }
 
 interface QuoteHistoryContextType {
   quotes: SavedQuote[];
   addQuote: (quote: Omit<SavedQuote, 'id' | 'createdAt'>) => void;
   deleteQuote: (id: string) => void;
+  updateQuoteStatus: (id: string, quoteStatus: QuoteWorkflowStatus) => void;
   getQuote: (id: string) => SavedQuote | undefined;
   isLoaded: boolean;
 }
@@ -119,6 +125,12 @@ export function QuoteHistoryProvider({ children, userId }: { children: React.Rea
     setQuotes((prev) => prev.filter((q) => q.id !== id));
   }, []);
 
+  const updateQuoteStatus = useCallback((id: string, quoteStatus: QuoteWorkflowStatus) => {
+    setQuotes((prev) =>
+      prev.map((q) => (q.id === id ? { ...q, quoteStatus } : q))
+    );
+  }, []);
+
   const getQuote = useCallback(
     (id: string) => quotes.find((q) => q.id === id),
     [quotes]
@@ -126,7 +138,7 @@ export function QuoteHistoryProvider({ children, userId }: { children: React.Rea
 
   return (
     <QuoteHistoryContext.Provider
-      value={{ quotes, addQuote, deleteQuote, getQuote, isLoaded }}
+      value={{ quotes, addQuote, deleteQuote, updateQuoteStatus, getQuote, isLoaded }}
     >
       {children}
     </QuoteHistoryContext.Provider>
