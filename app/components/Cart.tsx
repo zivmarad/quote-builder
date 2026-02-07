@@ -6,8 +6,8 @@ import { useQuoteBasket } from '../contexts/QuoteBasketContext';
 import { useProfile } from '../contexts/ProfileContext';
 import { useQuoteHistory } from '../contexts/QuoteHistoryContext';
 import { useSettings } from '../contexts/SettingsContext';
-import { Trash2, Edit2, Check, X, ShoppingBag, Plus, FileText, Share2, Eye } from 'lucide-react';
-import { generateQuotePDF, generateQuotePDFAsBlob, getQuotePreviewHtml } from './utils/pdfExport';
+import { Trash2, Edit2, Check, X, ShoppingBag, Plus, FileText, Share2, Eye, Loader2 } from 'lucide-react';
+import { generateQuotePDFAsBlob, getQuotePreviewHtml } from './utils/pdfExport';
 
 export default function Cart() {
   const router = useRouter();
@@ -44,6 +44,7 @@ export default function Cart() {
   const [customPrice, setCustomPrice] = useState('');
   const [customExtras, setCustomExtras] = useState<Array<{ text: string; price: number }>>([]);
   const [showCartPreview, setShowCartPreview] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     if (!toast) return;
@@ -110,31 +111,56 @@ export default function Cart() {
     customerAddress: contactType === 'address' ? contactValue.trim() : undefined,
   });
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     const { customerPhone, customerEmail, customerAddress } = getCustomerContact();
-    addQuote({
-      items,
-      totalBeforeVAT,
-      VAT,
-      totalWithVAT,
-      customerName: customerName.trim() || undefined,
-      customerPhone,
-      customerEmail,
-      customerAddress,
-      notes: notes.trim() || undefined,
-      quoteNumber: nextQuoteNumber,
-      status: 'download',
-      quoteStatus: 'draft',
-    });
-    generateQuotePDF(items, totalBeforeVAT, VAT, totalWithVAT, profile, customerName || undefined, notes || undefined, defaultQuoteTitle, nextQuoteNumber, customerPhone, customerEmail, customerAddress, validityDays ?? undefined);
-    setNextQuoteNumber(nextQuoteNumber + 1);
-    clearBasket();
-    setCustomerName('');
-    setContactType('none');
-    setContactValue('');
-    setNotes('');
-    setToast('ה-PDF הורד וההצעה נשמרה');
-    setTimeout(() => router.push('/'), 2500);
+    setIsDownloading(true);
+    try {
+      addQuote({
+        items,
+        totalBeforeVAT,
+        VAT,
+        totalWithVAT,
+        customerName: customerName.trim() || undefined,
+        customerPhone,
+        customerEmail,
+        customerAddress,
+        notes: notes.trim() || undefined,
+        quoteNumber: nextQuoteNumber,
+        status: 'download',
+        quoteStatus: 'draft',
+      });
+      const blob = await generateQuotePDFAsBlob(
+        items,
+        totalBeforeVAT,
+        VAT,
+        totalWithVAT,
+        profile,
+        customerName.trim() || undefined,
+        notes.trim() || undefined,
+        defaultQuoteTitle,
+        nextQuoteNumber,
+        customerPhone,
+        customerEmail,
+        customerAddress,
+        validityDays ?? undefined
+      );
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `hatzaat-mechir-${new Date().toISOString().slice(0, 10)}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setNextQuoteNumber(nextQuoteNumber + 1);
+      clearBasket();
+      setCustomerName('');
+      setContactType('none');
+      setContactValue('');
+      setNotes('');
+      setToast('ה-PDF הורד וההצעה נשמרה');
+      setTimeout(() => router.push('/'), 2500);
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   /** שלב 1: הכנת PDF. שלב 2: במודל – לחיצה על "שתף עכשיו" קוראת ל-navigator.share() במחווה ישירה, כך שמסך השיתוף נפתח במובייל. */
@@ -734,12 +760,32 @@ export default function Cart() {
         <button
           type="button"
           onClick={handleExportPDF}
-          className="flex items-center justify-center gap-2 sm:gap-3 bg-white text-slate-900 border-2 border-slate-200 py-4 sm:py-5 px-6 sm:px-8 rounded-xl sm:rounded-2xl font-black text-lg sm:text-xl hover:bg-slate-50 transition-all shadow-sm min-h-[52px] active:scale-[0.98]"
+          disabled={isDownloading}
+          className="flex items-center justify-center gap-2 sm:gap-3 bg-white text-slate-900 border-2 border-slate-200 py-4 sm:py-5 px-6 sm:px-8 rounded-xl sm:rounded-2xl font-black text-lg sm:text-xl hover:bg-slate-50 transition-all shadow-sm min-h-[52px] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
           aria-label="הורד הצעת מחיר כקובץ PDF"
         >
-          <FileText size={22} className="shrink-0 sm:w-6 sm:h-6" /> הורד כ-PDF
+          <FileText size={22} className="shrink-0 sm:w-6 sm:h-6" />
+          {isDownloading ? 'מוריד...' : 'הורד כ-PDF'}
         </button>
       </div>
+
+      {(isDownloading || isSharing) && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60"
+          dir="rtl"
+          role="status"
+          aria-live="polite"
+          aria-label={isDownloading ? 'מוריד את ההצעה' : 'מייצא הצעת מחיר'}
+        >
+          <div className="bg-white rounded-2xl shadow-2xl px-8 py-6 flex flex-col items-center gap-4">
+            <Loader2 size={40} className="animate-spin text-blue-600" />
+            <p className="font-bold text-slate-800 text-lg">
+              {isDownloading ? 'מוריד את ההצעה...' : 'מייצא הצעת מחיר...'}
+            </p>
+            <p className="text-slate-500 text-sm">זה יכול לקחת כמה שניות</p>
+          </div>
+        </div>
+      )}
 
       {showCartPreview && (
         <div
@@ -758,8 +804,10 @@ export default function Cart() {
                 סגור
               </button>
             </div>
-            <div className="overflow-auto p-4 bg-slate-100 [&_.quote-preview-body]:mx-auto [&_.quote-preview-body]:shadow-lg [&_.quote-preview-body]:bg-white">
+            <div className="overflow-x-hidden overflow-y-auto p-4 bg-slate-100 flex justify-center [&_.quote-preview-body]:shadow-lg [&_.quote-preview-body]:bg-white">
               <div
+                className="quote-preview-scaled"
+                style={{ minWidth: 'fit-content' }}
                 dangerouslySetInnerHTML={{
                   __html: getQuotePreviewHtml({
                     items,
@@ -776,8 +824,6 @@ export default function Cart() {
                     validityDays: validityDays ?? undefined,
                   }),
                 }}
-                className="scale-[0.85] origin-top"
-                style={{ minWidth: 'fit-content' }}
               />
             </div>
           </div>

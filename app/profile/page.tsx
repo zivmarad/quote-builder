@@ -12,7 +12,7 @@ import RequireAuth from '../components/RequireAuth';
 import { useAuth } from '../contexts/AuthContext';
 import { usePriceOverrides } from '../contexts/PriceOverridesContext';
 import { categories } from '../service/services';
-import { ArrowRight, UserCircle, History, Settings, FileText, ChevronLeft, Download, Trash2, Copy, DollarSign, KeyRound, Eye, ChevronDown, Check } from 'lucide-react';
+import { ArrowRight, UserCircle, History, Settings, FileText, ChevronLeft, Download, Trash2, Copy, DollarSign, KeyRound, Eye, ChevronDown, Check, Loader2 } from 'lucide-react';
 
 type SectionId = 'details' | 'history' | 'settings';
 
@@ -600,6 +600,22 @@ export default function ProfilePage() {
         </div>
       </div>
 
+      {downloadingId && (
+        <div
+          className="fixed inset-0 z-[150] flex items-center justify-center bg-black/60"
+          dir="rtl"
+          role="status"
+          aria-live="polite"
+          aria-label="מוריד את ההצעה"
+        >
+          <div className="bg-white rounded-2xl shadow-2xl px-8 py-6 flex flex-col items-center gap-4">
+            <Loader2 size={40} className="animate-spin text-blue-600" />
+            <p className="font-bold text-slate-800 text-lg">מוריד את ההצעה...</p>
+            <p className="text-slate-500 text-sm">זה יכול לקחת כמה שניות</p>
+          </div>
+        </div>
+      )}
+
       {saveToast && (
         <div
           role="status"
@@ -645,8 +661,8 @@ export default function ProfilePage() {
                   סגור
                 </button>
               </div>
-              <div className="overflow-auto p-4 bg-slate-100 [&_.quote-preview-body]:mx-auto [&_.quote-preview-body]:shadow-lg [&_.quote-preview-body]:bg-white">
-                <div dangerouslySetInnerHTML={{ __html: html }} className="scale-[0.85] origin-top" style={{ minWidth: 'fit-content' }} />
+              <div className="overflow-x-hidden overflow-y-auto p-4 bg-slate-100 flex justify-center [&_.quote-preview-body]:shadow-lg [&_.quote-preview-body]:bg-white">
+                <div dangerouslySetInnerHTML={{ __html: html }} className="quote-preview-scaled" style={{ minWidth: 'fit-content' }} />
               </div>
             </div>
           </div>

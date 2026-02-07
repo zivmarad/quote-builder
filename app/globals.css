@@ -59,6 +59,20 @@ body {
   gap: 20px;
 }
 
+/* תצוגה מקדימה – מותאם למובייל (ללא גלילה אופקית) */
+@media (max-width: 640px) {
+  .quote-preview-scaled {
+    transform: scale(calc((100vw - 4rem) / 560));
+    transform-origin: top center;
+  }
+}
+@media (min-width: 641px) {
+  .quote-preview-scaled {
+    transform: scale(0.85);
+    transform-origin: top center;
+  }
+}
+
 /* גריד קטגוריות בדף הבית – 2 עמודות בטלפון, 4 במחשב */
 .home-categories-grid {
   display: grid;
