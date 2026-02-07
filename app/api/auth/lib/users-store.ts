@@ -54,6 +54,30 @@ export function generateId(): string {
   return `u-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
+/** מוחק משתמש לפי id – כולל כל הנתונים המשויכים (פרופיל, סל, היסטוריה, הגדרות, קודי אימות) */
+export async function deleteUserById(userId: string): Promise<boolean> {
+  if (!supabaseAdmin) return false;
+  const users = await readUsers();
+  const user = users.find((u) => u.id === userId);
+  if (!user) return false;
+
+  const tablesByUserId = ['quote_basket', 'quote_history', 'user_profile', 'user_settings', 'price_overrides'] as const;
+  for (const table of tablesByUserId) {
+    const { error } = await supabaseAdmin.from(table).delete().eq('user_id', userId);
+    if (error) console.error(`deleteUserById ${table} error:`, error);
+  }
+  if (user.email) {
+    const { error } = await supabaseAdmin.from('verification_codes').delete().eq('email', user.email.trim().toLowerCase());
+    if (error) console.error('deleteUserById verification_codes error:', error);
+  }
+  const { error } = await supabaseAdmin.from('app_users').delete().eq('id', userId);
+  if (error) {
+    console.error('deleteUserById app_users error:', error);
+    return false;
+  }
+  return true;
+}
+
 /** מעדכן סיסמה למשתמש לפי אימייל (לשחזור סיסמה) */
 export async function updatePasswordByEmail(email: string, newPasswordHash: string): Promise<boolean> {
   if (!supabaseAdmin) return false;

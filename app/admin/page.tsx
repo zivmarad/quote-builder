@@ -13,6 +13,7 @@ import {
   LogOut,
   BarChart3,
   Eye,
+  Trash2,
 } from 'lucide-react';
 
 const ADMIN_KEY_STORAGE = 'quoteBuilder_adminKey';
@@ -42,6 +43,7 @@ export default function AdminPage() {
   const [stats, setStats] = useState<Stats>(null);
   const [loading, setLoading] = useState(false);
   const [listError, setListError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -109,6 +111,37 @@ export default function AdminPage() {
     setUsers([]);
     setStats(null);
     setListError(null);
+  };
+
+  const handleDeleteUser = async (u: UserRow, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!savedKey) return;
+    const msg = `להסיר את "${u.username}"${u.email && u.email !== '—' ? ` (${u.email})` : ''}? כל הנתונים יימחקו.`;
+    if (!window.confirm(msg)) return;
+    setDeletingId(u.id);
+    try {
+      const res = await fetch(`/api/admin/user/${u.id}`, {
+        method: 'DELETE',
+        headers: { 'X-Admin-Key': savedKey },
+      });
+      const json = await res.json();
+      if (res.ok && json.ok) {
+        setUsers((prev) => prev.filter((x) => x.id !== u.id));
+        if (stats) {
+          setStats({
+            ...stats,
+            totalUsers: Math.max(0, stats.totalUsers - 1),
+          });
+        }
+      } else {
+        alert(json?.error ?? 'שגיאה במחיקה');
+      }
+    } catch {
+      alert('שגיאה בתקשורת');
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const formatDate = (iso: string) => {
@@ -290,9 +323,9 @@ export default function AdminPage() {
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-right border-collapse">
-                    <thead>
+                        <thead>
                       <tr className="bg-slate-100/80 border-b border-slate-200">
-                        <th className="px-4 py-3 text-sm font-bold text-slate-700 w-24">פעולות</th>
+                        <th className="px-4 py-3 text-sm font-bold text-slate-700 w-40">פעולות</th>
                         <th className="px-4 py-3 text-sm font-bold text-slate-700">#</th>
                         <th className="px-4 py-3 text-sm font-bold text-slate-700">שם משתמש</th>
                         <th className="px-4 py-3 text-sm font-bold text-slate-700">אימייל</th>
@@ -316,13 +349,25 @@ export default function AdminPage() {
                           className="border-b border-slate-100 hover:bg-blue-50/60 cursor-pointer transition-colors group"
                         >
                           <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                            <Link
-                              href={`/admin/user/${u.id}`}
-                              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm"
-                            >
-                              <Eye size={18} aria-hidden />
-                              צפייה בפרטים
-                            </Link>
+                            <div className="flex items-center gap-2">
+                              <Link
+                                href={`/admin/user/${u.id}`}
+                                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm"
+                              >
+                                <Eye size={18} aria-hidden />
+                                צפייה
+                              </Link>
+                              <button
+                                type="button"
+                                onClick={(e) => handleDeleteUser(u, e)}
+                                disabled={deletingId === u.id}
+                                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-red-200 bg-red-50 text-red-700 text-sm font-medium hover:bg-red-100 disabled:opacity-60 transition-colors"
+                                title="הסר משתמש"
+                              >
+                                <Trash2 size={18} aria-hidden />
+                                {deletingId === u.id ? 'מוחק...' : 'הסר'}
+                              </button>
+                            </div>
                           </td>
                           <td className="px-4 py-3 text-slate-500 text-sm tabular-nums">{users.length - i}</td>
                           <td className="px-4 py-3 font-medium text-slate-900">{u.username}</td>

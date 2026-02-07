@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { readUsers } from '../../../auth/lib/users-store';
+import { readUsers, deleteUserById } from '../../../auth/lib/users-store';
 import { supabaseAdmin } from '../../../../../lib/supabase-server';
 
 function getAdminKey(request: Request): string | null {
@@ -69,6 +69,32 @@ export async function GET(
     });
   } catch (e) {
     console.error('Admin user detail error:', e);
+    return NextResponse.json({ error: 'שגיאה בשרת' }, { status: 500 });
+  }
+}
+
+/** מוחק משתמש ואת כל הנתונים המשויכים – נגיש רק לאדמין */
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ userId: string }> }
+) {
+  if (!getAdminKey(request)) {
+    return NextResponse.json({ error: 'גישה לא מורשית' }, { status: 401 });
+  }
+
+  const { userId } = await params;
+  if (!userId) {
+    return NextResponse.json({ error: 'חסר userId' }, { status: 400 });
+  }
+
+  try {
+    const deleted = await deleteUserById(userId);
+    if (!deleted) {
+      return NextResponse.json({ error: 'משתמש לא נמצא או לא ניתן למחוק' }, { status: 404 });
+    }
+    return NextResponse.json({ ok: true, message: 'המשתמש הוסר' });
+  } catch (e) {
+    console.error('Admin delete user error:', e);
     return NextResponse.json({ error: 'שגיאה בשרת' }, { status: 500 });
   }
 }

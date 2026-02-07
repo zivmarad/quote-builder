@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   ArrowRight,
   User,
@@ -11,6 +12,7 @@ import {
   Mail,
   Building2,
   Calendar,
+  Trash2,
 } from 'lucide-react';
 
 const ADMIN_KEY_STORAGE = 'quoteBuilder_adminKey';
@@ -25,10 +27,12 @@ type UserDetail = {
 };
 
 export default function AdminUserPage({ params }: { params: Promise<{ userId: string }> }) {
+  const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
   const [data, setData] = useState<UserDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     params.then((p) => setUserId(p.userId));
@@ -57,6 +61,31 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
       .catch((e) => setError(e.message ?? 'שגיאה'))
       .finally(() => setLoading(false));
   }, [userId]);
+
+  const handleDelete = async () => {
+    if (!userId || !data?.user) return;
+    const msg = `להסיר את המשתמש "${data.user.username}"${data.user.email ? ` (${data.user.email})` : ''}?\nכל הנתונים שלו יימחקו – פרופיל, סל, היסטוריה והגדרות.`;
+    if (!window.confirm(msg)) return;
+    const key = typeof window !== 'undefined' ? sessionStorage.getItem(ADMIN_KEY_STORAGE) : null;
+    if (!key) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/admin/user/${userId}`, {
+        method: 'DELETE',
+        headers: { 'X-Admin-Key': key },
+      });
+      const json = await res.json();
+      if (res.ok && json.ok) {
+        router.push('/admin');
+      } else {
+        alert(json?.error ?? 'שגיאה במחיקה');
+      }
+    } catch {
+      alert('שגיאה בתקשורת');
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const formatDate = (iso: string) => {
     try {
@@ -101,21 +130,32 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
         </Link>
 
         <header className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm mb-6">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-xl bg-slate-100">
-              <User size={28} className="text-slate-700" />
-            </div>
-            <div>
-              <h1 className="text-xl font-black text-slate-900">{user.username}</h1>
-              {user.email && (
-                <p className="text-slate-600 flex items-center gap-2 mt-1" dir="ltr">
-                  <Mail size={16} /> {user.email}
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-xl bg-slate-100">
+                <User size={28} className="text-slate-700" />
+              </div>
+              <div>
+                <h1 className="text-xl font-black text-slate-900">{user.username}</h1>
+                {user.email && (
+                  <p className="text-slate-600 flex items-center gap-2 mt-1" dir="ltr">
+                    <Mail size={16} /> {user.email}
+                  </p>
+                )}
+                <p className="text-slate-500 text-sm flex items-center gap-2 mt-1">
+                  <Calendar size={14} /> נרשם ב־{formatDate(user.createdAt)}
                 </p>
-              )}
-              <p className="text-slate-500 text-sm flex items-center gap-2 mt-1">
-                <Calendar size={14} /> נרשם ב־{formatDate(user.createdAt)}
-              </p>
+              </div>
             </div>
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={deleting}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 disabled:opacity-60 transition-colors font-medium text-sm"
+            >
+              <Trash2 size={18} />
+              {deleting ? 'מוחק...' : 'הסר משתמש'}
+            </button>
           </div>
         </header>
 
