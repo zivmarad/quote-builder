@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { saveVerificationCode, generateSixDigitCode } from '../lib/verification-codes-store';
 import { sendVerificationEmail } from '../lib/send-email';
 import { readUsers } from '../lib/users-store';
+import { isSupabaseConfigured } from '../../../../lib/supabase-server';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -32,6 +33,17 @@ export async function POST(request: Request) {
       if (!emailRegistered) {
         return NextResponse.json({ ok: true, message: 'אם האימייל רשום במערכת, תקבל קוד למייל' });
       }
+    }
+
+    if (!isSupabaseConfigured) {
+      console.error('send-code: Supabase not configured – cannot save verification codes. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.');
+      return NextResponse.json(
+        {
+          ok: false,
+          error: 'שליחת קוד אימות אינה זמינה כרגע. נסה שוב מאוחר יותר או צור קשר עם התמיכה.',
+        },
+        { status: 503 }
+      );
     }
 
     const code = generateSixDigitCode();

@@ -9,7 +9,9 @@
 5. פתח את הקובץ `supabase-schema.sql` והעתק את כל התוכן
 6. הדבק ב־SQL Editor ולחץ **Run**
 
-אם הכל עבר בהצלחה – יוצרו 5 טבלאות: `quote_basket`, `quote_history`, `user_profile`, `user_settings`, `price_overrides`.
+אם הכל עבר בהצלחה – יוצרו 7 טבלאות: `quote_basket`, `quote_history`, `user_profile`, `user_settings`, `price_overrides`, `app_users`, `verification_codes`.
+
+**חשוב:** הרשמה באימייל ושחזור סיסמה תלויים ב־`verification_codes` ו־`app_users`. בלי Supabase מוגדר – שליחת קוד אימות לא תעבוד.
 
 ---
 
@@ -48,8 +50,21 @@ npm run dev
 
 ---
 
+## פריסה ל־Vercel
+
+אם מפריסים ל־Vercel – הוסף את המפתחות ב־**Project Settings → Environment Variables**:
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `EMAIL_APP_PASSWORD` (לשליחת קודי אימות)
+- `EMAIL_USER` (אופציונלי)
+
+בלי המפתחות האלה – הרשמה באימייל ושחזור סיסמה לא יעבדו בפרודקשן.
+
+---
+
 ## איך זה עובד
 
 - **משתמש מחובר**: הנתונים נטענים מ־Supabase ונשמרים גם שם. סל, היסטוריה, פרופיל, הגדרות ומחירים מותאמים מסתנכרנים בין מכשירים.
 - **אורח**: הנתונים נשמרים רק ב־localStorage (כמו קודם).
-- **בלי Supabase**: אם המפתחות ריקים – האפליקציה עובדת כמו קודם עם localStorage בלבד.
+- **הרשמה באימייל ושחזור סיסמה**: דורשים Supabase (טבלאות `app_users`, `verification_codes`). בלי המפתחות – שליחת קוד אימות לא תעבוד.
+- **בלי Supabase**: התחברות רגילה (שם משתמש+סיסמה) והנתונים המקומיים עובדים. הרשמה באימייל ושחזור סיסמה לא יעבדו.

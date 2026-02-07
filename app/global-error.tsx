@@ -13,11 +13,15 @@ export default function GlobalError({
     console.error(error);
   }, [error]);
 
+  const friendlyMessage =
+    error.message?.toLowerCase().includes('object') && error.message?.toLowerCase().includes('not be found')
+      ? 'הדף או המשאב שביקשת לא נמצא. ייתכן שהחיבור נכשל – נסה לרענן או לפתוח את האתר מחדש.'
+      : error.message || 'אירעה שגיאה חמורה באפליקציה';
   return (
     <html lang="he" dir="rtl">
       <body style={{ fontFamily: 'Heebo, sans-serif', padding: '2rem', textAlign: 'center' }}>
         <h1>שגיאה קריטית</h1>
-        <p>{error.message || 'אירעה שגיאה חמורה באפליקציה'}</p>
+        <p>{friendlyMessage}</p>
         <button
           onClick={reset}
           style={{

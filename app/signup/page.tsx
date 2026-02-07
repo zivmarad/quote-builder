@@ -41,6 +41,9 @@ export default function SignupPage() {
         setStep('code');
         setCode('');
       } else setError(result.error ?? 'שגיאה בשליחת הקוד');
+    } catch (err) {
+      console.error('Send code error:', err);
+      setError('שגיאה בשליחת הקוד. בדוק חיבור לאינטרנט ונסה שוב.');
     } finally {
       setLoading(false);
     }
@@ -58,6 +61,9 @@ export default function SignupPage() {
       const result = await checkVerificationCode(email, code);
       if (result.ok) setStep('details');
       else setError(result.error ?? 'קוד לא תקין או שפג תוקפו');
+    } catch (err) {
+      console.error('Check code error:', err);
+      setError('שגיאה באימות. בדוק חיבור לאינטרנט ונסה שוב.');
     } finally {
       setLoading(false);
     }
@@ -75,6 +81,9 @@ export default function SignupPage() {
       const result = await signupWithEmail(email, code, username, password);
       if (result.ok) goToTarget();
       else setError(result.error ?? 'שגיאה בהרשמה');
+    } catch (err) {
+      console.error('Signup error:', err);
+      setError('שגיאה בהרשמה. בדוק חיבור לאינטרנט ונסה שוב.');
     } finally {
       setLoading(false);
     }

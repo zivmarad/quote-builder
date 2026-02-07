@@ -158,12 +158,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: trimmed }),
       });
-      const data = await res.json();
+      let data: { ok?: boolean; error?: string } = {};
+      try {
+        const text = await res.text();
+        if (text) data = JSON.parse(text);
+      } catch {
+        if (!res.ok) return { ok: false, error: 'שגיאה בשרת. נסה שוב או בדוק חיבור לאינטרנט.' };
+      }
       if (!res.ok) return { ok: false, error: data.error ?? 'שגיאה בשליחת הקוד' };
       return { ok: true };
     } catch (e) {
       console.warn('Send code failed', e);
-      return { ok: false, error: 'לא ניתן לשלוח קוד. בדוק חיבור לאינטרנט.' };
+      return { ok: false, error: 'לא ניתן לשלוח קוד. בדוק חיבור לאינטרנט ונסה שוב.' };
     }
   }, []);
 
@@ -177,12 +183,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: trimmedEmail, code: trimmedCode }),
       });
-      const data = await res.json();
-      if (!res.ok) return { ok: false, error: data.error ?? 'קוד לא תקין' };
+      let data: { ok?: boolean; error?: string } = {};
+      try {
+        const text = await res.text();
+        if (text) data = JSON.parse(text);
+      } catch {
+        if (!res.ok) return { ok: false, error: 'שגיאה בשרת. נסה שוב או בדוק חיבור לאינטרנט.' };
+      }
+      if (!res.ok) return { ok: false, error: data.error ?? 'קוד לא תקין או שפג תוקפו' };
       return { ok: data.ok };
     } catch (e) {
       console.warn('Check code failed', e);
-      return { ok: false, error: 'לא ניתן לאמת. בדוק חיבור לאינטרנט.' };
+      return { ok: false, error: 'לא ניתן לאמת. בדוק חיבור לאינטרנט ונסה שוב.' };
     }
   }, []);
 
@@ -199,7 +211,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: trimmedEmail, code: trimmedCode, username: trimmedUsername, password }),
       });
-      const data = await res.json();
+      let data: { ok?: boolean; error?: string; user?: { id: string; username: string; email?: string } } = {};
+      try {
+        const text = await res.text();
+        if (text) data = JSON.parse(text);
+      } catch {
+        if (!res.ok) return { ok: false, error: 'שגיאה בשרת. נסה שוב או בדוק חיבור לאינטרנט.' };
+      }
       if (!res.ok) return { ok: false, error: data.error ?? 'שגיאה בהרשמה' };
       if (data.ok && data.user) {
         const current: CurrentUser = { id: data.user.id, username: data.user.username, email: data.user.email };
@@ -207,10 +225,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(current);
         return { ok: true };
       }
-      return { ok: false, error: 'שגיאה בהרשמה' };
+      return { ok: false, error: data.error ?? 'שגיאה בהרשמה' };
     } catch (e) {
       console.warn('Signup with email failed', e);
-      return { ok: false, error: 'לא ניתן להתחבר לשרת. בדוק חיבור לאינטרנט.' };
+      return { ok: false, error: 'לא ניתן להתחבר לשרת. בדוק חיבור לאינטרנט ונסה שוב.' };
     }
   }, []);
 
@@ -223,12 +241,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: trimmed, intent: 'reset' }),
       });
-      const data = await res.json();
+      let data: { ok?: boolean; error?: string } = {};
+      try {
+        const text = await res.text();
+        if (text) data = JSON.parse(text);
+      } catch {
+        if (!res.ok) return { ok: false, error: 'שגיאה בשרת. נסה שוב או בדוק חיבור לאינטרנט.' };
+      }
       if (!res.ok) return { ok: false, error: data.error ?? 'שגיאה בשליחת הקוד' };
       return { ok: true };
     } catch (e) {
       console.warn('Send reset code failed', e);
-      return { ok: false, error: 'לא ניתן לשלוח קוד. בדוק חיבור לאינטרנט.' };
+      return { ok: false, error: 'לא ניתן לשלוח קוד. בדוק חיבור לאינטרנט ונסה שוב.' };
     }
   }, []);
 
@@ -243,12 +267,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: trimmedEmail, code: trimmedCode, newPassword }),
       });
-      const data = await res.json();
+      let data: { ok?: boolean; error?: string } = {};
+      try {
+        const text = await res.text();
+        if (text) data = JSON.parse(text);
+      } catch {
+        if (!res.ok) return { ok: false, error: 'שגיאה בשרת. נסה שוב או בדוק חיבור לאינטרנט.' };
+      }
       if (!res.ok) return { ok: false, error: data.error ?? 'שגיאה באיפוס הסיסמה' };
       return { ok: true };
     } catch (e) {
       console.warn('Reset password failed', e);
-      return { ok: false, error: 'לא ניתן לאפס. בדוק חיבור לאינטרנט.' };
+      return { ok: false, error: 'לא ניתן לאפס. בדוק חיבור לאינטרנט ונסה שוב.' };
     }
   }, []);
 
@@ -261,7 +291,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: trimmed }),
       });
-      const data = await res.json();
+      let data: { error?: string } = {};
+      try {
+        const text = await res.text();
+        if (text) data = JSON.parse(text);
+      } catch {
+        if (!res.ok) return { ok: false, error: 'שגיאה בשרת. נסה שוב או בדוק חיבור לאינטרנט.' };
+      }
       if (!res.ok) return { ok: false, error: data.error ?? 'שגיאה בשליחה' };
       return { ok: true };
     } catch (e) {

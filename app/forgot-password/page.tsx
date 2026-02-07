@@ -28,6 +28,9 @@ export default function ForgotPasswordPage() {
         setStep('code');
         setCode('');
       } else setError(result.error ?? 'שגיאה בשליחת הקוד');
+    } catch (err) {
+      console.error('Send code error:', err);
+      setError('שגיאה בשליחת הקוד. בדוק חיבור לאינטרנט ונסה שוב.');
     } finally {
       setLoading(false);
     }
@@ -49,6 +52,9 @@ export default function ForgotPasswordPage() {
       const result = await resetPassword(email, code, newPassword);
       if (result.ok) setSuccess(true);
       else setError(result.error ?? 'שגיאה באיפוס הסיסמה');
+    } catch (err) {
+      console.error('Reset password error:', err);
+      setError('שגיאה באיפוס הסיסמה. בדוק חיבור לאינטרנט ונסה שוב.');
     } finally {
       setLoading(false);
     }
