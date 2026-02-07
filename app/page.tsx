@@ -53,7 +53,7 @@ export default function HomePage() {
           </Link>
         </header>
 
-        <section className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-4 md:gap-6">
+        <section className="grid grid-cols-2 gap-4 sm:gap-6">
           {categories.map((cat) => {
             const IconComponent = categoryIcons[cat.id] ?? Package;
             const iconColor = categoryColors[cat.id] ?? 'text-slate-500';
