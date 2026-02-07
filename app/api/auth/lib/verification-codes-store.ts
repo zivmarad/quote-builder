@@ -8,8 +8,8 @@ export interface VerificationEntry {
   expiresAt: string; // ISO
 }
 
-export async function saveVerificationCode(email: string, code: string, ttlMinutes = 10): Promise<void> {
-  if (!supabaseAdmin) return;
+export async function saveVerificationCode(email: string, code: string, ttlMinutes = 10): Promise<boolean> {
+  if (!supabaseAdmin) return false;
   const expiresAt = new Date(Date.now() + ttlMinutes * 60 * 1000).toISOString();
   const { error } = await supabaseAdmin
     .from(TABLE)
@@ -17,7 +17,11 @@ export async function saveVerificationCode(email: string, code: string, ttlMinut
       { email: email.trim().toLowerCase(), code, expires_at: expiresAt, used: false },
       { onConflict: 'email,code' }
     );
-  if (error) console.error('saveVerificationCode supabase error:', error);
+  if (error) {
+    console.error('saveVerificationCode supabase error:', error);
+    return false;
+  }
+  return true;
 }
 
 /** בודק אם הקוד תקין (בלי למחוק) – לשימוש בשלב "המשך" בהרשמה */

@@ -47,7 +47,17 @@ export async function POST(request: Request) {
     }
 
     const code = generateSixDigitCode();
-    await saveVerificationCode(email, code, 10);
+    const saved = await saveVerificationCode(email, code, 10);
+    if (!saved) {
+      console.error('send-code: Failed to save verification code to Supabase (table missing or permission error?)');
+      return NextResponse.json(
+        {
+          ok: false,
+          error: 'שליחת קוד אימות אינה זמינה כרגע. נסה שוב מאוחר יותר או צור קשר עם התמיכה.',
+        },
+        { status: 503 }
+      );
+    }
 
     await sendVerificationEmail(email, code);
 
