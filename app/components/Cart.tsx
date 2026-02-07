@@ -332,7 +332,7 @@ export default function Cart() {
             </button>
           </div>
           {showAddCustom && (
-            <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100 border-dashed border-2">
+            <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100 border-dashed border-2 min-w-0 overflow-hidden">
               <h4 className="text-lg font-black text-slate-900 mb-4 text-right">הוסף פריט חופשי להצעה</h4>
               <div className="space-y-4 text-right max-w-md mr-auto">
                 <div>
@@ -358,28 +358,30 @@ export default function Cart() {
                   />
                 </div>
                 {customExtras.length > 0 && (
-                  <div>
+                  <div className="min-w-0 overflow-hidden">
                     <span className="block text-sm font-bold text-slate-700 mb-2">תוספות</span>
                     {customExtras.map((extra, idx) => (
-                      <div key={idx} className="flex gap-2 mb-2">
+                      <div key={idx} className="flex flex-wrap sm:flex-nowrap gap-2 mb-2 items-center">
                         <input
                           type="text"
                           value={extra.text}
                           onChange={(e) => handleUpdateCustomExtra(idx, 'text', e.target.value)}
                           placeholder="שם התוספת"
-                          className="flex-1 px-3 py-2 rounded-lg border border-slate-200 text-sm"
+                          className="flex-1 min-w-0 w-full sm:w-auto px-3 py-2 rounded-lg border border-slate-200 text-sm"
                         />
-                        <input
-                          type="number"
-                          value={extra.price || ''}
-                          onChange={(e) => handleUpdateCustomExtra(idx, 'price', e.target.value)}
-                          placeholder="מחיר"
-                          min={0}
-                          className="w-24 px-3 py-2 rounded-lg border border-slate-200 text-sm text-left"
-                        />
-                        <button type="button" onClick={() => handleRemoveCustomExtra(idx)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg">
-                          <Trash2 size={18} />
-                        </button>
+                        <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto justify-between sm:justify-start">
+                          <input
+                            type="number"
+                            value={extra.price || ''}
+                            onChange={(e) => handleUpdateCustomExtra(idx, 'price', e.target.value)}
+                            placeholder="מחיר"
+                            min={0}
+                            className="w-20 sm:w-24 px-3 py-2 rounded-lg border border-slate-200 text-sm text-left"
+                          />
+                          <button type="button" onClick={() => handleRemoveCustomExtra(idx)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg shrink-0" aria-label="הסר תוספת">
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -541,8 +543,8 @@ export default function Cart() {
             <span className="font-bold">{showAddCustom ? 'סגור' : 'הוסף פריט חופשי'}</span>
           </button>
           {showAddCustom && (
-            <div className="px-6 pb-6 pt-2 bg-slate-50/50 border-t border-slate-100">
-              <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm max-w-lg mr-auto">
+            <div className="px-6 pb-6 pt-2 bg-slate-50/50 border-t border-slate-100 overflow-hidden">
+              <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm max-w-lg mr-auto min-w-0 overflow-hidden">
                 <h4 className="text-base font-black text-slate-900 mb-4 text-right">פריט חופשי – שם, מחיר ותוספות</h4>
                 <div className="space-y-4 text-right">
                   <div>
@@ -568,28 +570,30 @@ export default function Cart() {
                     />
                   </div>
                   {customExtras.length > 0 && (
-                    <div>
+                    <div className="min-w-0 overflow-hidden">
                       <span className="block text-sm font-bold text-slate-700 mb-2">תוספות</span>
                       {customExtras.map((extra, idx) => (
-                        <div key={idx} className="flex gap-2 mb-2">
+                        <div key={idx} className="flex flex-wrap sm:flex-nowrap gap-2 mb-2 items-center">
                           <input
                             type="text"
                             value={extra.text}
                             onChange={(e) => handleUpdateCustomExtra(idx, 'text', e.target.value)}
                             placeholder="שם התוספת"
-                            className="flex-1 px-3 py-2 rounded-lg border border-slate-200 text-sm"
+                            className="flex-1 min-w-0 w-full sm:w-auto px-3 py-2 rounded-lg border border-slate-200 text-sm"
                           />
-                          <input
-                            type="number"
-                            value={extra.price || ''}
-                            onChange={(e) => handleUpdateCustomExtra(idx, 'price', e.target.value)}
-                            placeholder="מחיר"
-                            min={0}
-                            className="w-24 px-3 py-2 rounded-lg border border-slate-200 text-sm text-left"
-                          />
-                          <button type="button" onClick={() => handleRemoveCustomExtra(idx)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg">
-                            <Trash2 size={18} />
-                          </button>
+                          <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto justify-between sm:justify-start">
+                            <input
+                              type="number"
+                              value={extra.price || ''}
+                              onChange={(e) => handleUpdateCustomExtra(idx, 'price', e.target.value)}
+                              placeholder="מחיר"
+                              min={0}
+                              className="w-20 sm:w-24 px-3 py-2 rounded-lg border border-slate-200 text-sm text-left"
+                            />
+                            <button type="button" onClick={() => handleRemoveCustomExtra(idx)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg shrink-0" aria-label="הסר תוספת">
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>

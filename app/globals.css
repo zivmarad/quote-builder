@@ -10,7 +10,7 @@
 
 body {
   margin: 0;
-  background: #fafafa;
+  background: #F8FAFC;
   padding-left: var(--safe-area-inset-left);
   padding-right: var(--safe-area-inset-right);
   -webkit-tap-highlight-color: transparent;

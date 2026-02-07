@@ -37,19 +37,18 @@ export default function FloatingCartButton() {
   return (
     <button
       onClick={() => router.push('/cart')}
-      className="fixed z-50 flex items-center gap-2 sm:gap-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-2xl sm:rounded-full shadow-2xl hover:shadow-blue-500/50 active:scale-[0.98] sm:hover:scale-105 transition-all duration-300 group min-h-[56px] pl-4 pr-4 sm:pl-6 sm:pr-6 py-3 sm:py-4 bottom-4 left-4 right-4 sm:left-6 sm:right-auto sm:bottom-6"
-      style={{ marginBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      className="fixed z-50 flex items-center justify-between gap-3 sm:gap-4 bg-[#2563EB] text-white rounded-full shadow-xl hover:shadow-blue-500/40 active:scale-[0.98] sm:hover:scale-105 transition-all duration-300 group min-h-[56px] pl-5 pr-5 sm:pl-6 sm:pr-6 py-3 sm:py-4 bottom-5 left-5 right-5 sm:left-auto sm:right-6 sm:min-w-[200px]"
+      style={{ marginBottom: 'max(20px, env(safe-area-inset-bottom, 0px))' }}
     >
-      <div className="relative shrink-0">
-        <ShoppingCart size={24} className="group-hover:scale-110 transition-transform" />
-        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center animate-pulse">
-          {itemCount}
-        </span>
-      </div>
-      <div className="h-6 sm:h-8 w-px bg-white/30 hidden sm:block" />
-      <div className="text-right flex-1 sm:flex-initial min-w-0">
+      <div className="text-right flex-1 min-w-0">
         <div className="text-[10px] sm:text-xs opacity-90">סה״כ הצעת מחיר</div>
         <div className="text-base sm:text-lg font-bold tabular-nums">{formatPrice(totalWithVAT)}</div>
+      </div>
+      <div className="relative shrink-0 flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/25 sm:bg-white">
+        <ShoppingCart size={22} className="text-white group-hover:scale-110 transition-transform sm:text-[#2563EB]" />
+        <span className="absolute -top-1 -right-1 bg-violet-400 text-white text-xs font-bold rounded-full h-5 w-5 min-w-[20px] flex items-center justify-center shadow-sm">
+          {itemCount}
+        </span>
       </div>
     </button>
   );

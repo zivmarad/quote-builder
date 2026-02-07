@@ -61,7 +61,7 @@ export const categories: Category[] = [
       },
       {
         id: 'paint-apt-general',
-        name: 'צביעת דירה (כללי)',
+        name: 'צביעת דירה כללית (תיקונים והכל)',
         basePrice: 850,
         unit: 'חדר',
         isCounter: true,
@@ -70,6 +70,14 @@ export const categories: Category[] = [
           { id: 'q2', text: 'תיקון סדקים "עובדים" (כולל רשת)?', impact: { type: 'fixed', value: 700 } },
           { id: 'q3', text: 'הגנה מלאה (קרטון על הרצפה + ניילון לרהיטים)?', impact: { type: 'fixed', value: 450 } },
           { id: 'q4', text: 'צביעת ארונות חשמל/תקשורת בגוון הקיר?', impact: { type: 'fixed', value: 150 } },
+          { id: 'q5', text: 'קילוף צבע ישן ומתקלף?', impact: { type: 'fixed', value: 400 } },
+          { id: 'q6', text: 'החלפת גוון מכהה מאוד לבהיר?', impact: { type: 'fixed', value: 250 } },
+          { id: 'q7', text: 'כולל צביעת תקרות בכל החדרים?', impact: { type: 'fixed', value: 900 } },
+          { id: 'q8', text: 'כולל צביעת משקופים ודלתות פנים?', impact: { type: 'fixed', value: 800 } },
+          { id: 'q9', text: 'תיקון רטיבות/עובש פעיל (כולל חומר מחטא)?', impact: { type: 'fixed', value: 350 } },
+          { id: 'q10', text: 'קירות גבס (דורש פריימר)?', impact: { type: 'fixed', value: 120 } },
+          { id: 'q11', text: 'צבע כהה/עז (דורש 3 שכבות)?', impact: { type: 'percent', value: 12 } },
+          { id: 'q12', text: 'קיר גבוה (מעל 3 מטר)?', impact: { type: 'fixed', value: 150 } },
         ],
       },
       {
