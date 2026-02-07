@@ -794,7 +794,7 @@ export default function Cart() {
           onClick={(e) => e.target === e.currentTarget && setShowCartPreview(false)}
         >
           <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-slate-50">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-slate-50 shrink-0">
               <h3 className="font-bold text-slate-900">תצוגה מקדימה</h3>
               <button
                 type="button"
@@ -804,10 +804,9 @@ export default function Cart() {
                 סגור
               </button>
             </div>
-            <div className="overflow-x-hidden overflow-y-auto p-4 bg-slate-100 flex justify-center [&_.quote-preview-body]:shadow-lg [&_.quote-preview-body]:bg-white">
+            <div className="quote-preview-container p-4 bg-slate-100 min-h-0 flex-1 [&_.quote-preview-body]:shadow-lg [&_.quote-preview-body]:bg-white [&_.quote-preview-body]:my-0">
               <div
-                className="quote-preview-scaled"
-                style={{ minWidth: 'fit-content' }}
+                className="min-w-0"
                 dangerouslySetInnerHTML={{
                   __html: getQuotePreviewHtml({
                     items,

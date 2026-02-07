@@ -151,8 +151,18 @@ export function getQuotePreviewHtml(params: {
     })
     .join('');
 
+  const previewMobileStyles = `
+    @media (max-width: 640px) {
+      .quote-preview-body { width: 100% !important; max-width: 100%; padding: 0 12px 12px !important; font-size: 14px !important; }
+      .quote-preview-body .container { max-width: 100% !important; }
+      .quote-preview-body .quote-title { font-size: 16px !important; }
+      .quote-preview-body .items-table { font-size: 12px !important; }
+      .quote-preview-body .item-name, .quote-preview-body .item-extras { font-size: 12px !important; }
+    }
+  `;
   return `
     <style>${getQuoteStyles("'Heebo', 'Assistant', 'Segoe UI', Tahoma, sans-serif")}</style>
+    <style>${previewMobileStyles}</style>
     <div class="quote-pdf-body quote-preview-body" dir="rtl">
       <div class="container">
         ${profileBlock}
