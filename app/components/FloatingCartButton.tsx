@@ -37,12 +37,12 @@ export default function FloatingCartButton() {
   return (
     <button
       onClick={() => router.push('/cart')}
-      className="fixed z-50 flex items-center justify-between gap-3 sm:gap-4 bg-[#2563EB] text-white rounded-full shadow-xl hover:shadow-blue-500/40 active:scale-[0.98] sm:hover:scale-105 transition-all duration-300 group min-h-[56px] pl-5 pr-5 sm:pl-6 sm:pr-6 py-3 sm:py-4 bottom-5 left-5 right-5 sm:left-auto sm:right-6 sm:min-w-[200px]"
+      className="fixed z-50 flex items-center justify-between gap-3 sm:gap-4 bg-[#2563EB] text-white rounded-full shadow-xl hover:shadow-blue-500/40 active:scale-[0.98] sm:hover:scale-105 transition-all duration-300 group min-h-[64px] pl-5 pr-5 sm:pl-6 sm:pr-6 py-4 bottom-5 left-5 right-5 sm:left-auto sm:right-6 sm:min-w-[200px]"
       style={{ marginBottom: 'max(20px, env(safe-area-inset-bottom, 0px))' }}
     >
-      <div className="text-right flex-1 min-w-0">
-        <div className="text-[10px] sm:text-xs opacity-90">סה״כ הצעת מחיר</div>
-        <div className="text-base sm:text-lg font-bold tabular-nums">{formatPrice(totalWithVAT)}</div>
+      <div className="text-right flex-1 min-w-0 flex flex-col items-end gap-0.5">
+        <div className="text-[10px] sm:text-xs opacity-90 leading-tight">סה״כ הצעת מחיר</div>
+        <div className="text-base sm:text-lg font-bold tabular-nums leading-tight">{formatPrice(totalWithVAT)}</div>
       </div>
       <div className="relative shrink-0 flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/25 sm:bg-white">
         <ShoppingCart size={22} className="text-white group-hover:scale-110 transition-transform sm:text-[#2563EB]" />

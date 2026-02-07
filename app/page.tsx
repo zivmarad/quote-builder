@@ -40,13 +40,14 @@ export default function HomePage() {
         <section className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-4 md:gap-6">
           {categories.map((cat) => {
             const IconComponent = categoryIcons[cat.id] ?? Package;
+            const iconColor = categoryColors[cat.id] ?? 'text-slate-500';
             return (
               <Link
                 key={cat.id}
                 href={`/category/${cat.id}`}
                 className="card-hover-safe bg-white min-h-[120px] sm:aspect-square sm:min-h-0 rounded-2xl shadow-[0_4px_6px_-1px_rgb(0_0_0_/_0.1)] border border-[#E2E8F0] hover:border-blue-400 hover:shadow-lg transition-all flex flex-col items-center justify-center text-center group active:scale-[0.98] p-4 relative"
               >
-                <IconComponent size={28} className="text-[#475569] group-hover:text-blue-600 mb-2 sm:mb-3 transition-colors shrink-0" />
+                <IconComponent size={28} className={`${iconColor} group-hover:opacity-90 mb-2 sm:mb-3 transition-opacity shrink-0`} />
                 <span className="font-semibold text-[1.1rem] text-[#1E293B] leading-tight line-clamp-2">
                   {cat.name}
                 </span>
