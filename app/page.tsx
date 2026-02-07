@@ -18,6 +18,22 @@ const categoryIcons: Record<string, React.ComponentType<{ size?: number; classNa
   misc: Package,
 };
 
+const categoryColors: Record<string, string> = {
+  paint: 'text-amber-600',
+  sealing: 'text-purple-600',
+  plumbing: 'text-blue-500',
+  tiling: 'text-amber-700',
+  electricity: 'text-amber-500',
+  ac: 'text-cyan-500',
+  carpentry: 'text-amber-800',
+  aluminium: 'text-slate-600',
+  gardening: 'text-green-600',
+  handyman: 'text-orange-600',
+  drywall: 'text-slate-500',
+  doors: 'text-amber-900',
+  misc: 'text-slate-500',
+};
+
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-[#F8FAFC] px-5 py-6 sm:p-6 md:p-12" dir="rtl">
