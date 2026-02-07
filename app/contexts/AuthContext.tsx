@@ -191,7 +191,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!res.ok) return { ok: false, error: 'שגיאה בשרת. נסה שוב או בדוק חיבור לאינטרנט.' };
       }
       if (!res.ok) return { ok: false, error: data.error ?? 'קוד לא תקין או שפג תוקפו' };
-      return { ok: data.ok };
+      return { ok: !!data.ok };
     } catch (e) {
       console.warn('Check code failed', e);
       return { ok: false, error: 'לא ניתן לאמת. בדוק חיבור לאינטרנט ונסה שוב.' };
