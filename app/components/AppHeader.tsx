@@ -41,7 +41,7 @@ export default function AppHeader() {
             (user ? (
               <>
                 {displayName && (
-                  <span className="text-slate-600 font-medium text-xs sm:text-sm hidden sm:inline truncate max-w-[120px]">
+                  <span className="text-slate-600 font-medium text-xs sm:text-sm truncate max-w-[100px] sm:max-w-[120px]">
                     שלום {displayName}
                   </span>
                 )}
