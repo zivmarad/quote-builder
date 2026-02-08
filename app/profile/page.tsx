@@ -12,7 +12,12 @@ import RequireAuth from '../components/RequireAuth';
 import { useAuth } from '../contexts/AuthContext';
 import { usePriceOverrides } from '../contexts/PriceOverridesContext';
 import { categories } from '../service/services';
-import { ArrowRight, UserCircle, History, Settings, FileText, ChevronLeft, Download, Trash2, Copy, DollarSign, KeyRound, Eye, ChevronDown, Check, Loader2, Smartphone } from 'lucide-react';
+import { ArrowRight, UserCircle, History, Settings, FileText, ChevronLeft, Download, Trash2, Copy, DollarSign, KeyRound, Eye, ChevronDown, Check, Loader2, Smartphone, Plus } from 'lucide-react';
+
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
 
 type SectionId = 'details' | 'history' | 'settings';
 
@@ -66,8 +71,25 @@ export default function ProfilePage() {
   const [statusDropdownId, setStatusDropdownId] = useState<string | null>(null);
   const [saveToast, setSaveToast] = useState(false);
   const saveToastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [installSuccess, setInstallSuccess] = useState(false);
+  const [installLoading, setInstallLoading] = useState(false);
 
   useEffect(() => () => { if (saveToastTimeoutRef.current) clearTimeout(saveToastTimeoutRef.current); }, []);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setInstallPrompt(e as BeforeInstallPromptEvent);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    const appInstalled = () => setInstallSuccess(true);
+    window.addEventListener('appinstalled', appInstalled);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler);
+      window.removeEventListener('appinstalled', appInstalled);
+    };
+  }, []);
 
   const showSaveToast = () => {
     if (saveToastTimeoutRef.current) clearTimeout(saveToastTimeoutRef.current);
@@ -76,6 +98,18 @@ export default function ProfilePage() {
       setSaveToast(false);
       saveToastTimeoutRef.current = null;
     }, 2500);
+  };
+
+  const handleInstallApp = async () => {
+    if (!installPrompt) return;
+    setInstallLoading(true);
+    try {
+      await installPrompt.prompt();
+      const { outcome } = await installPrompt.userChoice;
+      if (outcome === 'accepted') setInstallSuccess(true);
+    } finally {
+      setInstallLoading(false);
+    }
   };
 
   const handleDuplicateQuote = (quoteId: string) => {
@@ -491,18 +525,30 @@ export default function ProfilePage() {
                     <p className="text-slate-500 text-sm mb-4">
                       אפשר להוסיף את האתר כמעט כאפליקציה – גישה מהירה מהמסך הראשי של הטלפון, בלי סרגל דפדפן.
                     </p>
-                    <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 space-y-4 max-w-md">
-                      <div>
-                        <p className="font-bold text-slate-700 text-sm mb-1">איך מוסיפים?</p>
+                    {installSuccess ? (
+                      <div className="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-green-50 border border-green-200 text-green-700 font-medium">
+                        <Check size={20} /> נוסף למסך הבית
+                      </div>
+                    ) : installPrompt ? (
+                      <button
+                        type="button"
+                        onClick={handleInstallApp}
+                        disabled={installLoading}
+                        className="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 transition-colors shadow-sm"
+                      >
+                        <Plus size={20} />
+                        {installLoading ? 'מתקין...' : 'הוסף למסך הבית'}
+                      </button>
+                    ) : (
+                      <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 space-y-3 max-w-md">
+                        <p className="font-bold text-slate-700 text-sm">איך מוסיפים?</p>
                         <ul className="text-sm text-slate-600 space-y-1.5">
-                          <li><strong>איפון (Safari):</strong> לחץ על כפתור השתף (הריבוע עם החץ) → &quot;הוסף למסך הבית&quot;</li>
+                          <li><strong>איפון (Safari):</strong> שתף (הריבוע עם החץ) → &quot;הוסף למסך הבית&quot;</li>
                           <li><strong>אנדרואיד (Chrome):</strong> תפריט (שלוש נקודות) → &quot;הוסף למסך הבית&quot; או &quot;התקן אפליקציה&quot;</li>
                         </ul>
+                        <p className="text-slate-500 text-xs">פתח את האתר בדפדפן (Chrome/Safari), לא מתוך וואטסאפ.</p>
                       </div>
-                      <p className="text-slate-500 text-xs">
-                        חשוב: פתח את האתר בדפדפן (Chrome/Safari), לא מתוך וואטסאפ, ואז הוסף למסך הבית.
-                      </p>
-                    </div>
+                    )}
                   </div>
 
                   <div className="mt-10 pt-8 border-t border-slate-200">
