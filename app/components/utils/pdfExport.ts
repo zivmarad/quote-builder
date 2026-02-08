@@ -433,7 +433,28 @@ export const generateQuotePDF = (
   printWindow.document.close();
 };
 
-/** מייצר את הצעת המחיר כ-PDF ומחזיר Blob – באמצעות HTML + html2canvas כדי שהעברית תוצג נכון (גופן Heebo) */
+const ROWS_PER_PAGE = 20; // שורות טבלה לכל עמוד (משאיר מקום לסיכום וחתימות בדף האחרון)
+
+function rowToHtml(item: BasketItem): string {
+  const extrasTotal = item.extras?.reduce((sum, extra) => sum + extra.price, 0) || 0;
+  const calculatedPrice = item.basePrice + extrasTotal;
+  const currentPrice = item.overridePrice ?? calculatedPrice;
+  const hasExtras = item.extras && item.extras.length > 0;
+  const extrasDesc =
+    item.overridePrice === undefined && hasExtras
+      ? item.extras!.map((e) => `+ ${escapeHtml(e.text)}`).join(', ')
+      : '';
+  return `
+    <tr>
+      <td><div class="item-name">${escapeHtml(item.name)}</div>${extrasDesc ? `<div class="item-extras">${extrasDesc}</div>` : ''}</td>
+      <td style="text-align:center">1</td>
+      <td class="price-cell">₪${currentPrice.toLocaleString('he-IL')}</td>
+      <td class="price-cell">₪${currentPrice.toLocaleString('he-IL')}</td>
+    </tr>
+  `;
+}
+
+/** מייצר את הצעת המחיר כ-PDF ומחזיר Blob – תומך במספר דפים בלתי מוגבל, שורת חתימות בדף האחרון */
 export async function generateQuotePDFAsBlob(
   items: BasketItem[],
   totalBeforeVAT: number,
@@ -463,102 +484,116 @@ export async function generateQuotePDFAsBlob(
     quoteNumber,
     validityDays,
   });
-  const { profileBlock, notesBlock, footerBlock, validityText, items: contentItems } = content;
-
-  const tableRows = contentItems
-    .map((item) => {
-      const extrasTotal = item.extras?.reduce((sum, extra) => sum + extra.price, 0) || 0;
-      const calculatedPrice = item.basePrice + extrasTotal;
-      const currentPrice = item.overridePrice ?? calculatedPrice;
-      const hasExtras = item.extras && item.extras.length > 0;
-      const extrasDesc =
-        item.overridePrice === undefined && hasExtras
-          ? item.extras!.map((e) => `+ ${escapeHtml(e.text)}`).join(', ')
-          : '';
-      return `
-        <tr>
-          <td><div class="item-name">${escapeHtml(item.name)}</div>${extrasDesc ? `<div class="item-extras">${extrasDesc}</div>` : ''}</td>
-          <td style="text-align:center">1</td>
-          <td class="price-cell">₪${currentPrice.toLocaleString('he-IL')}</td>
-          <td class="price-cell">₪${currentPrice.toLocaleString('he-IL')}</td>
-        </tr>
-      `;
-    })
-    .join('');
-
-  const fragment = `
-    <style>${getQuoteStyles("'Heebo', 'Assistant', 'Segoe UI', Tahoma, sans-serif")}</style>
-    <div class="quote-pdf-body" dir="rtl">
-      <div class="container">
-        ${profileBlock}
-        <div class="table-summary-wrap">
-          <table class="items-table">
-            <thead>
-              <tr>
-                <th>תיאור השירות / המוצר</th>
-                <th>יחידות</th>
-                <th>מחיר</th>
-                <th>סה"כ</th>
-              </tr>
-            </thead>
-            <tbody>${tableRows}</tbody>
-          </table>
-          <div class="summary-below">
-            <div class="summary">
-              <div class="summary-row subtotal"><span>סה"כ</span><span class="amount">₪${totalBeforeVAT.toLocaleString('he-IL')}</span></div>
-              <div class="summary-row vat"><span>מע"מ (18%)</span><span class="amount">₪${VAT.toLocaleString('he-IL')}</span></div>
-              <div class="summary-row total"><span>סה"כ לתשלום</span><span class="amount">₪${totalWithVAT.toLocaleString('he-IL')}</span></div>
-            </div>
-          </div>
-        </div>
-        ${notesBlock}
-        </div>
-        ${footerBlock}
-      </div>
-    </div>
-  `;
-
-  const wrap = document.createElement('div');
-  wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:595px;background:#fff;z-index:-1;';
-  wrap.innerHTML = fragment;
-  document.body.appendChild(wrap);
-
-  if (typeof document !== 'undefined' && document.fonts?.ready) await document.fonts.ready;
-  await new Promise((r) => setTimeout(r, 350));
-
-  const canvas = await html2canvas(wrap, {
-    scale: 2,
-    useCORS: true,
-    allowTaint: true,
-    backgroundColor: '#ffffff',
-    logging: false,
-  });
-  document.body.removeChild(wrap);
+  const { profileBlock, notesBlock, footerBlock, items: contentItems } = content;
 
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const pageW = 210;
   const pageH = 297;
-  const imgW = pageW;
-  const imgH = (pageW * canvas.height) / canvas.width;
 
-  if (imgH <= pageH) {
-    doc.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, imgW, imgH);
-  } else {
-    const sliceHeightPx = (pageH / pageW) * canvas.width;
-    let drawn = 0;
-    while (drawn < canvas.height) {
-      if (drawn > 0) doc.addPage();
-      const sliceH = Math.min(sliceHeightPx, canvas.height - drawn);
-      const sliceCanvas = document.createElement('canvas');
-      sliceCanvas.width = canvas.width;
-      sliceCanvas.height = sliceH;
-      const ctx = sliceCanvas.getContext('2d')!;
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
-      ctx.drawImage(canvas, 0, drawn, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
-      const sliceImgH = (pageW * sliceH) / canvas.width;
-      doc.addImage(sliceCanvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, imgW, sliceImgH);
-      drawn += sliceH;
+  const tableHeader = `
+    <thead>
+      <tr>
+        <th>תיאור השירות / המוצר</th>
+        <th>יחידות</th>
+        <th>מחיר</th>
+        <th>סה"כ</th>
+      </tr>
+    </thead>
+  `;
+
+  const summaryBlock = `
+    <div class="summary-below">
+      <div class="summary">
+        <div class="summary-row subtotal"><span>סה"כ</span><span class="amount">₪${totalBeforeVAT.toLocaleString('he-IL')}</span></div>
+        <div class="summary-row vat"><span>מע"מ (18%)</span><span class="amount">₪${VAT.toLocaleString('he-IL')}</span></div>
+        <div class="summary-row total"><span>סה"כ לתשלום</span><span class="amount">₪${totalWithVAT.toLocaleString('he-IL')}</span></div>
+      </div>
+    </div>
+  `;
+
+  const chunks: BasketItem[][] = [];
+  for (let i = 0; i < contentItems.length; i += ROWS_PER_PAGE) {
+    chunks.push(contentItems.slice(i, i + ROWS_PER_PAGE));
+  }
+
+  if (typeof document !== 'undefined' && document.fonts?.ready) await document.fonts.ready;
+
+  const styles = getQuoteStyles("'Heebo', 'Assistant', 'Segoe UI', Tahoma, sans-serif");
+
+  for (let i = 0; i < chunks.length; i++) {
+    const chunk = chunks[i];
+    const isFirst = i === 0;
+    const isLast = i === chunks.length - 1;
+    const tableRows = chunk.map(rowToHtml).join('');
+
+    let pageContent = '';
+    if (isFirst) pageContent += profileBlock;
+
+    pageContent += `
+      <div class="table-summary-wrap">
+        <table class="items-table">
+          ${tableHeader}
+          <tbody>${tableRows}</tbody>
+        </table>
+        ${isLast ? summaryBlock : ''}
+      </div>
+    `;
+    if (isLast) {
+      pageContent += notesBlock;
+      pageContent += footerBlock;
+    }
+
+    const fragment = `
+      <style>${styles}</style>
+      <div class="quote-pdf-body" dir="rtl">
+        <div class="container">
+          ${pageContent}
+        </div>
+      </div>
+    `;
+
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:595px;background:#fff;z-index:-1;overflow:visible;';
+    wrap.innerHTML = fragment;
+    document.body.appendChild(wrap);
+
+    await new Promise((r) => setTimeout(r, 200));
+
+    const canvas = await html2canvas(wrap, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+      logging: false,
+    });
+    document.body.removeChild(wrap);
+
+    const imgW = pageW;
+    const imgH = (pageW * canvas.height) / canvas.width;
+
+    if (i > 0) doc.addPage();
+
+    if (imgH <= pageH) {
+      doc.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, imgW, imgH);
+    } else {
+      const sliceHeightPx = (pageH / pageW) * canvas.width;
+      let drawn = 0;
+      let firstSlice = true;
+      while (drawn < canvas.height) {
+        if (!firstSlice) doc.addPage();
+        firstSlice = false;
+        const sliceH = Math.min(sliceHeightPx, canvas.height - drawn);
+        const sliceCanvas = document.createElement('canvas');
+        sliceCanvas.width = canvas.width;
+        sliceCanvas.height = sliceH;
+        const ctx = sliceCanvas.getContext('2d')!;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
+        ctx.drawImage(canvas, 0, drawn, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+        const sliceImgH = (pageW * sliceH) / canvas.width;
+        doc.addImage(sliceCanvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, imgW, sliceImgH);
+        drawn += sliceH;
+      }
     }
   }
 

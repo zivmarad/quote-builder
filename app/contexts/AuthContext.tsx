@@ -311,9 +311,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = useCallback(() => {
     setCurrentUser(null);
     setUser(null);
-    try {
-      if (typeof window !== 'undefined') window.localStorage.removeItem(SAVED_PASSWORD_KEY);
-    } catch { /* ignore */ }
   }, []);
 
   return (
