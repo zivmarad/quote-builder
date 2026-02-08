@@ -57,8 +57,8 @@ function buildQuoteContent(params: {
   const customerLines: string[] = [];
   if (customerCompanyId?.trim()) customerLines.push(`<span class="client-company-id">ח.פ ${escapeHtml(customerCompanyId.trim())}</span>`);
   if (customerPhone?.trim()) customerLines.push(`<span class="client-phone">${escapeHtml(customerPhone.trim())}</span>`);
+  if (customerEmail?.trim()) customerLines.push(`<span class="client-email">${escapeHtml(customerEmail.trim())}</span>`);
   if (customerAddress?.trim()) customerLines.push(`<span class="client-address">${escapeHtml(customerAddress.trim())}</span>`);
-  if (customerEmail?.trim() && !customerPhone?.trim() && !customerAddress?.trim()) customerLines.push(escapeHtml(customerEmail.trim()));
   const clientDetails = customerLines.length > 0 ? customerLines.join(' &nbsp; ') : '—';
   const forBlock = `<div class="for-block"><span class="for-label">עבור:</span> <strong>${escapeHtml(customerNameVal)}</strong><br><span class="for-details">${clientDetails}</span></div>`;
 

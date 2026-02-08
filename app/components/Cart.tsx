@@ -32,8 +32,10 @@ export default function Cart() {
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [customerName, setCustomerName] = useState('');
-  const [contactType, setContactType] = useState<'none' | 'phone' | 'email' | 'address' | 'companyId'>('none');
-  const [contactValue, setContactValue] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [customerEmail, setCustomerEmail] = useState('');
+  const [customerAddress, setCustomerAddress] = useState('');
+  const [customerCompanyId, setCustomerCompanyId] = useState('');
   const [notes, setNotes] = useState('');
   const lastShareBlobRef = useRef<Blob | null>(null);
   const [isMobile, setIsMobile] = useState(false);
@@ -106,10 +108,10 @@ export default function Cart() {
   };
 
   const getCustomerContact = () => ({
-    customerPhone: contactType === 'phone' ? contactValue.trim() : undefined,
-    customerEmail: contactType === 'email' ? contactValue.trim() : undefined,
-    customerAddress: contactType === 'address' ? contactValue.trim() : undefined,
-    customerCompanyId: contactType === 'companyId' ? contactValue.trim() : undefined,
+    customerPhone: customerPhone.trim() || undefined,
+    customerEmail: customerEmail.trim() || undefined,
+    customerAddress: customerAddress.trim() || undefined,
+    customerCompanyId: customerCompanyId.trim() || undefined,
   });
 
   const handleExportPDF = async () => {
@@ -156,8 +158,10 @@ export default function Cart() {
       setNextQuoteNumber(nextQuoteNumber + 1);
       clearBasket();
       setCustomerName('');
-      setContactType('none');
-      setContactValue('');
+      setCustomerPhone('');
+      setCustomerEmail('');
+      setCustomerAddress('');
+      setCustomerCompanyId('');
       setNotes('');
       setToast('ה-PDF הורד וההצעה נשמרה');
       setTimeout(() => router.push('/'), 2500);
@@ -219,8 +223,10 @@ export default function Cart() {
       setShowWhatsAppModal(false);
       clearBasket();
       setCustomerName('');
-      setContactType('none');
-      setContactValue('');
+      setCustomerPhone('');
+      setCustomerEmail('');
+      setCustomerAddress('');
+      setCustomerCompanyId('');
       setNotes('');
       setToast('ההצעה נשלחה בהצלחה');
       setTimeout(() => router.push('/'), 2500);
@@ -248,8 +254,10 @@ export default function Cart() {
     setShowWhatsAppModal(false);
     clearBasket();
     setCustomerName('');
-    setContactType('none');
-    setContactValue('');
+    setCustomerPhone('');
+    setCustomerEmail('');
+    setCustomerAddress('');
+    setCustomerCompanyId('');
     setNotes('');
     setToast('ה-PDF הורד וההצעה נשמרה');
     setTimeout(() => router.push('/'), 2500);
@@ -271,8 +279,10 @@ export default function Cart() {
     setShowWhatsAppModal(false);
     clearBasket();
     setCustomerName('');
-    setContactType('none');
-    setContactValue('');
+    setCustomerPhone('');
+    setCustomerEmail('');
+    setCustomerAddress('');
+    setCustomerCompanyId('');
     setNotes('');
     setToast('ה-PDF הורד – אפשר לשלוח בוואטסאפ Web');
     setTimeout(() => router.push('/'), 2500);
@@ -647,76 +657,82 @@ export default function Cart() {
           )}
         </div>
 
-        {/* פרטי לקוח והערות – מופיעים בהצעת המחיר: רק שם + אמצעי קשר מרשימה */}
-        <div className="px-6 py-4 bg-white border-t border-slate-100 space-y-4">
-          <div>
-            <label htmlFor="customerName" className="block text-sm font-bold text-slate-700 mb-2 text-right">
-              שם הלקוח
-            </label>
-            <input
-              id="customerName"
-              type="text"
-              value={customerName}
-              onChange={(e) => setCustomerName(e.target.value)}
-              placeholder="למשל: ישראל ישראלי"
-              className="w-full max-w-xs mr-0 ml-auto block px-4 py-3 min-h-[48px] rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
-            />
+        {/* פרטי לקוח והערות – מופיעים בהצעת המחיר */}
+        <div className="px-6 py-5 bg-white border-t border-slate-100">
+          <div className="mb-4">
+            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">פרטי לקוח</h3>
+            <p className="text-xs text-slate-400">הפרטים יופיעו בראש הצעת המחיר – כל השדות אופציונליים</p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-3 sm:items-end max-w-md mr-0 ml-auto">
-            <div className="flex-1 min-w-0">
-              <label htmlFor="contactType" className="block text-sm font-bold text-slate-700 mb-2 text-right">
-                אמצעי ליצירת קשר
-              </label>
-              <select
-                id="contactType"
-                value={contactType}
-                onChange={(e) => {
-                  setContactType(e.target.value as 'none' | 'phone' | 'email' | 'address' | 'companyId');
-                  setContactValue('');
-                }}
-                className="w-full px-4 py-3 min-h-[48px] rounded-xl border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right bg-white"
-              >
-                <option value="none">לא צוין</option>
-                <option value="phone">טלפון</option>
-                <option value="email">אימייל</option>
-                <option value="address">כתובת</option>
-              </select>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
+            <div className="sm:col-span-2">
+              <label htmlFor="customerName" className="block text-sm font-bold text-slate-700 mb-1.5 text-right">שם הלקוח / שם החברה</label>
+              <input
+                id="customerName"
+                type="text"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                placeholder="ישראל ישראלי או חברה בע״מ"
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
+              />
             </div>
-            {contactType !== 'none' && (
-              <div className="flex-1 min-w-0">
-                <label htmlFor="contactValue" className="block text-sm font-bold text-slate-700 mb-2 text-right">
-                  {contactType === 'phone' && 'מספר טלפון'}
-                  {contactType === 'email' && 'כתובת אימייל'}
-                  {contactType === 'address' && 'כתובת'}
-                  {contactType === 'companyId' && 'ח.פ'}
-                </label>
-                <input
-                  id="contactValue"
-                  type={contactType === 'email' ? 'email' : 'text'}
-                  value={contactValue}
-                  onChange={(e) => setContactValue(e.target.value)}
-                  placeholder={
-                    contactType === 'phone' ? '050-1234567' :
-                    contactType === 'email' ? 'customer@example.com' :
-                    contactType === 'companyId' ? '123456789' : 'רחוב, עיר'
-                  }
-                  className="w-full px-4 py-3 min-h-[48px] rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
-                  dir={contactType === 'phone' || contactType === 'email' || contactType === 'companyId' ? 'ltr' : 'rtl'}
-                />
-              </div>
-            )}
+            <div>
+              <label htmlFor="customerCompanyId" className="block text-sm font-bold text-slate-700 mb-1.5 text-right">ח.פ</label>
+              <input
+                id="customerCompanyId"
+                type="text"
+                inputMode="numeric"
+                value={customerCompanyId}
+                onChange={(e) => setCustomerCompanyId(e.target.value)}
+                placeholder="123456789"
+                dir="ltr"
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
+              />
+            </div>
+            <div>
+              <label htmlFor="customerPhone" className="block text-sm font-bold text-slate-700 mb-1.5 text-right">טלפון</label>
+              <input
+                id="customerPhone"
+                type="tel"
+                value={customerPhone}
+                onChange={(e) => setCustomerPhone(e.target.value)}
+                placeholder="050-1234567"
+                dir="ltr"
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
+              />
+            </div>
+            <div>
+              <label htmlFor="customerEmail" className="block text-sm font-bold text-slate-700 mb-1.5 text-right">אימייל</label>
+              <input
+                id="customerEmail"
+                type="email"
+                value={customerEmail}
+                onChange={(e) => setCustomerEmail(e.target.value)}
+                placeholder="example@email.com"
+                dir="ltr"
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <label htmlFor="customerAddress" className="block text-sm font-bold text-slate-700 mb-1.5 text-right">כתובת</label>
+              <input
+                id="customerAddress"
+                type="text"
+                value={customerAddress}
+                onChange={(e) => setCustomerAddress(e.target.value)}
+                placeholder="רחוב, עיר, מיקוד"
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
+              />
+            </div>
           </div>
-          <div>
-            <label htmlFor="notes" className="block text-sm font-bold text-slate-700 mb-2 text-right">
-              הערות (אופציונלי)
-            </label>
+          <div className="mt-4 pt-4 border-t border-slate-100">
+            <label htmlFor="notes" className="block text-sm font-bold text-slate-700 mb-1.5 text-right">הערות להצעה</label>
             <textarea
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="למשל: המחיר לא כולל חומרים, צפי לסיום..."
+              placeholder="למשל: המחיר לא כולל חומרים, צפי לסיום, תנאי תשלום..."
               rows={3}
-              className="w-full max-w-md mr-0 ml-auto block px-4 py-3 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right resize-y"
+              className="w-full max-w-2xl px-4 py-2.5 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right resize-y"
             />
           </div>
         </div>
@@ -820,10 +836,10 @@ export default function Cart() {
                     totalWithVAT,
                     profile,
                     customerName: customerName.trim() || undefined,
-                    customerPhone: contactType === 'phone' ? contactValue.trim() : undefined,
-                    customerEmail: contactType === 'email' ? contactValue.trim() : undefined,
-                    customerAddress: contactType === 'address' ? contactValue.trim() : undefined,
-                    customerCompanyId: contactType === 'companyId' ? contactValue.trim() : undefined,
+                    customerPhone: customerPhone.trim() || undefined,
+                    customerEmail: customerEmail.trim() || undefined,
+                    customerAddress: customerAddress.trim() || undefined,
+                    customerCompanyId: customerCompanyId.trim() || undefined,
                     notes: notes.trim() || undefined,
                     quoteTitle: defaultQuoteTitle,
                     quoteNumber: nextQuoteNumber,
