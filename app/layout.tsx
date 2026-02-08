@@ -11,6 +11,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import QuoteBasketWithAuth from './components/QuoteBasketWithAuth';
 import UserDataProviders from './components/UserDataProviders';
 import FloatingCartButton from './components/FloatingCartButton';
+import StorageQuotaAlert from './components/StorageQuotaAlert';
 import AppHeader from './components/AppHeader';
 import Footer from './components/Footer';
 
@@ -42,6 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <Footer />
               </div>
               <FloatingCartButton />
+              <StorageQuotaAlert />
             </UserDataProviders>
           </QuoteBasketWithAuth>
         </AuthProvider>

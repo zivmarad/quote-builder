@@ -2,6 +2,11 @@
 
 import React, { createContext, useContext, useState, useEffect, useMemo, useRef } from 'react';
 import { fetchSync, postSync } from '../../lib/sync';
+import {
+  basketStorageSet,
+  basketStorageRemove,
+  getBasketWithMigration,
+} from '../../lib/basket-storage';
 
 // הגדרת מבנה התוספת (שם ומחיר)
 export interface BasketExtra {
@@ -43,12 +48,15 @@ const QuoteBasketContext = createContext<QuoteBasketContextType | undefined>(und
 const getStorageKey = (userId: string | null | undefined) =>
   `quoteBasket_${userId ?? 'guest'}`;
 
+/** שם האירוע כשמגיעים למגבלת אחסון (IndexedDB) */
+export const STORAGE_QUOTA_EVENT = 'quoteBasketStorageQuotaExceeded';
+
 export const QuoteBasketProvider: React.FC<{ children: React.ReactNode; userId?: string | null }> = ({ children, userId }) => {
   const [items, setItems] = useState<BasketItem[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const lastLoadedForUserIdRef = useRef<string | null | undefined>(undefined);
 
-  // טעינה: משתמש מחובר – קודם מ־Supabase, אחרת localStorage. אורח – localStorage בלבד
+  // טעינה: משתמש מחובר – קודם מ־Supabase, אחרת IndexedDB. אורח – IndexedDB בלבד
   useEffect(() => {
     if (typeof window === 'undefined') {
       setIsLoaded(true);
@@ -58,31 +66,6 @@ export const QuoteBasketProvider: React.FC<{ children: React.ReactNode; userId?:
     lastLoadedForUserIdRef.current = undefined;
     let cancelled = false;
     const key = getStorageKey(userId);
-    const loadFromStorage = (): BasketItem[] => {
-      let savedBasket = localStorage.getItem(key);
-      if (!savedBasket && userId) {
-        const legacy = localStorage.getItem('quoteBasket');
-        if (legacy) {
-          try {
-            const parsed = JSON.parse(legacy);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-              localStorage.setItem(key, legacy);
-              localStorage.removeItem('quoteBasket');
-              savedBasket = legacy;
-            }
-          } catch {
-            /* ignore */
-          }
-        }
-      }
-      if (!savedBasket) return [];
-      try {
-        const parsed = JSON.parse(savedBasket);
-        return Array.isArray(parsed) ? parsed : [];
-      } catch {
-        return [];
-      }
-    };
 
     (async () => {
       if (userId) {
@@ -91,14 +74,19 @@ export const QuoteBasketProvider: React.FC<{ children: React.ReactNode; userId?:
           const arr = Array.isArray(data.items) ? data.items : [];
           lastLoadedForUserIdRef.current = userId;
           setItems(arr);
-          localStorage.setItem(key, JSON.stringify(arr));
+          void basketStorageSet(key, JSON.stringify(arr));
           setIsLoaded(true);
           return;
         }
       }
-      if (!cancelled) {
-        lastLoadedForUserIdRef.current = userId;
-        setItems(loadFromStorage());
+      const savedBasket = await getBasketWithMigration(key, userId ?? null);
+      if (cancelled) return;
+      lastLoadedForUserIdRef.current = userId;
+      try {
+        const parsed = savedBasket ? JSON.parse(savedBasket) : [];
+        setItems(Array.isArray(parsed) ? parsed : []);
+      } catch {
+        setItems([]);
       }
       setIsLoaded(true);
     })();
@@ -107,15 +95,15 @@ export const QuoteBasketProvider: React.FC<{ children: React.ReactNode; userId?:
     };
   }, [userId]);
 
-  // שמירה: localStorage תמיד; Supabase רק אם טענו עבור userId הזה
+  // שמירה: IndexedDB תמיד; Supabase רק אם טענו עבור userId הזה
   useEffect(() => {
     if (typeof window === 'undefined' || !isLoaded) return;
     const key = getStorageKey(userId);
     if (items.length > 0) {
-      localStorage.setItem(key, JSON.stringify(items));
+      void basketStorageSet(key, JSON.stringify(items));
       if (userId && lastLoadedForUserIdRef.current === userId) void postSync('/basket', userId, { items });
     } else {
-      localStorage.removeItem(key);
+      void basketStorageRemove(key);
       if (userId && lastLoadedForUserIdRef.current === userId) void postSync('/basket', userId, { items: [] });
     }
   }, [items, isLoaded, userId]);
