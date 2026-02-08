@@ -484,7 +484,14 @@ export default function Cart() {
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
                     <div className="flex-1 text-right min-w-0">
                       <span className={`text-[10px] font-bold uppercase tracking-wider mb-1 block ${item.category === 'פריט חופשי' ? 'text-emerald-600' : 'text-blue-600'}`}>{item.category}</span>
-                      <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">{item.name}</h3>
+                      <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
+                        {item.name}
+                        {item.quantity != null && item.quantity > 1 && (
+                          <span className="mr-2 text-sm font-semibold text-slate-500">
+                            ×{item.quantity}{item.unit ? ` ${item.unit}` : ''}
+                          </span>
+                        )}
+                      </h3>
                     </div>
                     <div className="flex items-center gap-2 shrink-0 justify-end sm:justify-start">
                       {isEditing ? (

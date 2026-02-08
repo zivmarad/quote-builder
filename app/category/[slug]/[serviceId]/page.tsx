@@ -249,7 +249,9 @@ export default function ServiceWizardPage() {
                   category: category.id,
                   basePrice: baseTotal,
                   extras: selectedExtrasList,
-                  description: selectedExtrasList.map(e => e.text).join(', ')
+                  description: selectedExtrasList.map(e => e.text).join(', '),
+                  quantity: qty > 1 ? qty : undefined,
+                  unit: qty > 1 ? service.unit : undefined,
                 }} 
               />
             </div>

@@ -18,10 +18,12 @@ export interface BasketItem {
   id: string;
   name: string;
   category: string;
-  basePrice: number; // מחיר הבסיס של השירות בלבד
+  basePrice: number; // מחיר הבסיס של השירות (כולל כמות – basePrice×qty)
   extras?: BasketExtra[]; // רשימת התוספות המפורטת
   overridePrice?: number; // מחיר סופי ידני (אם נערך)
   description?: string;
+  quantity?: number; // כמות (למשל 2 אסלות)
+  unit?: string; // יחידה (אסלה, חדר, וכו')
 }
 
 interface QuoteBasketContextType {

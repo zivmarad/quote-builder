@@ -8,6 +8,8 @@ export interface BasketItem {
   basePrice: number;
   overridePrice?: number;
   extras?: Array<{ text: string; price: number }>;
+  quantity?: number;
+  unit?: string;
 }
 
 /** פרופיל בעל המקצוע – מופיע בראש הצעת המחיר */
@@ -144,16 +146,19 @@ export function getQuotePreviewHtml(params: {
       const extrasTotal = item.extras?.reduce((sum, extra) => sum + extra.price, 0) || 0;
       const calculatedPrice = item.basePrice + extrasTotal;
       const currentPrice = item.overridePrice ?? calculatedPrice;
+      const qty = item.quantity ?? 1;
+      const pricePerUnit = currentPrice / qty;
       const hasExtras = item.extras && item.extras.length > 0;
       const extrasDesc =
         item.overridePrice === undefined && hasExtras
           ? item.extras!.map((e) => `• ${escapeHtml(formatExtraForQuote(e.text))}`).join('<br>')
           : '';
+      const qtyDisplay = qty > 1 && item.unit ? `${qty} ${item.unit}` : String(qty);
       return `
         <tr>
           <td><div class="item-name">${escapeHtml(item.name)}</div>${extrasDesc ? `<div class="item-extras">${extrasDesc}</div>` : ''}</td>
-          <td style="text-align:center">1</td>
-          <td class="price-cell">₪${currentPrice.toLocaleString('he-IL')}</td>
+          <td style="text-align:center">${escapeHtml(qtyDisplay)}</td>
+          <td class="price-cell">₪${pricePerUnit.toLocaleString('he-IL')}</td>
           <td class="price-cell">₪${currentPrice.toLocaleString('he-IL')}</td>
         </tr>
       `;
@@ -321,15 +326,18 @@ export const generateQuotePDF = (
     const extrasTotal = item.extras?.reduce((sum, extra) => sum + extra.price, 0) || 0;
     const calculatedPrice = item.basePrice + extrasTotal;
     const currentPrice = item.overridePrice ?? calculatedPrice;
+    const qty = item.quantity ?? 1;
+    const pricePerUnit = currentPrice / qty;
     const hasExtras = item.extras && item.extras.length > 0;
     const extrasDesc = !(item.overridePrice !== undefined) && hasExtras
       ? item.extras!.map((e) => `• ${escapeHtml(formatExtraForQuote(e.text))}`).join('<br>')
       : '';
+    const qtyDisplay = qty > 1 && item.unit ? `${qty} ${item.unit}` : String(qty);
     return `
       <tr>
         <td><div class="item-name">${item.name}</div>${extrasDesc ? `<div class="item-extras">${extrasDesc}</div>` : ''}</td>
-        <td style="text-align:center">1</td>
-        <td class="price-cell">₪${currentPrice.toLocaleString('he-IL')}</td>
+        <td style="text-align:center">${qtyDisplay}</td>
+        <td class="price-cell">₪${pricePerUnit.toLocaleString('he-IL')}</td>
         <td class="price-cell">₪${currentPrice.toLocaleString('he-IL')}</td>
       </tr>
     `;
@@ -450,16 +458,19 @@ function rowToHtml(item: BasketItem): string {
   const extrasTotal = item.extras?.reduce((sum, extra) => sum + extra.price, 0) || 0;
   const calculatedPrice = item.basePrice + extrasTotal;
   const currentPrice = item.overridePrice ?? calculatedPrice;
+  const qty = item.quantity ?? 1;
+  const pricePerUnit = currentPrice / qty;
   const hasExtras = item.extras && item.extras.length > 0;
   const extrasDesc =
     item.overridePrice === undefined && hasExtras
       ? item.extras!.map((e) => `• ${escapeHtml(formatExtraForQuote(e.text))}`).join('<br>')
       : '';
+  const qtyDisplay = qty > 1 && item.unit ? `${qty} ${item.unit}` : String(qty);
   return `
     <tr>
       <td><div class="item-name">${escapeHtml(item.name)}</div>${extrasDesc ? `<div class="item-extras">${extrasDesc}</div>` : ''}</td>
-      <td style="text-align:center">1</td>
-      <td class="price-cell">₪${currentPrice.toLocaleString('he-IL')}</td>
+      <td style="text-align:center">${escapeHtml(qtyDisplay)}</td>
+      <td class="price-cell">₪${pricePerUnit.toLocaleString('he-IL')}</td>
       <td class="price-cell">₪${currentPrice.toLocaleString('he-IL')}</td>
     </tr>
   `;

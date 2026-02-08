@@ -12,6 +12,8 @@ interface AddToBasketButtonProps {
     basePrice: number;
     extras: BasketExtra[];
     description?: string;
+    quantity?: number;
+    unit?: string;
   };
 }
 
@@ -26,6 +28,8 @@ export default function AddToBasketButton({ service }: AddToBasketButtonProps) {
       basePrice: service.basePrice,
       extras: service.extras,
       description: service.description || '',
+      quantity: service.quantity,
+      unit: service.unit,
     });
     // חזרה שלב אחד אחורה להמשיך לבחור (למשל מדף שירות חזרה לתיקיית הקטגוריה)
     router.back();
