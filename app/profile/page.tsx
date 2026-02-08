@@ -21,9 +21,9 @@ interface BeforeInstallPromptEvent extends Event {
 
 type SectionId = 'details' | 'history' | 'settings';
 
-const sections: { id: SectionId; label: string; icon: React.ReactNode }[] = [
+const sections: { id: SectionId; label: string; labelShort?: string; icon: React.ReactNode }[] = [
   { id: 'details', label: 'פרטים', icon: <UserCircle size={22} /> },
-  { id: 'history', label: 'היסטוריית הצעות', icon: <History size={22} /> },
+  { id: 'history', label: 'היסטוריית הצעות', labelShort: 'היסטוריה', icon: <History size={22} /> },
   { id: 'settings', label: 'הגדרות', icon: <Settings size={22} /> },
 ];
 
@@ -207,24 +207,25 @@ export default function ProfilePage() {
               <div className="px-3 sm:px-4 py-2.5 sm:py-3 border-b border-slate-100 bg-slate-50/80">
                 <h2 className="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wider">איזור אישי</h2>
               </div>
-              <ul className="p-1.5 sm:p-2 flex flex-row md:flex-col gap-1 overflow-x-auto md:overflow-visible">
+              <ul className="p-1.5 sm:p-2 grid grid-cols-3 md:flex md:flex-col gap-1">
                 {sections.map((section) => (
-                  <li key={section.id} className="shrink-0 md:shrink">
+                  <li key={section.id}>
                     <button
                       type="button"
                       onClick={() => setActiveSection(section.id)}
-                      className={`w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-right font-medium text-sm transition-colors min-h-[44px] ${
+                      className={`w-full flex items-center justify-center md:justify-start gap-1.5 sm:gap-3 px-2 sm:px-4 py-2.5 sm:py-3 rounded-xl text-right font-medium text-xs sm:text-sm transition-colors min-h-[44px] ${
                         activeSection === section.id
                           ? 'bg-blue-50 text-blue-700 border border-blue-100'
                           : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border border-transparent'
                       }`}
                     >
-                      <span className="text-slate-400 [.button:focus_&]:text-blue-500">
+                      <span className="text-slate-400 shrink-0 [.button:focus_&]:text-blue-500">
                         {section.icon}
                       </span>
-                      {section.label}
+                      <span className="truncate sm:hidden">{section.labelShort ?? section.label}</span>
+                      <span className="truncate hidden sm:inline">{section.label}</span>
                       {activeSection === section.id && (
-                        <ChevronLeft size={18} className="mr-auto text-blue-500" />
+                        <ChevronLeft size={16} className="mr-auto text-blue-500 hidden md:block shrink-0" />
                       )}
                     </button>
                   </li>
@@ -373,9 +374,9 @@ export default function ProfilePage() {
                         return (
                           <li
                             key={q.id}
-                            className="flex flex-wrap items-center gap-3 md:gap-4 p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-colors"
+                            className="flex flex-col gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-colors"
                           >
-                            <div className="flex-1 min-w-0">
+                            <div className="min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
                                 <span className="font-bold text-slate-900">
                                   {q.customerName?.trim() || '— ללא שם לקוח'}
@@ -428,41 +429,41 @@ export default function ProfilePage() {
                                 )}
                               </div>
                             </div>
-                            <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                            <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-200/80">
                               <button
                                 type="button"
                                 onClick={() => setPreviewQuoteId(q.id)}
-                                className="inline-flex items-center gap-2 px-3 py-2 rounded-xl font-bold text-sm border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
+                                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-sm border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors shrink-0"
                                 title="תצוגה מקדימה"
                               >
-                                <Eye size={18} />
+                                <Eye size={16} />
                                 תצוגה מקדימה
                               </button>
                               <button
                                 type="button"
                                 onClick={() => handleDuplicateQuote(q.id)}
-                                className="inline-flex items-center gap-2 px-3 py-2 rounded-xl font-bold text-sm border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
+                                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-sm border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors shrink-0"
                                 title="שכפל לסל"
                               >
-                                <Copy size={18} />
+                                <Copy size={16} />
                                 שכפל
                               </button>
                               <button
                                 type="button"
                                 onClick={() => handleDownloadQuote(q.id)}
                                 disabled={downloadingId === q.id}
-                                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 transition-colors"
+                                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-bold text-sm bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 transition-colors shrink-0"
                               >
-                                <Download size={18} />
+                                <Download size={16} />
                                 {downloadingId === q.id ? 'מוריד...' : 'הורד PDF'}
                               </button>
                               <button
                                 type="button"
                                 onClick={() => handleDeleteQuote(q.id)}
-                                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors shrink-0"
                                 title="מחק מההיסטוריה"
                               >
-                                <Trash2 size={20} />
+                                <Trash2 size={18} />
                               </button>
                             </div>
                           </li>
