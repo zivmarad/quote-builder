@@ -26,6 +26,10 @@ const formatPrice = (n: number) => '₪' + n.toLocaleString('he-IL');
 const escapeHtml = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
+/** מטהר טקסט תוספת להצגה מקצועית בהצעה – מסיר סימני שאלה ומעבד לפורמט נקי */
+const formatExtraForQuote = (text: string): string =>
+  text.replace(/\?+$/, '').trim();
+
 const hasProfile = (p?: QuoteProfile | null) =>
   p && (p.businessName || p.phone || p.logo || p.contactName || p.companyId || p.email || p.address);
 
@@ -143,7 +147,7 @@ export function getQuotePreviewHtml(params: {
       const hasExtras = item.extras && item.extras.length > 0;
       const extrasDesc =
         item.overridePrice === undefined && hasExtras
-          ? item.extras!.map((e) => `+ ${escapeHtml(e.text)}`).join(', ')
+          ? item.extras!.map((e) => `• ${escapeHtml(formatExtraForQuote(e.text))}`).join('<br>')
           : '';
       return `
         <tr>
@@ -251,7 +255,7 @@ function getQuoteStyles(fontFamily = "'Heebo', 'Assistant', 'Segoe UI', Tahoma, 
     .items-table tbody tr:nth-child(even) { background: #f8f9fa; }
     .items-table tbody tr:last-child td { border-bottom: 2px solid #1e3a5f; }
     .item-name { font-weight: 500; color: #1a1a1a; }
-    .item-extras { font-size: 11px; color: #555; margin-top: 3px; }
+    .item-extras { font-size: 11px; color: #555; margin-top: 3px; line-height: 1.5; }
     .price-cell { text-align: center; font-weight: 600; color: #1a1a1a; white-space: nowrap; }
     .summary { width: 180px; border: 1px solid #e5e5e5; font-size: 10px; }
     .summary-row { display: flex; justify-content: space-between; padding: 5px 8px; align-items: center; gap: 6px; }
@@ -319,7 +323,7 @@ export const generateQuotePDF = (
     const currentPrice = item.overridePrice ?? calculatedPrice;
     const hasExtras = item.extras && item.extras.length > 0;
     const extrasDesc = !(item.overridePrice !== undefined) && hasExtras
-      ? item.extras!.map((e) => `+ ${e.text}`).join(', ')
+      ? item.extras!.map((e) => `• ${escapeHtml(formatExtraForQuote(e.text))}`).join('<br>')
       : '';
     return `
       <tr>
@@ -372,7 +376,7 @@ export const generateQuotePDF = (
     .items-table tbody tr:nth-child(even) { background: #f8f9fa; }
     .items-table tbody tr:last-child td { border-bottom: 2px solid #1e3a5f; }
     .item-name { font-weight: 500; color: #1a1a1a; }
-    .item-extras { font-size: 10px; color: #555; margin-top: 2px; }
+    .item-extras { font-size: 10px; color: #555; margin-top: 2px; line-height: 1.5; }
     .price-cell { text-align: center; font-weight: 600; color: #1a1a1a; white-space: nowrap; }
     .summary { width: 180px; border: 1px solid #e5e5e5; font-size: 10px; }
     .summary-row { display: flex; justify-content: space-between; padding: 5px 8px; align-items: center; gap: 6px; }
@@ -449,7 +453,7 @@ function rowToHtml(item: BasketItem): string {
   const hasExtras = item.extras && item.extras.length > 0;
   const extrasDesc =
     item.overridePrice === undefined && hasExtras
-      ? item.extras!.map((e) => `+ ${escapeHtml(e.text)}`).join(', ')
+      ? item.extras!.map((e) => `• ${escapeHtml(formatExtraForQuote(e.text))}`).join('<br>')
       : '';
   return `
     <tr>
