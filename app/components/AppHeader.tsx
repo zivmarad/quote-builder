@@ -2,10 +2,19 @@
 
 import Link from 'next/link';
 import { useAuth } from '../contexts/AuthContext';
+import { useProfile } from '../contexts/ProfileContext';
 import { User, LogIn, UserPlus, LogOut } from 'lucide-react';
 
 export default function AppHeader() {
   const { user, isLoaded, logout } = useAuth();
+  const { profile } = useProfile();
+  const displayName = user
+    ? (() => {
+        const raw = profile?.contactName?.trim() || user.username;
+        const first = raw.split(/\s+/)[0] || user.username;
+        return first.includes('@') ? first.split('@')[0] : first;
+      })()
+    : '';
 
   return (
     <header
@@ -31,9 +40,11 @@ export default function AppHeader() {
           {isLoaded &&
             (user ? (
               <>
-                <span className="text-slate-500 text-xs sm:text-sm hidden md:inline truncate max-w-[100px]">
-                  שלום, {user.username}
-                </span>
+                {displayName && (
+                  <span className="text-slate-600 font-medium text-xs sm:text-sm hidden sm:inline truncate max-w-[120px]">
+                    שלום {displayName}
+                  </span>
+                )}
                 <button
                   type="button"
                   onClick={logout}
