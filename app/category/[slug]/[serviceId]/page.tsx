@@ -40,6 +40,8 @@ export default function ServiceWizardPage() {
     return service.questions
       .filter((q) => answers[q.id] === true)
       .map((q) => {
+        const hasQtyLabel = 'quantityLabel' in q.impact && q.impact.quantityLabel;
+        const useQtyForFixed = q.impact.type === 'fixed' && hasQtyLabel && qty > 1;
         let price: number;
         if (q.impact.type === 'percent') {
           price = (baseTotal * q.impact.value) / 100;
@@ -48,13 +50,18 @@ export default function ServiceWizardPage() {
         } else if (q.impact.type === 'fixedWithQuantity') {
           const qtyQ = Math.max(1, parseInt(questionQuantities[q.id] || '1', 10) || 1);
           price = q.impact.value * qtyQ;
+        } else if (useQtyForFixed) {
+          const qtyQ = Math.min(qty, Math.max(1, parseInt(questionQuantities[q.id] || '1', 10) || 1));
+          price = q.impact.value * qtyQ;
         } else {
           price = q.impact.value;
         }
         const qtyQ = q.impact.type === 'fixedWithQuantity'
           ? Math.max(1, parseInt(questionQuantities[q.id] || '1', 10) || 1)
-          : null;
-        const label = 'quantityLabel' in q.impact && q.impact.quantityLabel ? q.impact.quantityLabel : "יח'";
+          : useQtyForFixed
+            ? Math.min(qty, Math.max(1, parseInt(questionQuantities[q.id] || '1', 10) || 1))
+            : null;
+        const label = hasQtyLabel ? q.impact.quantityLabel! : "יח'";
         const text = qtyQ != null && qtyQ > 0
           ? `${q.text} (${qtyQ} ${label})`
           : q.text;
@@ -107,14 +114,20 @@ export default function ServiceWizardPage() {
   const handleQuestionQuantityBlur = (qId: string) => {
     const val = questionQuantities[qId];
     const num = parseInt(val || '', 10);
+    const q = service?.questions.find((x) => x.id === qId);
+    const isFixedWithQty = q?.impact.type === 'fixed' && 'quantityLabel' in (q?.impact || {}) && qty > 1;
+    const maxQty = isFixedWithQty ? qty : Infinity;
     if (val === '' || Number.isNaN(num) || num < 1) {
       setQuestionQuantities((prev) => ({ ...prev, [qId]: '1' }));
     } else {
-      setQuestionQuantities((prev) => ({ ...prev, [qId]: String(num) }));
+      setQuestionQuantities((prev) => ({ ...prev, [qId]: String(Math.min(num, maxQty)) }));
     }
   };
 
-  const hasQuantityInput = (q: Question) => q.impact.type === 'fixedWithQuantity';
+  const hasQuantityInput = (q: Question) => {
+    if (q.impact.type === 'fixedWithQuantity') return true;
+    return q.impact.type === 'fixed' && 'quantityLabel' in q.impact && !!q.impact.quantityLabel && qty > 1;
+  };
 
   return (
     <RequireAuth>
@@ -200,7 +213,7 @@ export default function ServiceWizardPage() {
                       ? `+${q.impact.value}%` 
                       : q.impact.type === 'fixedPerUnit' 
                         ? `+₪${q.impact.value}/${service.unit}` 
-                        : q.impact.type === 'fixedWithQuantity'
+                        : (q.impact.type === 'fixedWithQuantity' || (q.impact.type === 'fixed' && 'quantityLabel' in q.impact && q.impact.quantityLabel))
                           ? `+₪${q.impact.value}/${q.impact.quantityLabel ?? "יח'"}`
                           : `+₪${q.impact.value}`}
                   </span>

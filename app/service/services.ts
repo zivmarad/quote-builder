@@ -318,9 +318,9 @@ export const categories: Category[] = [
         unit: 'חלון',
         isCounter: true,
         questions: [
-          { id: 'q1', text: 'הסרת סיליקון ישן ויבש?', impact: { type: 'fixed', value: 150 } },
-          { id: 'q2', text: 'איטום חיצוני בגובה (מנצ\'ר/סולם גבוה)?', impact: { type: 'fixed', value: 300 } },
-          { id: 'q3', text: 'איטום מסילות וקדח ניקוז?', impact: { type: 'fixed', value: 100 } },
+          { id: 'q1', text: 'הסרת סיליקון ישן ויבש?', impact: { type: 'fixed', value: 150, quantityLabel: 'חלון' } },
+          { id: 'q2', text: 'איטום חיצוני בגובה (מנצ\'ר/סולם גבוה)?', impact: { type: 'fixed', value: 300, quantityLabel: 'חלון' } },
+          { id: 'q3', text: 'איטום מסילות וקדח ניקוז?', impact: { type: 'fixed', value: 100, quantityLabel: 'חלון' } },
         ],
       },
       {
@@ -494,10 +494,10 @@ export const categories: Category[] = [
         unit: 'יחידה',
         isCounter: true,
         questions: [
-          { id: 'q1', text: 'פירוק כלי ישן ופינוי?', impact: { type: 'fixed', value: 150 } },
+          { id: 'q1', text: 'פירוק כלי ישן ופינוי?', impact: { type: 'fixed', value: 150, quantityLabel: 'יחידה' } },
           { id: 'q2', text: 'התקנת ברז מהקיר (מערכת ישנה)?', impact: { type: 'fixed', value: 200 } },
           { id: 'q3', text: 'התקנת אינטרפוץ (לפני חיפוי)?', impact: { type: 'fixed', value: 650 } },
-          { id: 'q4', text: 'התקנת אביזרי קצה (סבוניה/מחזיק נייר - סט מלא)?', impact: { type: 'fixed', value: 250 } },
+          { id: 'q4', text: 'התקנת אביזרי קצה (סבוניה/מחזיק נייר - סט מלא)?', impact: { type: 'fixed', value: 250, quantityLabel: 'יחידה' } },
         ],
       },
       {
@@ -507,9 +507,9 @@ export const categories: Category[] = [
         unit: 'אסלה',
         isCounter: true,
         questions: [
-          { id: 'q1', text: 'אסלת מונובלוק (יציאה לרצפה)?', impact: { type: 'fixed', value: 250 } },
+          { id: 'q1', text: 'אסלת מונובלוק (יציאה לרצפה)?', impact: { type: 'fixed', value: 250, quantityLabel: 'אסלה' } },
           { id: 'q2', text: 'הזזת נקודת ביוב (עד 50 ס"מ)?', impact: { type: 'fixed', value: 600 } },
-          { id: 'q3', text: 'התקנת ברז שטיפה (בידה) לצד האסלה?', impact: { type: 'fixed', value: 350 } },
+          { id: 'q3', text: 'התקנת ברז שטיפה (בידה) לצד האסלה?', impact: { type: 'fixed', value: 350, quantityLabel: 'אסלה' } },
         ],
       },
       {
@@ -534,8 +534,8 @@ export const categories: Category[] = [
         questions: [
           { id: 'q1', text: 'צנרת PEX (בתוך מוביל)?', impact: { type: 'fixed', value: 0 } },
           { id: 'q2', text: 'צנרת SP (רב שכבתית)?', impact: { type: 'fixed', value: 150 } },
-          { id: 'q3', text: 'הכנה למדיח/מכונת כביסה (כולל ניקוז)?', impact: { type: 'fixed', value: 450 } },
-          { id: 'q4', text: 'נקודת מים למקרר (כולל צנרת גמישה)?', impact: { type: 'fixed', value: 550 } },
+          { id: 'q3', text: 'הכנה למדיח/מכונת כביסה (כולל ניקוז)?', impact: { type: 'fixed', value: 450, quantityLabel: 'נקודה' } },
+          { id: 'q4', text: 'נקודת מים למקרר (כולל צנרת גמישה)?', impact: { type: 'fixed', value: 550, quantityLabel: 'נקודה' } },
         ],
       },
       {
@@ -696,9 +696,9 @@ export const categories: Category[] = [
         unit: 'יחידה',
         isCounter: true,
         questions: [
-          { id: 'q1', text: 'התקנת ידיות אחיזה במקלחת (כולל חיזוק)?', impact: { type: 'fixed', value: 150 } },
-          { id: 'q2', text: 'התקנת מושב מתקפל במקלחון?', impact: { type: 'fixed', value: 350 } },
-          { id: 'q3', text: 'הגבהת אסלה קיימת?', impact: { type: 'fixed', value: 400 } },
+          { id: 'q1', text: 'התקנת ידיות אחיזה במקלחת (כולל חיזוק)?', impact: { type: 'fixed', value: 150, quantityLabel: 'יחידה' } },
+          { id: 'q2', text: 'התקנת מושב מתקפל במקלחון?', impact: { type: 'fixed', value: 350, quantityLabel: 'יחידה' } },
+          { id: 'q3', text: 'הגבהת אסלה קיימת?', impact: { type: 'fixed', value: 400, quantityLabel: 'יחידה' } },
         ],
       },
       {
@@ -863,8 +863,8 @@ export const categories: Category[] = [
         unit: 'יחידה',
         isCounter: true,
         questions: [
-          { id: 'q1', text: 'נברשת כבדה/יוקרה?', impact: { type: 'fixed', value: 250 } },
-          { id: 'q2', text: 'מאוורר תקרה (כולל איזון)?', impact: { type: 'fixed', value: 250 } },
+          { id: 'q1', text: 'נברשת כבדה/יוקרה?', impact: { type: 'fixed', value: 250, quantityLabel: 'נברשת' } },
+          { id: 'q2', text: 'מאוורר תקרה (כולל איזון)?', impact: { type: 'fixed', value: 250, quantityLabel: 'מאוורר' } },
           { id: 'q3', text: 'התקנה בתקרת גבס (כולל חיזוק)?', impact: { type: 'fixed', value: 100 } },
           { id: 'q4', text: 'עבודה בגובה (מעל 3 מטר)?', impact: { type: 'percent', value: 25 } },
         ],
