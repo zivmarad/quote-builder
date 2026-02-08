@@ -27,8 +27,7 @@ export default function LoginPage() {
     try {
       const result = await login(username, password);
       if (result.ok) {
-        const target = from.startsWith('/') ? from : `/${from}`;
-        window.location.href = typeof window !== 'undefined' ? `${window.location.origin}${target}` : target;
+        window.location.href = typeof window !== 'undefined' ? `${window.location.origin}/` : '/';
         return;
       }
       setError(result.error ?? 'שגיאה בהתחברות');

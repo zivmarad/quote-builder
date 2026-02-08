@@ -27,8 +27,7 @@ export default function SignupPage() {
   }, []);
 
   const goToTarget = () => {
-    const target = from.startsWith('/') ? from : `/${from}`;
-    window.location.href = typeof window !== 'undefined' ? `${window.location.origin}${target}` : target;
+    window.location.href = typeof window !== 'undefined' ? `${window.location.origin}/` : '/';
   };
 
   const handleSendCode = async (e: React.FormEvent) => {
