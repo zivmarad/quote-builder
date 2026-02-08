@@ -142,6 +142,7 @@ export default function ProfilePage() {
         quote.customerPhone ?? undefined,
         quote.customerEmail ?? undefined,
         quote.customerAddress ?? undefined,
+        quote.customerCompanyId ?? undefined,
         validityDays
       );
       const url = URL.createObjectURL(blob);
@@ -288,6 +289,19 @@ export default function ProfilePage() {
                         onBlur={showSaveToast}
                         placeholder="למשל: משה כהן"
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="companyId" className="block text-sm font-bold text-slate-700 mb-2">ח.פ (אופציונלי)</label>
+                      <input
+                        id="companyId"
+                        type="text"
+                        value={profile.companyId ?? ''}
+                        onChange={(e) => setProfile({ companyId: e.target.value || undefined })}
+                        onBlur={showSaveToast}
+                        placeholder="למשל: 123456789"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        dir="ltr"
                       />
                     </div>
                     <div>
@@ -706,6 +720,7 @@ export default function ProfilePage() {
           customerPhone: q.customerPhone,
           customerEmail: q.customerEmail,
           customerAddress: q.customerAddress,
+          customerCompanyId: q.customerCompanyId,
           notes: q.notes,
           quoteTitle: defaultQuoteTitle,
           quoteNumber: q.quoteNumber,

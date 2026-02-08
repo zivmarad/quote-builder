@@ -9,6 +9,7 @@ const getStorageKey = (userId: string | null | undefined) =>
 export interface UserProfile {
   businessName: string;
   contactName?: string;
+  companyId?: string; // ח.פ של העסק
   phone: string;
   email?: string;
   address?: string;
@@ -18,6 +19,7 @@ export interface UserProfile {
 const defaultProfile: UserProfile = {
   businessName: '',
   contactName: '',
+  companyId: '',
   phone: '',
   email: '',
   address: '',

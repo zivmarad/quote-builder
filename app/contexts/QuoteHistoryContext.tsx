@@ -20,6 +20,7 @@ export interface SavedQuote {
   customerPhone?: string;
   customerEmail?: string;
   customerAddress?: string;
+  customerCompanyId?: string;
   notes?: string;
   items: BasketItem[];
   totalBeforeVAT: number;

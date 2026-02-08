@@ -32,7 +32,7 @@ export default function Cart() {
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [customerName, setCustomerName] = useState('');
-  const [contactType, setContactType] = useState<'none' | 'phone' | 'email' | 'address'>('none');
+  const [contactType, setContactType] = useState<'none' | 'phone' | 'email' | 'address' | 'companyId'>('none');
   const [contactValue, setContactValue] = useState('');
   const [notes, setNotes] = useState('');
   const lastShareBlobRef = useRef<Blob | null>(null);
@@ -109,10 +109,11 @@ export default function Cart() {
     customerPhone: contactType === 'phone' ? contactValue.trim() : undefined,
     customerEmail: contactType === 'email' ? contactValue.trim() : undefined,
     customerAddress: contactType === 'address' ? contactValue.trim() : undefined,
+    customerCompanyId: contactType === 'companyId' ? contactValue.trim() : undefined,
   });
 
   const handleExportPDF = async () => {
-    const { customerPhone, customerEmail, customerAddress } = getCustomerContact();
+    const { customerPhone, customerEmail, customerAddress, customerCompanyId } = getCustomerContact();
     setIsDownloading(true);
     try {
       addQuote({
@@ -124,6 +125,7 @@ export default function Cart() {
         customerPhone,
         customerEmail,
         customerAddress,
+        customerCompanyId,
         notes: notes.trim() || undefined,
         quoteNumber: nextQuoteNumber,
         status: 'download',
@@ -142,6 +144,7 @@ export default function Cart() {
         customerPhone,
         customerEmail,
         customerAddress,
+        customerCompanyId,
         validityDays ?? undefined
       );
       const url = URL.createObjectURL(blob);
@@ -166,7 +169,7 @@ export default function Cart() {
   /** שלב 1: הכנת PDF. שלב 2: במודל – לחיצה על "שתף עכשיו" קוראת ל-navigator.share() במחווה ישירה, כך שמסך השיתוף נפתח במובייל. */
   const handleShareToWhatsApp = async () => {
     setIsSharing(true);
-    const { customerPhone, customerEmail, customerAddress } = getCustomerContact();
+    const { customerPhone, customerEmail, customerAddress, customerCompanyId } = getCustomerContact();
     addQuote({
       items,
       totalBeforeVAT,
@@ -176,13 +179,14 @@ export default function Cart() {
       customerPhone,
       customerEmail,
       customerAddress,
+      customerCompanyId,
       notes: notes.trim() || undefined,
       quoteNumber: nextQuoteNumber,
       status: 'whatsapp',
       quoteStatus: 'sent',
     });
     try {
-      const blob = await generateQuotePDFAsBlob(items, totalBeforeVAT, VAT, totalWithVAT, profile, customerName || undefined, notes || undefined, defaultQuoteTitle, nextQuoteNumber, customerPhone, customerEmail, customerAddress, validityDays ?? undefined);
+      const blob = await generateQuotePDFAsBlob(items, totalBeforeVAT, VAT, totalWithVAT, profile, customerName || undefined, notes || undefined, defaultQuoteTitle, nextQuoteNumber, customerPhone, customerEmail, customerAddress, customerCompanyId, validityDays ?? undefined);
       setNextQuoteNumber(nextQuoteNumber + 1);
       lastShareBlobRef.current = blob;
       setShareError(null);
@@ -667,7 +671,7 @@ export default function Cart() {
                 id="contactType"
                 value={contactType}
                 onChange={(e) => {
-                  setContactType(e.target.value as 'none' | 'phone' | 'email' | 'address');
+                  setContactType(e.target.value as 'none' | 'phone' | 'email' | 'address' | 'companyId');
                   setContactValue('');
                 }}
                 className="w-full px-4 py-3 min-h-[48px] rounded-xl border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right bg-white"
@@ -684,6 +688,7 @@ export default function Cart() {
                   {contactType === 'phone' && 'מספר טלפון'}
                   {contactType === 'email' && 'כתובת אימייל'}
                   {contactType === 'address' && 'כתובת'}
+                  {contactType === 'companyId' && 'ח.פ'}
                 </label>
                 <input
                   id="contactValue"
@@ -692,10 +697,11 @@ export default function Cart() {
                   onChange={(e) => setContactValue(e.target.value)}
                   placeholder={
                     contactType === 'phone' ? '050-1234567' :
-                    contactType === 'email' ? 'customer@example.com' : 'רחוב, עיר'
+                    contactType === 'email' ? 'customer@example.com' :
+                    contactType === 'companyId' ? '123456789' : 'רחוב, עיר'
                   }
                   className="w-full px-4 py-3 min-h-[48px] rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
-                  dir={contactType === 'phone' || contactType === 'email' ? 'ltr' : 'rtl'}
+                  dir={contactType === 'phone' || contactType === 'email' || contactType === 'companyId' ? 'ltr' : 'rtl'}
                 />
               </div>
             )}
@@ -817,6 +823,7 @@ export default function Cart() {
                     customerPhone: contactType === 'phone' ? contactValue.trim() : undefined,
                     customerEmail: contactType === 'email' ? contactValue.trim() : undefined,
                     customerAddress: contactType === 'address' ? contactValue.trim() : undefined,
+                    customerCompanyId: contactType === 'companyId' ? contactValue.trim() : undefined,
                     notes: notes.trim() || undefined,
                     quoteTitle: defaultQuoteTitle,
                     quoteNumber: nextQuoteNumber,

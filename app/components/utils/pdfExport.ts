@@ -14,6 +14,7 @@ export interface BasketItem {
 export interface QuoteProfile {
   businessName?: string;
   contactName?: string;
+  companyId?: string; // ח.פ
   phone?: string;
   email?: string;
   address?: string;
@@ -26,7 +27,7 @@ const escapeHtml = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 const hasProfile = (p?: QuoteProfile | null) =>
-  p && (p.businessName || p.phone || p.logo || p.contactName || p.email || p.address);
+  p && (p.businessName || p.phone || p.logo || p.contactName || p.companyId || p.email || p.address);
 
 /** בונה את תוכן ההצעה (פרופיל, לקוח, טבלה, סיכום, הערות) – לשימוש בהדפסה ו-PDF */
 function buildQuoteContent(params: {
@@ -38,21 +39,23 @@ function buildQuoteContent(params: {
   customerPhone?: string | null;
   customerEmail?: string | null;
   customerAddress?: string | null;
+  customerCompanyId?: string | null;
   notes?: string | null;
   quoteTitle?: string | null;
   quoteNumber?: number | null;
   validityDays?: number | null;
 }) {
-  const { items, totalBeforeVAT, totalWithVAT, profile, customerName, customerPhone, customerEmail, customerAddress, notes, quoteTitle, quoteNumber, validityDays } = params;
+  const { items, totalBeforeVAT, totalWithVAT, profile, customerName, customerPhone, customerEmail, customerAddress, customerCompanyId, notes, quoteTitle, quoteNumber, validityDays } = params;
   const today = new Date().toLocaleDateString('he-IL', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit'
   });
   const titleText = [quoteTitle?.trim() || 'הצעת מחיר', quoteNumber != null ? `#${quoteNumber}` : ''].filter(Boolean).join(' ');
-  const hasCustomer = customerName?.trim() || customerPhone?.trim() || customerEmail?.trim() || customerAddress?.trim();
+  const hasCustomer = customerName?.trim() || customerPhone?.trim() || customerEmail?.trim() || customerAddress?.trim() || customerCompanyId?.trim();
   const customerNameVal = customerName?.trim() ?? '—';
   const customerLines: string[] = [];
+  if (customerCompanyId?.trim()) customerLines.push(`<span class="client-company-id">ח.פ ${escapeHtml(customerCompanyId.trim())}</span>`);
   if (customerPhone?.trim()) customerLines.push(`<span class="client-phone">${escapeHtml(customerPhone.trim())}</span>`);
   if (customerAddress?.trim()) customerLines.push(`<span class="client-address">${escapeHtml(customerAddress.trim())}</span>`);
   if (customerEmail?.trim() && !customerPhone?.trim() && !customerAddress?.trim()) customerLines.push(escapeHtml(customerEmail.trim()));
@@ -66,6 +69,7 @@ function buildQuoteContent(params: {
 
   const companyLines: string[] = [];
   if (profile?.businessName) companyLines.push(`<div class="company-name">${escapeHtml(profile.businessName)}</div>`);
+  if (profile?.companyId) companyLines.push(`<div class="company-line">ח.פ ${escapeHtml(profile.companyId)}</div>`);
   if (profile?.phone) companyLines.push(`<div class="company-line">${escapeHtml(profile.phone)}</div>`);
   if (profile?.address) companyLines.push(`<div class="company-line">${escapeHtml(profile.address)}</div>`);
   if (profile?.email) companyLines.push(`<div class="company-line">${escapeHtml(profile.email)}</div>`);
@@ -120,6 +124,7 @@ export function getQuotePreviewHtml(params: {
   customerPhone?: string | null;
   customerEmail?: string | null;
   customerAddress?: string | null;
+  customerCompanyId?: string | null;
   notes?: string | null;
   quoteTitle?: string | null;
   quoteNumber?: number | null;
@@ -289,6 +294,7 @@ export const generateQuotePDF = (
   customerPhone?: string | null,
   customerEmail?: string | null,
   customerAddress?: string | null,
+  customerCompanyId?: string | null,
   validityDays?: number | null
 ) => {
   const content = buildQuoteContent({
@@ -300,6 +306,7 @@ export const generateQuotePDF = (
     customerPhone,
     customerEmail,
     customerAddress,
+    customerCompanyId,
     notes,
     quoteTitle,
     quoteNumber,
@@ -468,6 +475,7 @@ export async function generateQuotePDFAsBlob(
   customerPhone?: string | null,
   customerEmail?: string | null,
   customerAddress?: string | null,
+  customerCompanyId?: string | null,
   validityDays?: number | null
 ): Promise<Blob> {
   const content = buildQuoteContent({
@@ -479,6 +487,7 @@ export async function generateQuotePDFAsBlob(
     customerPhone,
     customerEmail,
     customerAddress,
+    customerCompanyId,
     notes,
     quoteTitle,
     quoteNumber,
