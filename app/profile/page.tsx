@@ -12,7 +12,7 @@ import RequireAuth from '../components/RequireAuth';
 import { useAuth } from '../contexts/AuthContext';
 import { usePriceOverrides } from '../contexts/PriceOverridesContext';
 import { categories } from '../service/services';
-import { ArrowRight, UserCircle, History, Settings, FileText, ChevronLeft, Download, Trash2, Copy, DollarSign, KeyRound, Eye, ChevronDown, Check, Loader2 } from 'lucide-react';
+import { ArrowRight, UserCircle, History, Settings, FileText, ChevronLeft, Download, Trash2, Copy, DollarSign, KeyRound, Eye, ChevronDown, Check, Loader2, Smartphone } from 'lucide-react';
 
 type SectionId = 'details' | 'history' | 'settings';
 
@@ -483,6 +483,27 @@ export default function ProfilePage() {
                     </div>
                     <p className="text-slate-500 text-sm pt-2">ההגדרות נשמרות אוטומטית ומשמשות בעת יצירת הצעות חדשות.</p>
                   </form>
+
+                  <div className="mt-10 pt-8 border-t border-slate-200">
+                    <h2 className="text-lg font-black text-slate-900 mb-1 flex items-center gap-2">
+                      <Smartphone size={22} /> הוסף אייקון למסך הבית
+                    </h2>
+                    <p className="text-slate-500 text-sm mb-4">
+                      אפשר להוסיף את האתר כמעט כאפליקציה – גישה מהירה מהמסך הראשי של הטלפון, בלי סרגל דפדפן.
+                    </p>
+                    <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 space-y-4 max-w-md">
+                      <div>
+                        <p className="font-bold text-slate-700 text-sm mb-1">איך מוסיפים?</p>
+                        <ul className="text-sm text-slate-600 space-y-1.5">
+                          <li><strong>איפון (Safari):</strong> לחץ על כפתור השתף (הריבוע עם החץ) → &quot;הוסף למסך הבית&quot;</li>
+                          <li><strong>אנדרואיד (Chrome):</strong> תפריט (שלוש נקודות) → &quot;הוסף למסך הבית&quot; או &quot;התקן אפליקציה&quot;</li>
+                        </ul>
+                      </div>
+                      <p className="text-slate-500 text-xs">
+                        חשוב: פתח את האתר בדפדפן (Chrome/Safari), לא מתוך וואטסאפ, ואז הוסף למסך הבית.
+                      </p>
+                    </div>
+                  </div>
 
                   <div className="mt-10 pt-8 border-t border-slate-200">
                     <h2 className="text-lg font-black text-slate-900 mb-1 flex items-center gap-2">

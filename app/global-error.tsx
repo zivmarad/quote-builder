@@ -15,7 +15,7 @@ export default function GlobalError({
 
   const friendlyMessage =
     error.message?.toLowerCase().includes('object') && error.message?.toLowerCase().includes('not be found')
-      ? 'הדף או המשאב שביקשת לא נמצא. ייתכן שהחיבור נכשל – נסה לרענן או לפתוח את האתר מחדש.'
+      ? 'נראה שנפתחת מתוך וואטסאפ או אפליקציה אחרת. נסה לפתוח את הקישור בדפדפן רגיל (Chrome או Safari): לחץ על החץ או שלוש הנקודות ליד הכתובת ובחר "פתח בדפדפן" או "Open in browser".'
       : error.message || 'אירעה שגיאה חמורה באפליקציה';
   return (
     <html lang="he" dir="rtl">
