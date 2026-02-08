@@ -12,18 +12,22 @@ import RequireAuth from '../components/RequireAuth';
 import { useAuth } from '../contexts/AuthContext';
 import { usePriceOverrides } from '../contexts/PriceOverridesContext';
 import { categories } from '../service/services';
-import { ArrowRight, UserCircle, History, Settings, FileText, ChevronLeft, Download, Trash2, Copy, DollarSign, KeyRound, Eye, ChevronDown, Check, Loader2, Smartphone, Plus } from 'lucide-react';
+import { getDrafts, deleteDraft, type QuoteDraft } from '../../lib/drafts-storage';
+import { ArrowRight, UserCircle, History, Settings, FileText, ChevronLeft, Download, Trash2, Copy, DollarSign, KeyRound, Eye, ChevronDown, Check, Loader2, Smartphone, Plus, FileEdit } from 'lucide-react';
+
+const PENDING_DRAFT_KEY = 'quoteBuilder_pendingDraft';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
-type SectionId = 'details' | 'history' | 'settings';
+type SectionId = 'details' | 'history' | 'drafts' | 'settings';
 
 const sections: { id: SectionId; label: string; labelShort?: string; icon: React.ReactNode }[] = [
   { id: 'details', label: 'פרטים', icon: <UserCircle size={22} /> },
   { id: 'history', label: 'היסטוריית הצעות', labelShort: 'היסטוריה', icon: <History size={22} /> },
+  { id: 'drafts', label: 'טיוטות', icon: <FileEdit size={22} /> },
   { id: 'settings', label: 'הגדרות', icon: <Settings size={22} /> },
 ];
 
@@ -74,8 +78,15 @@ export default function ProfilePage() {
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [installSuccess, setInstallSuccess] = useState(false);
   const [installLoading, setInstallLoading] = useState(false);
+  const [drafts, setDrafts] = useState<QuoteDraft[]>([]);
 
   useEffect(() => () => { if (saveToastTimeoutRef.current) clearTimeout(saveToastTimeoutRef.current); }, []);
+
+  useEffect(() => {
+    if (activeSection === 'drafts' && typeof window !== 'undefined') {
+      getDrafts(authUser?.id ?? null).then(setDrafts);
+    }
+  }, [activeSection, authUser?.id]);
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -117,6 +128,42 @@ export default function ProfilePage() {
     if (!quote?.items?.length) return;
     loadBasket(quote.items);
     router.push('/cart');
+  };
+
+  const handleLoadDraft = (draft: QuoteDraft) => {
+    sessionStorage.setItem(PENDING_DRAFT_KEY, JSON.stringify({
+      customerName: draft.customerName || '',
+      customerPhone: draft.customerPhone || '',
+      customerEmail: draft.customerEmail || '',
+      customerAddress: draft.customerAddress || '',
+      customerCompanyId: draft.customerCompanyId || '',
+      notes: draft.notes || '',
+    }));
+    loadBasket(draft.items);
+    router.push('/cart');
+  };
+
+  const handleDeleteDraft = async (draftId: string) => {
+    if (!window.confirm('למחוק את הטיוטה?')) return;
+    await deleteDraft(authUser?.id ?? null, draftId);
+    setDrafts((prev) => prev.filter((d) => d.id !== draftId));
+  };
+
+  const formatDraftDate = (iso: string) => {
+    const d = new Date(iso);
+    return d.toLocaleDateString('he-IL', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  };
+
+  const getDraftSummary = (d: QuoteDraft) => {
+    const names = d.items.slice(0, 2).map((i) => i.name);
+    return names.length > 0 ? names.join(', ') : '—';
+  };
+
+  const getDraftTotal = (d: QuoteDraft) => {
+    return d.items.reduce((sum, item) => {
+      const extras = item.extras?.reduce((s, e) => s + e.price, 0) ?? 0;
+      return sum + (item.overridePrice ?? item.basePrice + extras);
+    }, 0);
   };
 
   const handleDeleteQuote = (quoteId: string) => {
@@ -207,7 +254,7 @@ export default function ProfilePage() {
               <div className="px-3 sm:px-4 py-2.5 sm:py-3 border-b border-slate-100 bg-slate-50/80">
                 <h2 className="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wider">איזור אישי</h2>
               </div>
-              <ul className="p-1.5 sm:p-2 grid grid-cols-3 md:flex md:flex-col gap-1">
+              <ul className="p-1.5 sm:p-2 grid grid-cols-2 sm:grid-cols-4 md:flex md:flex-col gap-1">
                 {sections.map((section) => (
                   <li key={section.id}>
                     <button
@@ -469,6 +516,69 @@ export default function ProfilePage() {
                           </li>
                         );
                       })}
+                    </ul>
+                  )}
+                </div>
+              )}
+
+              {activeSection === 'drafts' && (
+                <div className="p-6 md:p-8">
+                  <h1 className="text-xl font-black text-slate-900 mb-1">טיוטות</h1>
+                  <p className="text-slate-500 text-sm mb-8">הטיוטות ששמרת מהסל – טען לסל להמשך עריכה או מחק</p>
+                  {drafts.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-16 text-center bg-slate-50/50 rounded-2xl border border-slate-100">
+                      <div className="w-16 h-16 rounded-2xl bg-amber-50 flex items-center justify-center mb-4 text-amber-500">
+                        <FileEdit size={32} />
+                      </div>
+                      <p className="text-slate-500 text-sm max-w-xs">
+                        אין טיוטות. שמור טיוטה מתוך הסל (כפתור "שמור טיוטה") כדי לחזור אליה מאוחר יותר.
+                      </p>
+                    </div>
+                  ) : (
+                    <ul className="space-y-3">
+                      {drafts.map((d) => (
+                        <li
+                          key={d.id}
+                          className="flex flex-col gap-3 p-4 rounded-xl border border-slate-200 bg-amber-50/30 hover:bg-amber-50/50 transition-colors"
+                        >
+                          <div className="min-w-0">
+                            <div className="font-bold text-slate-900 text-lg">{d.name}</div>
+                            <div className="text-sm text-slate-600 mt-1">
+                              {getDraftSummary(d)}
+                            </div>
+                            <div className="flex items-center gap-2 mt-2 flex-wrap text-xs text-slate-500">
+                              <span>{d.items.length} פריטים</span>
+                              <span>·</span>
+                              <span>{formatPrice(getDraftTotal(d))} סה"כ</span>
+                              <span>·</span>
+                              <span>{formatDraftDate(d.savedAt)}</span>
+                              {d.customerName?.trim() && (
+                                <>
+                                  <span>·</span>
+                                  <span>לקוח: {d.customerName}</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-200/80">
+                            <button
+                              type="button"
+                              onClick={() => handleLoadDraft(d)}
+                              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm bg-blue-600 text-white hover:bg-blue-700 transition-colors shrink-0"
+                            >
+                              טען לסל
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteDraft(d.id)}
+                              className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors shrink-0"
+                              title="מחק טיוטה"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        </li>
+                      ))}
                     </ul>
                   )}
                 </div>

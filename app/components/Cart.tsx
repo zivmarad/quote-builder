@@ -7,8 +7,10 @@ import { useQuoteBasket } from '../contexts/QuoteBasketContext';
 import { useProfile } from '../contexts/ProfileContext';
 import { useQuoteHistory } from '../contexts/QuoteHistoryContext';
 import { useSettings } from '../contexts/SettingsContext';
-import { getDrafts, saveDraft, deleteDraft, type QuoteDraft } from '../../lib/drafts-storage';
-import { Trash2, Edit2, Check, X, ShoppingBag, Plus, FileText, Share2, Eye, Loader2, ChevronDown, ChevronUp, Save, FolderOpen } from 'lucide-react';
+import { saveDraft } from '../../lib/drafts-storage';
+import { Trash2, Edit2, Check, X, ShoppingBag, Plus, FileText, Share2, Eye, Loader2, ChevronDown, ChevronUp, Save } from 'lucide-react';
+
+const PENDING_DRAFT_KEY = 'quoteBuilder_pendingDraft';
 import { generateQuotePDFAsBlob, getQuotePreviewHtml } from './utils/pdfExport';
 
 export default function Cart() {
@@ -52,8 +54,7 @@ export default function Cart() {
   const [showCartPreview, setShowCartPreview] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [showCustomerDetails, setShowCustomerDetails] = useState(false);
-  const [showDraftsModal, setShowDraftsModal] = useState(false);
-  const [drafts, setDrafts] = useState<QuoteDraft[]>([]);
+  const [showSaveDraftModal, setShowSaveDraftModal] = useState(false);
   const [draftName, setDraftName] = useState('');
 
   useEffect(() => {
@@ -80,11 +81,24 @@ export default function Cart() {
     setEditPrice(currentPrice.toString());
   }, [editingId, items]);
 
-  /** טעינת טיוטות כשפותחים את המודל */
+  /** טעינת פרטי לקוח מטיוטה שנטענה מאיזור אישי */
   useEffect(() => {
-    if (!showDraftsModal || typeof window === 'undefined') return;
-    getDrafts(user?.id ?? null).then(setDrafts);
-  }, [showDraftsModal, user?.id]);
+    if (typeof window === 'undefined') return;
+    const raw = sessionStorage.getItem(PENDING_DRAFT_KEY);
+    if (!raw) return;
+    try {
+      const data = JSON.parse(raw) as Record<string, string>;
+      if (data.customerName !== undefined) setCustomerName(data.customerName || '');
+      if (data.customerPhone !== undefined) setCustomerPhone(data.customerPhone || '');
+      if (data.customerEmail !== undefined) setCustomerEmail(data.customerEmail || '');
+      if (data.customerAddress !== undefined) setCustomerAddress(data.customerAddress || '');
+      if (data.customerCompanyId !== undefined) setCustomerCompanyId(data.customerCompanyId || '');
+      if (data.notes !== undefined) setNotes(data.notes || '');
+    } catch {
+      /* ignore */
+    }
+    sessionStorage.removeItem(PENDING_DRAFT_KEY);
+  }, []);
 
   const handleSaveDraft = async () => {
     if (items.length === 0) return;
@@ -109,35 +123,12 @@ export default function Cart() {
       setNotes('');
       setToast('הטיוטה נשמרה והסל נוקה');
       setDraftName('');
-      setShowDraftsModal(false);
-      getDrafts(user?.id ?? null).then(setDrafts);
+      setShowSaveDraftModal(false);
     } catch {
       setToast('שגיאה בשמירת הטיוטה');
     }
   };
 
-  const handleLoadDraft = (draft: QuoteDraft) => {
-    loadBasket(draft.items);
-    setCustomerName(draft.customerName || '');
-    setCustomerPhone(draft.customerPhone || '');
-    setCustomerEmail(draft.customerEmail || '');
-    setCustomerAddress(draft.customerAddress || '');
-    setCustomerCompanyId(draft.customerCompanyId || '');
-    setNotes(draft.notes || '');
-    setShowDraftsModal(false);
-    setToast('הטיוטה נטענה');
-  };
-
-  const handleDeleteDraft = async (draftId: string) => {
-    if (!window.confirm('למחוק את הטיוטה?')) return;
-    await deleteDraft(user?.id ?? null, draftId);
-    setDrafts((prev) => prev.filter((d) => d.id !== draftId));
-  };
-
-  const formatDraftDate = (iso: string) => {
-    const d = new Date(iso);
-    return d.toLocaleDateString('he-IL', { day: 'numeric', month: 'short', year: 'numeric' });
-  };
 
   const VAT = contextVAT;
   const totalWithVAT = contextTotalWithVAT;
@@ -432,24 +423,14 @@ export default function Cart() {
             </div>
             <h3 className="text-xl font-black text-slate-800 mb-2">הסל שלך ריק</h3>
             <p className="text-slate-500 mb-6">בחר תחום עבודה מהדף הבית או הוסף פריט חופשי כאן.</p>
-            <div className="flex flex-wrap gap-3 justify-center">
-              <button
-                type="button"
-                onClick={() => setShowAddCustom(!showAddCustom)}
-                className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-blue-600 border-2 border-blue-200 hover:bg-blue-50 transition-colors"
-              >
-                <Plus size={20} />
-                {showAddCustom ? 'סגור' : 'הוסף פריט חופשי'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowDraftsModal(true)}
-                className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-amber-700 border-2 border-amber-200 hover:bg-amber-50 transition-colors"
-              >
-                <FolderOpen size={20} />
-                טיוטות שמורות
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => setShowAddCustom(!showAddCustom)}
+              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-blue-600 border-2 border-blue-200 hover:bg-blue-50 transition-colors"
+            >
+              <Plus size={20} />
+              {showAddCustom ? 'סגור' : 'הוסף פריט חופשי'}
+            </button>
           </div>
           {showAddCustom && (
             <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100 border-dashed border-2 min-w-0 overflow-hidden">
@@ -522,51 +503,6 @@ export default function Cart() {
             </div>
           )}
         </div>
-        {showDraftsModal && (
-          <div
-            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50"
-            dir="rtl"
-            onClick={() => { setShowDraftsModal(false); setDraftName(''); }}
-            role="presentation"
-          >
-            <div
-              className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-md w-full max-h-[85vh] overflow-hidden flex flex-col border border-slate-200 sm:border-t"
-              onClick={(e) => e.stopPropagation()}
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="drafts-modal-title-empty"
-              style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-            >
-              <div className="flex items-center justify-between px-4 py-4 border-b border-slate-200 shrink-0">
-                <h3 id="drafts-modal-title-empty" className="text-xl font-black text-slate-900">טיוטות</h3>
-                <button type="button" onClick={() => { setShowDraftsModal(false); setDraftName(''); }} className="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100" aria-label="סגור">
-                  <X size={22} />
-                </button>
-              </div>
-              <div className="overflow-y-auto p-4">
-                <h4 className="text-sm font-bold text-slate-700 mb-2">טיוטות שמורות</h4>
-                {drafts.length === 0 ? (
-                  <p className="text-sm text-slate-500 py-4">אין טיוטות שמורות</p>
-                ) : (
-                  <ul className="space-y-2">
-                    {drafts.map((d) => (
-                      <li key={d.id} className="flex items-center justify-between gap-2 bg-slate-50 rounded-xl p-3 border border-slate-100">
-                        <div className="min-w-0 flex-1">
-                          <span className="font-bold text-slate-900 block truncate">{d.name}</span>
-                          <span className="text-xs text-slate-500">{d.items.length} פריטים · {formatDraftDate(d.savedAt)}</span>
-                        </div>
-                        <div className="flex gap-1 shrink-0">
-                          <button type="button" onClick={() => handleLoadDraft(d)} className="px-3 py-1.5 rounded-lg text-sm font-bold bg-blue-600 text-white hover:bg-blue-700">טען</button>
-                          <button type="button" onClick={() => handleDeleteDraft(d.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg" aria-label="מחק טיוטה"><Trash2 size={18} /></button>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
         {toastEl}
       </>
     );
@@ -926,94 +862,55 @@ export default function Cart() {
           <FileText size={22} className="shrink-0 sm:w-6 sm:h-6" />
           {isDownloading ? 'מוריד...' : 'הורד כ-PDF'}
         </button>
-        <button
-          type="button"
-          onClick={() => setShowDraftsModal(true)}
-          className="flex items-center justify-center gap-2 sm:gap-3 bg-amber-50 text-amber-800 border-2 border-amber-200 py-4 sm:py-5 px-4 sm:px-8 rounded-xl sm:rounded-2xl font-black text-base sm:text-xl hover:bg-amber-100 transition-all shadow-sm min-h-[52px] active:scale-[0.98]"
-          aria-label="טיוטות"
-        >
-          <FolderOpen size={22} className="shrink-0 sm:w-6 sm:h-6" /> טיוטות
-        </button>
+        {items.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setShowSaveDraftModal(true)}
+            className="flex items-center justify-center gap-2 sm:gap-3 bg-amber-50 text-amber-800 border-2 border-amber-200 py-4 sm:py-5 px-4 sm:px-8 rounded-xl sm:rounded-2xl font-black text-base sm:text-xl hover:bg-amber-100 transition-all shadow-sm min-h-[52px] active:scale-[0.98]"
+            aria-label="שמור טיוטה"
+          >
+            <Save size={22} className="shrink-0 sm:w-6 sm:h-6" /> שמור טיוטה
+          </button>
+        )}
       </div>
 
-      {showDraftsModal && (
+      {showSaveDraftModal && (
         <div
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50"
           dir="rtl"
-          onClick={() => { setShowDraftsModal(false); setDraftName(''); }}
+          onClick={() => { setShowSaveDraftModal(false); setDraftName(''); }}
           role="presentation"
         >
           <div
-            className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-md w-full max-h-[85vh] overflow-hidden flex flex-col border border-slate-200 sm:border-t"
+            className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-6 border border-slate-200 sm:border-t"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
-            aria-labelledby="drafts-modal-title"
+            aria-labelledby="save-draft-modal-title"
             style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
           >
-            <div className="flex items-center justify-between px-4 py-4 border-b border-slate-200 shrink-0">
-              <h3 id="drafts-modal-title" className="text-xl font-black text-slate-900">טיוטות</h3>
-              <button type="button" onClick={() => { setShowDraftsModal(false); setDraftName(''); }} className="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100" aria-label="סגור">
+            <div className="flex items-center justify-between mb-4">
+              <h3 id="save-draft-modal-title" className="text-xl font-black text-slate-900">שמור טיוטה</h3>
+              <button type="button" onClick={() => { setShowSaveDraftModal(false); setDraftName(''); }} className="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100" aria-label="סגור">
                 <X size={22} />
               </button>
             </div>
-            <div className="overflow-y-auto p-4 space-y-6">
-              {items.length > 0 && (
-                <div className="bg-amber-50 rounded-xl p-4 border border-amber-200">
-                  <h4 className="text-sm font-bold text-amber-900 mb-2">שמור את הסל הנוכחי כטיוטה</h4>
-                  <p className="text-xs text-amber-800 mb-3">כדי להתחיל הצעה חדשה ולשמור את זו להמשך</p>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={draftName}
-                      onChange={(e) => setDraftName(e.target.value)}
-                      placeholder={`טיוטה ${new Date().toLocaleDateString('he-IL')}`}
-                      className="flex-1 px-3 py-2 rounded-lg border border-amber-300 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleSaveDraft}
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg font-bold bg-amber-600 text-white hover:bg-amber-700 shrink-0"
-                    >
-                      <Save size={18} /> שמור
-                    </button>
-                  </div>
-                </div>
-              )}
-              <div>
-                <h4 className="text-sm font-bold text-slate-700 mb-2">טיוטות שמורות</h4>
-                {drafts.length === 0 ? (
-                  <p className="text-sm text-slate-500 py-4">אין טיוטות שמורות</p>
-                ) : (
-                  <ul className="space-y-2">
-                    {drafts.map((d) => (
-                      <li key={d.id} className="flex items-center justify-between gap-2 bg-slate-50 rounded-xl p-3 border border-slate-100">
-                        <div className="min-w-0 flex-1">
-                          <span className="font-bold text-slate-900 block truncate">{d.name}</span>
-                          <span className="text-xs text-slate-500">{d.items.length} פריטים · {formatDraftDate(d.savedAt)}</span>
-                        </div>
-                        <div className="flex gap-1 shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => handleLoadDraft(d)}
-                            className="px-3 py-1.5 rounded-lg text-sm font-bold bg-blue-600 text-white hover:bg-blue-700"
-                          >
-                            טען
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteDraft(d.id)}
-                            className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg"
-                            aria-label="מחק טיוטה"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+            <p className="text-sm text-slate-600 mb-3">שמור את הסל הנוכחי להמשך – הטיוטות זמינות באיזור האישי</p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={draftName}
+                onChange={(e) => setDraftName(e.target.value)}
+                placeholder={`למשל: הצעת לקוח X, טיוטה ${new Date().toLocaleDateString('he-IL')}`}
+                className="flex-1 px-3 py-2.5 rounded-xl border border-amber-300 bg-amber-50/50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              />
+              <button
+                type="button"
+                onClick={handleSaveDraft}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold bg-amber-600 text-white hover:bg-amber-700 shrink-0"
+              >
+                <Save size={18} /> שמור
+              </button>
             </div>
           </div>
         </div>
