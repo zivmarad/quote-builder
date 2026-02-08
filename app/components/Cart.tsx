@@ -6,7 +6,7 @@ import { useQuoteBasket } from '../contexts/QuoteBasketContext';
 import { useProfile } from '../contexts/ProfileContext';
 import { useQuoteHistory } from '../contexts/QuoteHistoryContext';
 import { useSettings } from '../contexts/SettingsContext';
-import { Trash2, Edit2, Check, X, ShoppingBag, Plus, FileText, Share2, Eye, Loader2 } from 'lucide-react';
+import { Trash2, Edit2, Check, X, ShoppingBag, Plus, FileText, Share2, Eye, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import { generateQuotePDFAsBlob, getQuotePreviewHtml } from './utils/pdfExport';
 
 export default function Cart() {
@@ -47,6 +47,7 @@ export default function Cart() {
   const [customExtras, setCustomExtras] = useState<Array<{ text: string; price: number }>>([]);
   const [showCartPreview, setShowCartPreview] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [showCustomerDetails, setShowCustomerDetails] = useState(false);
 
   useEffect(() => {
     if (!toast) return;
@@ -657,84 +658,92 @@ export default function Cart() {
           )}
         </div>
 
-        {/* פרטי לקוח והערות – מופיעים בהצעת המחיר */}
-        <div className="px-6 py-5 bg-white border-t border-slate-100">
-          <div className="mb-4">
-            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">פרטי לקוח</h3>
-            <p className="text-xs text-slate-400">הפרטים יופיעו בראש הצעת המחיר – כל השדות אופציונליים</p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
-            <div className="sm:col-span-2">
-              <label htmlFor="customerName" className="block text-sm font-bold text-slate-700 mb-1.5 text-right">שם הלקוח / שם החברה</label>
-              <input
-                id="customerName"
-                type="text"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                placeholder="ישראל ישראלי או חברה בע״מ"
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
-              />
-            </div>
-            <div>
-              <label htmlFor="customerCompanyId" className="block text-sm font-bold text-slate-700 mb-1.5 text-right">ח.פ</label>
-              <input
-                id="customerCompanyId"
-                type="text"
-                inputMode="numeric"
-                value={customerCompanyId}
-                onChange={(e) => setCustomerCompanyId(e.target.value)}
-                placeholder="123456789"
-                dir="ltr"
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
-              />
-            </div>
-            <div>
-              <label htmlFor="customerPhone" className="block text-sm font-bold text-slate-700 mb-1.5 text-right">טלפון</label>
-              <input
-                id="customerPhone"
-                type="tel"
-                value={customerPhone}
-                onChange={(e) => setCustomerPhone(e.target.value)}
-                placeholder="050-1234567"
-                dir="ltr"
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
-              />
-            </div>
-            <div>
-              <label htmlFor="customerEmail" className="block text-sm font-bold text-slate-700 mb-1.5 text-right">אימייל</label>
-              <input
-                id="customerEmail"
-                type="email"
-                value={customerEmail}
-                onChange={(e) => setCustomerEmail(e.target.value)}
-                placeholder="example@email.com"
-                dir="ltr"
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
-              />
-            </div>
-            <div className="sm:col-span-2">
-              <label htmlFor="customerAddress" className="block text-sm font-bold text-slate-700 mb-1.5 text-right">כתובת</label>
-              <input
-                id="customerAddress"
-                type="text"
-                value={customerAddress}
-                onChange={(e) => setCustomerAddress(e.target.value)}
-                placeholder="רחוב, עיר, מיקוד"
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
-              />
-            </div>
-          </div>
-          <div className="mt-4 pt-4 border-t border-slate-100">
-            <label htmlFor="notes" className="block text-sm font-bold text-slate-700 mb-1.5 text-right">הערות להצעה</label>
-            <textarea
-              id="notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="למשל: המחיר לא כולל חומרים, צפי לסיום, תנאי תשלום..."
-              rows={3}
-              className="w-full max-w-2xl px-4 py-2.5 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right resize-y"
+        {/* פרטי לקוח – שם תמיד גלוי, השאר מתקפל */}
+        <div className="px-6 py-4 bg-white border-t border-slate-100">
+          <div className="flex flex-col gap-3">
+            <label htmlFor="customerName" className="block text-sm font-bold text-slate-700 text-right">שם הלקוח</label>
+            <input
+              id="customerName"
+              type="text"
+              value={customerName}
+              onChange={(e) => setCustomerName(e.target.value)}
+              placeholder="ישראל ישראלי או חברה בע״מ"
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
             />
+            <button
+              type="button"
+              onClick={() => setShowCustomerDetails((v) => !v)}
+              className="flex items-center justify-center gap-1.5 py-2 text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors"
+            >
+              {showCustomerDetails ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+              {showCustomerDetails ? 'הסתר פרטים נוספים' : 'ח.פ, טלפון, אימייל, כתובת'}
+            </button>
+            {showCustomerDetails && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-100">
+                <div>
+                  <label htmlFor="customerCompanyId" className="block text-xs font-bold text-slate-600 mb-1 text-right">ח.פ</label>
+                  <input
+                    id="customerCompanyId"
+                    type="text"
+                    inputMode="numeric"
+                    value={customerCompanyId}
+                    onChange={(e) => setCustomerCompanyId(e.target.value)}
+                    placeholder="123456789"
+                    dir="ltr"
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-right text-sm"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="customerPhone" className="block text-xs font-bold text-slate-600 mb-1 text-right">טלפון</label>
+                  <input
+                    id="customerPhone"
+                    type="tel"
+                    value={customerPhone}
+                    onChange={(e) => setCustomerPhone(e.target.value)}
+                    placeholder="050-1234567"
+                    dir="ltr"
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-right text-sm"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="customerEmail" className="block text-xs font-bold text-slate-600 mb-1 text-right">אימייל</label>
+                  <input
+                    id="customerEmail"
+                    type="email"
+                    value={customerEmail}
+                    onChange={(e) => setCustomerEmail(e.target.value)}
+                    placeholder="example@email.com"
+                    dir="ltr"
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-right text-sm"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label htmlFor="customerAddress" className="block text-xs font-bold text-slate-600 mb-1 text-right">כתובת</label>
+                  <input
+                    id="customerAddress"
+                    type="text"
+                    value={customerAddress}
+                    onChange={(e) => setCustomerAddress(e.target.value)}
+                    placeholder="רחוב, עיר, מיקוד"
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-right text-sm"
+                  />
+                </div>
+              </div>
+            )}
           </div>
+        </div>
+
+        {/* הערות להצעה – לא חלק מפרטי הלקוח */}
+        <div className="px-6 py-4 bg-white border-t border-slate-100">
+          <label htmlFor="notes" className="block text-sm font-bold text-slate-700 mb-1.5 text-right">הערות להצעה</label>
+          <textarea
+            id="notes"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="למשל: המחיר לא כולל חומרים, צפי לסיום, תנאי תשלום..."
+            rows={2}
+            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right resize-y"
+          />
         </div>
 
         <div className="bg-slate-50 p-4 sm:p-8 border-t border-slate-100">
