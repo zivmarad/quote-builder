@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../contexts/AuthContext';
+import { SAVED_USERNAME_KEY, SAVED_PASSWORD_KEY } from '../contexts/AuthContext';
 import { LogIn, ArrowRight } from 'lucide-react';
 
 export default function LoginPage() {
@@ -10,6 +11,8 @@ export default function LoginPage() {
   const { login } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberUsername, setRememberUsername] = useState(true);
+  const [rememberPassword, setRememberPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -20,6 +23,16 @@ export default function LoginPage() {
     setFrom(f.startsWith('/') ? f : `/${f}`);
   }, []);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const savedUser = localStorage.getItem(SAVED_USERNAME_KEY);
+      if (savedUser) setUsername(savedUser);
+      const savedPass = localStorage.getItem(SAVED_PASSWORD_KEY);
+      if (savedPass) setPassword(savedPass);
+    } catch { /* ignore */ }
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -27,6 +40,14 @@ export default function LoginPage() {
     try {
       const result = await login(username, password);
       if (result.ok) {
+        try {
+          if (typeof window !== 'undefined') {
+            if (rememberUsername) localStorage.setItem(SAVED_USERNAME_KEY, username.trim());
+            else localStorage.removeItem(SAVED_USERNAME_KEY);
+            if (rememberPassword) localStorage.setItem(SAVED_PASSWORD_KEY, password);
+            else localStorage.removeItem(SAVED_PASSWORD_KEY);
+          }
+        } catch { /* ignore */ }
         window.location.href = typeof window !== 'undefined' ? `${window.location.origin}/` : '/';
         return;
       }
@@ -87,6 +108,26 @@ export default function LoginPage() {
                 autoComplete="current-password"
                 dir="ltr"
               />
+            </div>
+            <div className="flex flex-wrap gap-4">
+              <label className="flex items-center gap-2 cursor-pointer text-sm text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={rememberUsername}
+                  onChange={(e) => setRememberUsername(e.target.checked)}
+                  className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                />
+                זכור שם משתמש
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer text-sm text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={rememberPassword}
+                  onChange={(e) => setRememberPassword(e.target.checked)}
+                  className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                />
+                זכור סיסמה
+              </label>
             </div>
             <button
               type="submit"

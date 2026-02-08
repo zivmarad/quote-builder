@@ -4,6 +4,8 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 
 /** הסשן (מי מחובר כרגע) נשמר ב-localStorage; רשימת המשתמשים נשמרת בשרת (API) וזמינה מכל מכשיר. */
 const CURRENT_USER_KEY = 'quoteBuilder_currentUser';
+export const SAVED_USERNAME_KEY = 'quoteBuilder_savedUsername';
+export const SAVED_PASSWORD_KEY = 'quoteBuilder_savedPassword';
 
 export interface StoredUser {
   id: string;
@@ -309,6 +311,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = useCallback(() => {
     setCurrentUser(null);
     setUser(null);
+    try {
+      if (typeof window !== 'undefined') window.localStorage.removeItem(SAVED_PASSWORD_KEY);
+    } catch { /* ignore */ }
   }, []);
 
   return (
