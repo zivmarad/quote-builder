@@ -10,21 +10,26 @@ export interface QuoteSettings {
   defaultQuoteTitle: string;
   nextQuoteNumber: number;
   validityDays: number;
+  /** 0 = עוסק פטור (ללא מע"מ), 0.18 = מחייב מע"מ 18% */
+  vatRate: number;
 }
 
 const defaultSettings: QuoteSettings = {
   defaultQuoteTitle: 'הצעת מחיר',
   nextQuoteNumber: 1,
   validityDays: 30,
+  vatRate: 0.18,
 };
 
 interface SettingsContextType {
   defaultQuoteTitle: string;
   nextQuoteNumber: number;
   validityDays: number;
+  vatRate: number;
   setDefaultQuoteTitle: (v: string) => void;
   setNextQuoteNumber: (v: number) => void;
   setValidityDays: (v: number) => void;
+  setVatRate: (v: number) => void;
   isLoaded: boolean;
 }
 
@@ -57,11 +62,13 @@ export function SettingsProvider({ children, userId }: { children: React.ReactNo
       if (!raw) return defaultSettings;
       try {
         const parsed = JSON.parse(raw) as Partial<QuoteSettings>;
+        const vat = parsed?.vatRate;
         return {
           ...defaultSettings,
           ...parsed,
           nextQuoteNumber: typeof parsed?.nextQuoteNumber === 'number' && parsed.nextQuoteNumber >= 1 ? parsed.nextQuoteNumber : defaultSettings.nextQuoteNumber,
           validityDays: typeof parsed?.validityDays === 'number' && parsed.validityDays >= 1 ? parsed.validityDays : defaultSettings.validityDays,
+          vatRate: typeof vat === 'number' && vat >= 0 && vat <= 1 ? vat : defaultSettings.vatRate,
         };
       } catch {
         return defaultSettings;
@@ -72,11 +79,13 @@ export function SettingsProvider({ children, userId }: { children: React.ReactNo
       if (userId) {
         const data = await fetchSync<{ settings: Partial<QuoteSettings> }>('/settings', userId);
         if (!cancelled && data && data.settings && typeof data.settings === 'object') {
+          const vat = data.settings?.vatRate;
           const merged: QuoteSettings = {
             ...defaultSettings,
             ...data.settings,
             nextQuoteNumber: typeof data.settings.nextQuoteNumber === 'number' && data.settings.nextQuoteNumber >= 1 ? data.settings.nextQuoteNumber : defaultSettings.nextQuoteNumber,
             validityDays: typeof data.settings.validityDays === 'number' && data.settings.validityDays >= 1 ? data.settings.validityDays : defaultSettings.validityDays,
+            vatRate: typeof vat === 'number' && vat >= 0 && vat <= 1 ? vat : defaultSettings.vatRate,
           };
           lastLoadedForUserIdRef.current = userId;
           setSettings(merged);
@@ -117,15 +126,22 @@ export function SettingsProvider({ children, userId }: { children: React.ReactNo
     setSettings((prev) => ({ ...prev, validityDays: v }));
   }, []);
 
+  const setVatRate = useCallback((v: number) => {
+    if (typeof v !== 'number' || v < 0 || v > 1) return;
+    setSettings((prev) => ({ ...prev, vatRate: v }));
+  }, []);
+
   return (
     <SettingsContext.Provider
       value={{
         defaultQuoteTitle: settings.defaultQuoteTitle,
         nextQuoteNumber: settings.nextQuoteNumber,
         validityDays: settings.validityDays,
+        vatRate: settings.vatRate,
         setDefaultQuoteTitle,
         setNextQuoteNumber,
         setValidityDays,
+        setVatRate,
         isLoaded,
       }}
     >

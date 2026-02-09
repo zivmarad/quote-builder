@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useMemo, useRef } from 'react';
 import { fetchSync, postSync } from '../../lib/sync';
+import { useSettings } from './SettingsContext';
 import {
   basketStorageSet,
   basketStorageRemove,
@@ -54,6 +55,7 @@ const getStorageKey = (userId: string | null | undefined) =>
 export const STORAGE_QUOTA_EVENT = 'quoteBasketStorageQuotaExceeded';
 
 export const QuoteBasketProvider: React.FC<{ children: React.ReactNode; userId?: string | null }> = ({ children, userId }) => {
+  const { vatRate } = useSettings();
   const [items, setItems] = useState<BasketItem[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const lastLoadedForUserIdRef = useRef<string | null | undefined>(undefined);
@@ -171,8 +173,7 @@ export const QuoteBasketProvider: React.FC<{ children: React.ReactNode; userId?:
     return sum + (item.basePrice || 0) + extrasTotal;
   }, 0);
 
-  // מע"מ מעודכן ל-18% (2026)
-  const VAT = totalBeforeVAT * 0.18;
+  const VAT = totalBeforeVAT * vatRate;
   const totalWithVAT = totalBeforeVAT + VAT;
   const itemCount = items.length;
 
@@ -192,7 +193,7 @@ export const QuoteBasketProvider: React.FC<{ children: React.ReactNode; userId?:
       itemCount,
       isLoaded,
     }),
-    [items, totalBeforeVAT, VAT, totalWithVAT, itemCount, isLoaded]
+    [items, totalBeforeVAT, VAT, totalWithVAT, itemCount, isLoaded, vatRate]
   );
 
   return (

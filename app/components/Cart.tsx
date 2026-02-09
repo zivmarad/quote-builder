@@ -31,7 +31,7 @@ export default function Cart() {
   } = useQuoteBasket();
   const { profile } = useProfile();
   const { addQuote } = useQuoteHistory();
-  const { defaultQuoteTitle, nextQuoteNumber, setNextQuoteNumber, validityDays } = useSettings();
+  const { defaultQuoteTitle, nextQuoteNumber, setNextQuoteNumber, validityDays, vatRate } = useSettings();
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editPrice, setEditPrice] = useState<string>('');
@@ -205,7 +205,8 @@ export default function Cart() {
         customerEmail,
         customerAddress,
         customerCompanyId,
-        validityDays ?? undefined
+        validityDays ?? undefined,
+        vatRate
       );
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -248,7 +249,7 @@ export default function Cart() {
       quoteStatus: 'sent',
     });
     try {
-      const blob = await generateQuotePDFAsBlob(items, totalBeforeVAT, VAT, totalWithVAT, profile, customerName || undefined, notes || undefined, defaultQuoteTitle, nextQuoteNumber, customerPhone, customerEmail, customerAddress, customerCompanyId, validityDays ?? undefined);
+      const blob = await generateQuotePDFAsBlob(items, totalBeforeVAT, VAT, totalWithVAT, profile, customerName || undefined, notes || undefined, defaultQuoteTitle, nextQuoteNumber, customerPhone, customerEmail, customerAddress, customerCompanyId, validityDays ?? undefined, vatRate);
       setNextQuoteNumber(nextQuoteNumber + 1);
       lastShareBlobRef.current = blob;
       setShareError(null);
@@ -817,7 +818,7 @@ export default function Cart() {
               <span className="text-slate-900 font-bold">{formatPrice(totalBeforeVAT)}</span>
             </div>
             <div className="flex justify-between text-sm font-medium">
-              <span className="text-slate-500">מע"מ (18%)</span>
+              <span className="text-slate-500">{vatRate === 0 ? 'עוסק פטור' : `מע"מ (${Math.round(vatRate * 100)}%)`}</span>
               <span className="text-slate-900 font-bold">{formatPrice(VAT)}</span>
             </div>
             <div className="flex justify-between items-center pt-4 border-t border-slate-200">
@@ -969,6 +970,7 @@ export default function Cart() {
                     quoteTitle: defaultQuoteTitle,
                     quoteNumber: nextQuoteNumber,
                     validityDays: validityDays ?? undefined,
+                    vatRate,
                   }),
                 }}
               />

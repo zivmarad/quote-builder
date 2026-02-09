@@ -35,8 +35,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="he" dir="rtl">
       <body className={`${heebo.className} antialiased bg-[#F8FAFC]`}>
         <AuthProvider>
-          <QuoteBasketWithAuth>
-            <UserDataProviders>
+          <UserDataProviders>
+            <QuoteBasketWithAuth>
               <AppHeader />
               <div className="min-h-screen flex flex-col">
                 {children}
@@ -44,8 +44,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </div>
               <FloatingCartButton />
               <StorageQuotaAlert />
-            </UserDataProviders>
-          </QuoteBasketWithAuth>
+            </QuoteBasketWithAuth>
+          </UserDataProviders>
         </AuthProvider>
       </body>
     </html>

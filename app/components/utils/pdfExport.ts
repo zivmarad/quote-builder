@@ -50,8 +50,10 @@ function buildQuoteContent(params: {
   quoteTitle?: string | null;
   quoteNumber?: number | null;
   validityDays?: number | null;
+  vatRate?: number;
 }) {
-  const { items, totalBeforeVAT, totalWithVAT, profile, customerName, customerPhone, customerEmail, customerAddress, customerCompanyId, notes, quoteTitle, quoteNumber, validityDays } = params;
+  const { items, totalBeforeVAT, totalWithVAT, profile, customerName, customerPhone, customerEmail, customerAddress, customerCompanyId, notes, quoteTitle, quoteNumber, validityDays, vatRate: rateParam } = params;
+  const vatRate = rateParam ?? 0.18;
   const today = new Date().toLocaleDateString('he-IL', {
     year: 'numeric',
     month: '2-digit',
@@ -106,7 +108,7 @@ function buildQuoteContent(params: {
   const businessLabel = hasProfile(profile) && profile!.businessName ? escapeHtml(profile!.businessName) : 'חתימת בעל העסק';
   const footerBlock = `<div class="pdf-footer"><div class="footer-sig-block footer-sig-client"><span class="footer-sig-label">${escapeHtml(customerNameVal)}</span><span class="footer-sig-line"></span></div><div class="footer-sig-block footer-sig-business"><span class="footer-sig-label">${businessLabel}</span><span class="footer-sig-line"></span></div></div>`;
 
-  const VAT = totalBeforeVAT * 0.18;
+  const VAT = totalBeforeVAT * vatRate;
   return {
     profileBlock,
     notesBlock,
@@ -135,11 +137,13 @@ export function getQuotePreviewHtml(params: {
   quoteTitle?: string | null;
   quoteNumber?: number | null;
   validityDays?: number | null;
+  vatRate?: number;
 }): string {
   const content = buildQuoteContent(params);
-  const { profileBlock, notesBlock, footerBlock, items: contentItems } = content;
+  const { profileBlock, notesBlock, footerBlock, items: contentItems, VAT } = content;
   const { totalBeforeVAT, totalWithVAT } = params;
-  const VAT = totalBeforeVAT * 0.18;
+  const rate = params.vatRate ?? 0.18;
+  const vatLabel = rate === 0 ? 'עוסק פטור' : `מע"מ (${Math.round(rate * 100)}%)`;
 
   const tableRows = contentItems
     .map((item) => {
@@ -195,7 +199,7 @@ export function getQuotePreviewHtml(params: {
           <div class="summary-below">
             <div class="summary">
               <div class="summary-row subtotal"><span>סה"כ</span><span class="amount">₪${totalBeforeVAT.toLocaleString('he-IL')}</span></div>
-              <div class="summary-row vat"><span>מע"מ (18%)</span><span class="amount">₪${VAT.toLocaleString('he-IL')}</span></div>
+              <div class="summary-row vat"><span>${vatLabel}</span><span class="amount">₪${VAT.toLocaleString('he-IL')}</span></div>
               <div class="summary-row total"><span>סה"כ לתשלום</span><span class="amount">₪${totalWithVAT.toLocaleString('he-IL')}</span></div>
             </div>
           </div>
@@ -491,8 +495,11 @@ export async function generateQuotePDFAsBlob(
   customerEmail?: string | null,
   customerAddress?: string | null,
   customerCompanyId?: string | null,
-  validityDays?: number | null
+  validityDays?: number | null,
+  vatRate?: number
 ): Promise<Blob> {
+  const rate = vatRate ?? 0.18;
+  const vatLabel = rate === 0 ? 'עוסק פטור' : `מע"מ (${Math.round(rate * 100)}%)`;
   const content = buildQuoteContent({
     items,
     totalBeforeVAT,
@@ -507,6 +514,7 @@ export async function generateQuotePDFAsBlob(
     quoteTitle,
     quoteNumber,
     validityDays,
+    vatRate: rate,
   });
   const { profileBlock, notesBlock, footerBlock, items: contentItems } = content;
 
@@ -529,7 +537,7 @@ export async function generateQuotePDFAsBlob(
     <div class="summary-below">
       <div class="summary">
         <div class="summary-row subtotal"><span>סה"כ</span><span class="amount">₪${totalBeforeVAT.toLocaleString('he-IL')}</span></div>
-        <div class="summary-row vat"><span>מע"מ (18%)</span><span class="amount">₪${VAT.toLocaleString('he-IL')}</span></div>
+        <div class="summary-row vat"><span>${vatLabel}</span><span class="amount">₪${VAT.toLocaleString('he-IL')}</span></div>
         <div class="summary-row total"><span>סה"כ לתשלום</span><span class="amount">₪${totalWithVAT.toLocaleString('he-IL')}</span></div>
       </div>
     </div>

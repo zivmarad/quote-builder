@@ -59,7 +59,7 @@ export default function ProfilePage() {
   const { profile, setProfile } = useProfile();
   const { quotes, deleteQuote, updateQuoteStatus } = useQuoteHistory();
   const { loadBasket } = useQuoteBasket();
-  const { defaultQuoteTitle, nextQuoteNumber, validityDays, setDefaultQuoteTitle, setNextQuoteNumber, setValidityDays } = useSettings();
+  const { defaultQuoteTitle, nextQuoteNumber, validityDays, vatRate, setDefaultQuoteTitle, setNextQuoteNumber, setValidityDays, setVatRate } = useSettings();
   const { getBasePrice, setBasePrice } = usePriceOverrides();
   const { user: authUser, changePassword } = useAuth();
   const [activeSection, setActiveSection] = useState<SectionId>('details');
@@ -640,6 +640,26 @@ export default function ProfilePage() {
                       />
                       <p className="text-slate-500 text-xs mt-1">יופיע ב-PDF: &quot;הצעת מחיר זו תקפה ל-X יום&quot;</p>
                     </div>
+                    <div>
+                      <label htmlFor="vatRate" className="block text-sm font-bold text-slate-700 mb-2">
+                        מע&quot;מ
+                      </label>
+                      <select
+                        id="vatRate"
+                        value={vatRate}
+                        onChange={(e) => {
+                          const v = parseFloat(e.target.value);
+                          if (!isNaN(v) && v >= 0) setVatRate(v);
+                        }}
+                        onBlur={showSaveToast}
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value={0}>עוסק פטור – ללא מע&quot;מ</option>
+                        <option value={0.17}>מחייב מע&quot;מ 17%</option>
+                        <option value={0.18}>מחייב מע&quot;מ 18%</option>
+                      </select>
+                      <p className="text-slate-500 text-xs mt-1">בחר אם אתה עוסק פטור או מחייב מע&quot;מ</p>
+                    </div>
                     <p className="text-slate-500 text-sm pt-2">ההגדרות נשמרות אוטומטית ומשמשות בעת יצירת הצעות חדשות.</p>
                   </form>
 
@@ -836,6 +856,7 @@ export default function ProfilePage() {
           quoteTitle: defaultQuoteTitle,
           quoteNumber: q.quoteNumber,
           validityDays,
+          vatRate,
         });
         return (
           <div
