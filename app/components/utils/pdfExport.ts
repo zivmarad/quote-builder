@@ -339,8 +339,8 @@ export const generateQuotePDF = (
     const qtyDisplay = qty > 1 && item.unit ? `${qty} ${item.unit}` : String(qty);
     return `
       <tr>
-        <td><div class="item-name">${item.name}</div>${extrasDesc ? `<div class="item-extras">${extrasDesc}</div>` : ''}</td>
-        <td style="text-align:center">${qtyDisplay}</td>
+        <td><div class="item-name">${escapeHtml(item.name)}</div>${extrasDesc ? `<div class="item-extras">${extrasDesc}</div>` : ''}</td>
+        <td style="text-align:center">${escapeHtml(qtyDisplay)}</td>
         <td class="price-cell">₪${pricePerUnit.toLocaleString('he-IL')}</td>
         <td class="price-cell">₪${currentPrice.toLocaleString('he-IL')}</td>
       </tr>
@@ -380,7 +380,8 @@ export const generateQuotePDF = (
     .table-summary-wrap .summary-below { display: flex; justify-content: flex-end; direction: rtl; }
     .items-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; table-layout: fixed; font-size: 11px; }
     .items-table thead th { background: #1e3a5f; color: #fff; padding: 8px 10px; text-align: right; font-weight: 600; font-size: 10px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .items-table thead th:nth-child(2), .items-table thead th:nth-child(3), .items-table thead th:nth-child(4) { text-align: center; }
+    .items-table thead th:nth-child(2) { text-align: center; }
+    .items-table thead th:nth-child(3), .items-table thead th:nth-child(4) { text-align: center; }
     .items-table thead th:nth-child(1) { width: 50%; }
     .items-table thead th:nth-child(2) { width: 12%; }
     .items-table thead th:nth-child(3), .items-table thead th:nth-child(4) { width: 19%; }
