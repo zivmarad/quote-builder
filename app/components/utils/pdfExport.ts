@@ -153,10 +153,9 @@ export function getQuotePreviewHtml(params: {
       const qty = item.quantity ?? 1;
       const pricePerUnit = currentPrice / qty;
       const hasExtras = item.extras && item.extras.length > 0;
-      const extrasDesc =
-        item.overridePrice === undefined && hasExtras
-          ? item.extras!.map((e) => `• ${escapeHtml(formatExtraForQuote(e.text))}`).join('<br>')
-          : '';
+      const extrasDesc = hasExtras
+        ? item.extras!.map((e) => `• ${escapeHtml(formatExtraForQuote(e.text))}`).join('<br>')
+        : '';
       const qtyDisplay = qty > 1 && item.unit ? `${qty} ${item.unit}` : String(qty);
       return `
         <tr>
@@ -333,7 +332,7 @@ export const generateQuotePDF = (
     const qty = item.quantity ?? 1;
     const pricePerUnit = currentPrice / qty;
     const hasExtras = item.extras && item.extras.length > 0;
-    const extrasDesc = !(item.overridePrice !== undefined) && hasExtras
+    const extrasDesc = hasExtras
       ? item.extras!.map((e) => `• ${escapeHtml(formatExtraForQuote(e.text))}`).join('<br>')
       : '';
     const qtyDisplay = qty > 1 && item.unit ? `${qty} ${item.unit}` : String(qty);
@@ -466,10 +465,9 @@ function rowToHtml(item: BasketItem): string {
   const qty = item.quantity ?? 1;
   const pricePerUnit = currentPrice / qty;
   const hasExtras = item.extras && item.extras.length > 0;
-  const extrasDesc =
-    item.overridePrice === undefined && hasExtras
-      ? item.extras!.map((e) => `• ${escapeHtml(formatExtraForQuote(e.text))}`).join('<br>')
-      : '';
+  const extrasDesc = hasExtras
+    ? item.extras!.map((e) => `• ${escapeHtml(formatExtraForQuote(e.text))}`).join('<br>')
+    : '';
   const qtyDisplay = qty > 1 && item.unit ? `${qty} ${item.unit}` : String(qty);
   return `
     <tr>
