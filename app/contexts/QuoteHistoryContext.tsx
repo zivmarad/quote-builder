@@ -83,9 +83,26 @@ export function QuoteHistoryProvider({ children, userId }: { children: React.Rea
         const data = await fetchSync<{ quotes: SavedQuote[] }>('/history', userId);
         if (!cancelled && data && typeof data.quotes !== 'undefined') {
           const arr = Array.isArray(data.quotes) ? data.quotes : [];
+          let finalQuotes = arr;
+          if (arr.length === 0) {
+            const guestKey = getStorageKey(null);
+            const guestRaw = localStorage.getItem(guestKey);
+            if (guestRaw) {
+              try {
+                const guestArr = JSON.parse(guestRaw) as unknown;
+                if (Array.isArray(guestArr) && guestArr.length > 0) {
+                  finalQuotes = guestArr as SavedQuote[];
+                  localStorage.removeItem(guestKey);
+                  void postSync('/history', userId, { quotes: finalQuotes });
+                }
+              } catch {
+                /* ignore */
+              }
+            }
+          }
           lastLoadedForUserIdRef.current = userId;
-          setQuotes(arr);
-          localStorage.setItem(key, JSON.stringify(arr));
+          setQuotes(finalQuotes);
+          localStorage.setItem(key, JSON.stringify(finalQuotes));
           setIsLoaded(true);
           return;
         }

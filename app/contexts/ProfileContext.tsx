@@ -71,10 +71,32 @@ export function ProfileProvider({ children, userId }: { children: React.ReactNod
       if (userId) {
         const data = await fetchSync<{ profile: UserProfile }>('/profile', userId);
         if (!cancelled && data && data.profile && typeof data.profile === 'object') {
-          const merged = { ...defaultProfile, ...data.profile };
+          let fromLocal = loadFromStorage();
+          const guestKey = getStorageKey(null);
+          if (guestKey !== key) {
+            const guestRaw = localStorage.getItem(guestKey);
+            if (guestRaw) {
+              try {
+                const guest = JSON.parse(guestRaw) as Partial<UserProfile>;
+                fromLocal = { ...defaultProfile, ...fromLocal, ...guest };
+                localStorage.removeItem(guestKey);
+              } catch {
+                /* ignore */
+              }
+            }
+          }
+          const fromApi = data.profile as Partial<UserProfile>;
+          const merged: UserProfile = { ...defaultProfile, ...fromLocal };
+          (Object.keys(fromApi) as (keyof UserProfile)[]).forEach((k) => {
+            const v = fromApi[k];
+            if (v !== undefined && v !== null && v !== '') merged[k] = v as never;
+          });
           lastLoadedForUserIdRef.current = userId;
           setProfileState(merged);
           localStorage.setItem(key, JSON.stringify(merged));
+          if (JSON.stringify(merged) !== JSON.stringify(fromApi)) {
+            void postSync('/profile', userId, { profile: merged });
+          }
           setIsLoaded(true);
           return;
         }

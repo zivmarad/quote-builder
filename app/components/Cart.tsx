@@ -11,6 +11,10 @@ import { saveDraft } from '../../lib/drafts-storage';
 import { Trash2, Edit2, Check, X, ShoppingBag, Plus, FileText, Share2, Eye, Loader2, ChevronDown, ChevronUp, Save } from 'lucide-react';
 
 const PENDING_DRAFT_KEY = 'quoteBuilder_pendingDraft';
+
+const getLastCustomerKey = (userId: string | null | undefined) =>
+  `quoteBuilder_lastCustomer_${userId ?? 'guest'}`;
+
 import { generateQuotePDFAsBlob, getQuotePreviewHtml } from './utils/pdfExport';
 
 export default function Cart() {
@@ -81,13 +85,30 @@ export default function Cart() {
     setEditPrice(currentPrice.toString());
   }, [editingId, items]);
 
-  /** טעינת פרטי לקוח מטיוטה שנטענה מאיזור אישי */
+  /** טעינת פרטי לקוח: מטיוטה שנטענה מאיזור אישי, או אחרת – פרטי הלקוח האחרונים שנשמרו */
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const raw = sessionStorage.getItem(PENDING_DRAFT_KEY);
-    if (!raw) return;
+    if (raw) {
+      try {
+        const data = JSON.parse(raw) as Record<string, string>;
+        if (data.customerName !== undefined) setCustomerName(data.customerName || '');
+        if (data.customerPhone !== undefined) setCustomerPhone(data.customerPhone || '');
+        if (data.customerEmail !== undefined) setCustomerEmail(data.customerEmail || '');
+        if (data.customerAddress !== undefined) setCustomerAddress(data.customerAddress || '');
+        if (data.customerCompanyId !== undefined) setCustomerCompanyId(data.customerCompanyId || '');
+        if (data.notes !== undefined) setNotes(data.notes || '');
+      } catch {
+        /* ignore */
+      }
+      sessionStorage.removeItem(PENDING_DRAFT_KEY);
+      return;
+    }
+    const key = getLastCustomerKey(user?.id);
+    const saved = localStorage.getItem(key);
+    if (!saved) return;
     try {
-      const data = JSON.parse(raw) as Record<string, string>;
+      const data = JSON.parse(saved) as Record<string, string>;
       if (data.customerName !== undefined) setCustomerName(data.customerName || '');
       if (data.customerPhone !== undefined) setCustomerPhone(data.customerPhone || '');
       if (data.customerEmail !== undefined) setCustomerEmail(data.customerEmail || '');
@@ -97,8 +118,29 @@ export default function Cart() {
     } catch {
       /* ignore */
     }
-    sessionStorage.removeItem(PENDING_DRAFT_KEY);
-  }, []);
+  }, [user?.id]);
+
+  /** שמירת פרטי לקוח אוטומטית – כדי שיישמרו בין ביקורים (אלא אם המשתמש משנה בעצמו) */
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const key = getLastCustomerKey(user?.id);
+    const payload = {
+      customerName,
+      customerPhone,
+      customerEmail,
+      customerAddress,
+      customerCompanyId,
+      notes,
+    };
+    const t = setTimeout(() => {
+      try {
+        localStorage.setItem(key, JSON.stringify(payload));
+      } catch {
+        /* ignore */
+      }
+    }, 400);
+    return () => clearTimeout(t);
+  }, [customerName, customerPhone, customerEmail, customerAddress, customerCompanyId, notes, user?.id]);
 
   const handleSaveDraft = async () => {
     if (items.length === 0) return;
@@ -115,12 +157,6 @@ export default function Cart() {
         notes,
       });
       clearBasket();
-      setCustomerName('');
-      setCustomerPhone('');
-      setCustomerEmail('');
-      setCustomerAddress('');
-      setCustomerCompanyId('');
-      setNotes('');
       setToast('הטיוטה נשמרה והסל נוקה');
       setDraftName('');
       setShowSaveDraftModal(false);
@@ -216,12 +252,6 @@ export default function Cart() {
       URL.revokeObjectURL(url);
       setNextQuoteNumber(nextQuoteNumber + 1);
       clearBasket();
-      setCustomerName('');
-      setCustomerPhone('');
-      setCustomerEmail('');
-      setCustomerAddress('');
-      setCustomerCompanyId('');
-      setNotes('');
       setToast('ה-PDF הורד וההצעה נשמרה');
       setTimeout(() => router.push('/'), 2500);
     } finally {
@@ -312,12 +342,6 @@ export default function Cart() {
     setShareError(null);
     setShowWhatsAppModal(false);
     clearBasket();
-    setCustomerName('');
-    setCustomerPhone('');
-    setCustomerEmail('');
-    setCustomerAddress('');
-    setCustomerCompanyId('');
-    setNotes('');
     setToast('ה-PDF הורד וההצעה נשמרה');
     setTimeout(() => router.push('/'), 2500);
   };
@@ -337,12 +361,6 @@ export default function Cart() {
     setShareError(null);
     setShowWhatsAppModal(false);
     clearBasket();
-    setCustomerName('');
-    setCustomerPhone('');
-    setCustomerEmail('');
-    setCustomerAddress('');
-    setCustomerCompanyId('');
-    setNotes('');
     setToast('ה-PDF הורד – אפשר לשלוח בוואטסאפ Web');
     setTimeout(() => router.push('/'), 2500);
   };

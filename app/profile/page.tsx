@@ -4,7 +4,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useProfile } from '../contexts/ProfileContext';
-import { useQuoteHistory, type QuoteWorkflowStatus, type ExportMethod } from '../contexts/QuoteHistoryContext';
+import { useQuoteHistory, type QuoteWorkflowStatus, type ExportMethod, type SavedQuote } from '../contexts/QuoteHistoryContext';
 import { useQuoteBasket } from '../contexts/QuoteBasketContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { generateQuotePDFAsBlob, getQuotePreviewHtml } from '../components/utils/pdfExport';
@@ -13,7 +13,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { usePriceOverrides } from '../contexts/PriceOverridesContext';
 import { categories } from '../service/services';
 import { getDrafts, deleteDraft, type QuoteDraft } from '../../lib/drafts-storage';
-import { ArrowRight, UserCircle, History, Settings, FileText, ChevronLeft, Download, Trash2, Copy, DollarSign, KeyRound, Eye, ChevronDown, Check, Loader2, Smartphone, Plus, FileEdit } from 'lucide-react';
+import { ArrowRight, UserCircle, Settings, FileText, ChevronLeft, Download, Trash2, Copy, DollarSign, KeyRound, Eye, ChevronDown, Check, Loader2, Smartphone, Plus, FileEdit } from 'lucide-react';
 
 const PENDING_DRAFT_KEY = 'quoteBuilder_pendingDraft';
 
@@ -22,12 +22,11 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
-type SectionId = 'details' | 'history' | 'drafts' | 'settings';
+type SectionId = 'details' | 'quotes-and-drafts' | 'settings';
 
 const sections: { id: SectionId; label: string; labelShort?: string; icon: React.ReactNode }[] = [
   { id: 'details', label: 'פרטים', icon: <UserCircle size={22} /> },
-  { id: 'history', label: 'היסטוריית הצעות', labelShort: 'היסטוריה', icon: <History size={22} /> },
-  { id: 'drafts', label: 'טיוטות', icon: <FileEdit size={22} /> },
+  { id: 'quotes-and-drafts', label: 'הצעות וטיוטות', labelShort: 'הצעות', icon: <FileText size={22} /> },
   { id: 'settings', label: 'הגדרות', icon: <Settings size={22} /> },
 ];
 
@@ -83,7 +82,7 @@ export default function ProfilePage() {
   useEffect(() => () => { if (saveToastTimeoutRef.current) clearTimeout(saveToastTimeoutRef.current); }, []);
 
   useEffect(() => {
-    if (activeSection === 'drafts' && typeof window !== 'undefined') {
+    if (activeSection === 'quotes-and-drafts' && typeof window !== 'undefined') {
       getDrafts(authUser?.id ?? null).then(setDrafts);
     }
   }, [activeSection, authUser?.id]);
@@ -395,192 +394,192 @@ export default function ProfilePage() {
                 </div>
               )}
 
-              {activeSection === 'history' && (
+              {activeSection === 'quotes-and-drafts' && (
                 <div className="p-6 md:p-8">
-                  <h1 className="text-xl font-black text-slate-900 mb-1">היסטוריית הצעות</h1>
-                  <p className="text-slate-500 text-sm mb-8">ההצעות ששמרת – הורדה מחדש או מחיקה</p>
-                  {quotes.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-16 text-center bg-slate-50/50 rounded-2xl border border-slate-100">
-                      <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-4 text-slate-400">
-                        <FileText size={32} />
-                      </div>
-                      <p className="text-slate-500 text-sm max-w-xs">
-                        עדיין לא נשמרו הצעות. כל הצעה שתוריד כ-PDF או תשלח בוואטסאפ תישמר כאן אוטומטית.
-                      </p>
-                    </div>
-                  ) : (
-                    <ul className="space-y-3">
-                      {quotes.map((q) => {
-                        const dateStr = new Date(q.createdAt).toLocaleDateString('he-IL', {
-                          day: '2-digit',
-                          month: '2-digit',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        });
-                        return (
-                          <li
-                            key={q.id}
-                            className="flex flex-col gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-colors"
-                          >
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className="font-bold text-slate-900">
-                                  {q.customerName?.trim() || '— ללא שם לקוח'}
-                                </span>
-                                {q.quoteNumber != null && (
-                                  <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
-                                    #{q.quoteNumber}
-                                  </span>
-                                )}
-                              </div>
-                              <div className="text-sm text-slate-500">{dateStr}</div>
-                              <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                <span className="text-sm font-semibold text-blue-600">
-                                  {formatPrice(q.totalWithVAT)} סה"כ
-                                </span>
-                                <div className="relative">
+                  <h1 className="text-xl font-black text-slate-900 mb-1">הצעות וטיוטות</h1>
+                  <p className="text-slate-500 text-sm mb-8">כל ההצעות ששמרת או שלחת, יחד עם הטיוטות – במקום אחד מסודר</p>
+                  {(() => {
+                    type QuoteItem = { type: 'quote'; id: string; date: string; data: SavedQuote };
+                    type DraftItem = { type: 'draft'; id: string; date: string; data: QuoteDraft };
+                    const quoteItems: QuoteItem[] = quotes.map((q) => ({ type: 'quote', id: q.id, date: q.createdAt, data: q }));
+                    const draftItems: DraftItem[] = drafts.map((d) => ({ type: 'draft', id: d.id, date: d.savedAt, data: d }));
+                    const combined: (QuoteItem | DraftItem)[] = [...quoteItems, ...draftItems].sort(
+                      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+                    );
+                    if (combined.length === 0) {
+                      return (
+                        <div className="flex flex-col items-center justify-center py-16 text-center bg-slate-50/50 rounded-2xl border border-slate-100">
+                          <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-4 text-slate-400">
+                            <FileText size={32} />
+                          </div>
+                          <p className="text-slate-500 text-sm max-w-xs">
+                            עדיין אין הצעות או טיוטות. כל הצעה שתוריד כ-PDF או תשלח תישמר כאן; טיוטות נשמרות מתוך הסל.
+                          </p>
+                        </div>
+                      );
+                    }
+                    return (
+                      <ul className="space-y-4">
+                        {combined.map((entry) => {
+                          if (entry.type === 'quote') {
+                            const q = entry.data;
+                            const dateStr = new Date(q.createdAt).toLocaleDateString('he-IL', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            });
+                            return (
+                              <li
+                                key={`q-${q.id}`}
+                                className="flex flex-col gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-colors"
+                              >
+                                <div className="flex items-center gap-2 text-slate-500 text-xs font-medium">
+                                  <FileText size={14} /> הצעת מחיר
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="font-bold text-slate-900">
+                                      {q.customerName?.trim() || '— ללא שם לקוח'}
+                                    </span>
+                                    {q.quoteNumber != null && (
+                                      <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                                        #{q.quoteNumber}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="text-sm text-slate-500">{dateStr}</div>
+                                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                    <span className="text-sm font-semibold text-blue-600">
+                                      {formatPrice(q.totalWithVAT)} סה&quot;כ
+                                    </span>
+                                    <div className="relative">
+                                      <button
+                                        type="button"
+                                        onClick={() => setStatusDropdownId(statusDropdownId === q.id ? null : q.id)}
+                                        className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full transition-colors ${quoteStatusColors[q.quoteStatus ?? 'draft']} hover:opacity-90`}
+                                      >
+                                        {quoteStatusLabels[q.quoteStatus ?? 'draft']}
+                                        <ChevronDown size={14} className="opacity-70" />
+                                      </button>
+                                      {statusDropdownId === q.id && (
+                                        <>
+                                          <div className="fixed inset-0 z-40" onClick={() => setStatusDropdownId(null)} aria-hidden />
+                                          <div className="absolute top-full right-0 mt-1 z-50 py-1 bg-white rounded-lg shadow-lg border border-slate-200 min-w-[100px]">
+                                            {(['draft', 'sent', 'approved', 'paid'] as const).map((st) => (
+                                              <button
+                                                key={st}
+                                                type="button"
+                                                onClick={() => {
+                                                  updateQuoteStatus(q.id, st);
+                                                  setStatusDropdownId(null);
+                                                }}
+                                                className={`block w-full text-right px-3 py-2 text-sm hover:bg-slate-50 ${q.quoteStatus === st ? 'font-bold text-blue-600' : 'text-slate-700'}`}
+                                              >
+                                                {quoteStatusLabels[st]}
+                                              </button>
+                                            ))}
+                                          </div>
+                                        </>
+                                      )}
+                                    </div>
+                                    {q.status && (
+                                      <span className="text-xs text-slate-500">
+                                        {exportLabels[q.status as ExportMethod]}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-200/80">
                                   <button
                                     type="button"
-                                    onClick={() => setStatusDropdownId(statusDropdownId === q.id ? null : q.id)}
-                                    className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full transition-colors ${quoteStatusColors[q.quoteStatus ?? 'draft']} hover:opacity-90`}
+                                    onClick={() => setPreviewQuoteId(q.id)}
+                                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-sm border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors shrink-0"
+                                    title="תצוגה מקדימה"
                                   >
-                                    {quoteStatusLabels[q.quoteStatus ?? 'draft']}
-                                    <ChevronDown size={14} className="opacity-70" />
+                                    <Eye size={16} />
+                                    תצוגה מקדימה
                                   </button>
-                                  {statusDropdownId === q.id && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDuplicateQuote(q.id)}
+                                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-sm border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors shrink-0"
+                                    title="שכפל לסל"
+                                  >
+                                    <Copy size={16} />
+                                    שכפל
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDownloadQuote(q.id)}
+                                    disabled={downloadingId === q.id}
+                                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-bold text-sm bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 transition-colors shrink-0"
+                                  >
+                                    <Download size={16} />
+                                    {downloadingId === q.id ? 'מוריד...' : 'הורד PDF'}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteQuote(q.id)}
+                                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors shrink-0"
+                                    title="מחק מההיסטוריה"
+                                  >
+                                    <Trash2 size={18} />
+                                  </button>
+                                </div>
+                              </li>
+                            );
+                          }
+                          const d = entry.data;
+                          return (
+                            <li
+                              key={`d-${d.id}`}
+                              className="flex flex-col gap-3 p-4 rounded-xl border border-amber-200 bg-amber-50/40 hover:bg-amber-50/60 transition-colors"
+                            >
+                              <div className="flex items-center gap-2 text-amber-700 text-xs font-medium">
+                                <FileEdit size={14} /> טיוטה
+                              </div>
+                              <div className="min-w-0">
+                                <div className="font-bold text-slate-900 text-lg">{d.name}</div>
+                                <div className="text-sm text-slate-600 mt-1">{getDraftSummary(d)}</div>
+                                <div className="flex items-center gap-2 mt-2 flex-wrap text-xs text-slate-500">
+                                  <span>{d.items.length} פריטים</span>
+                                  <span>·</span>
+                                  <span>{formatPrice(getDraftTotal(d))} סה&quot;כ</span>
+                                  <span>·</span>
+                                  <span>{formatDraftDate(d.savedAt)}</span>
+                                  {d.customerName?.trim() && (
                                     <>
-                                      <div className="fixed inset-0 z-40" onClick={() => setStatusDropdownId(null)} aria-hidden />
-                                      <div className="absolute top-full right-0 mt-1 z-50 py-1 bg-white rounded-lg shadow-lg border border-slate-200 min-w-[100px]">
-                                        {(['draft', 'sent', 'approved', 'paid'] as const).map((st) => (
-                                          <button
-                                            key={st}
-                                            type="button"
-                                            onClick={() => {
-                                              updateQuoteStatus(q.id, st);
-                                              setStatusDropdownId(null);
-                                            }}
-                                            className={`block w-full text-right px-3 py-2 text-sm hover:bg-slate-50 ${q.quoteStatus === st ? 'font-bold text-blue-600' : 'text-slate-700'}`}
-                                          >
-                                            {quoteStatusLabels[st]}
-                                          </button>
-                                        ))}
-                                      </div>
+                                      <span>·</span>
+                                      <span>לקוח: {d.customerName}</span>
                                     </>
                                   )}
                                 </div>
-                                {q.status && (
-                                  <span className="text-xs text-slate-500">
-                                    {exportLabels[q.status as ExportMethod]}
-                                  </span>
-                                )}
                               </div>
-                            </div>
-                            <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-200/80">
-                              <button
-                                type="button"
-                                onClick={() => setPreviewQuoteId(q.id)}
-                                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-sm border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors shrink-0"
-                                title="תצוגה מקדימה"
-                              >
-                                <Eye size={16} />
-                                תצוגה מקדימה
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleDuplicateQuote(q.id)}
-                                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-sm border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors shrink-0"
-                                title="שכפל לסל"
-                              >
-                                <Copy size={16} />
-                                שכפל
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleDownloadQuote(q.id)}
-                                disabled={downloadingId === q.id}
-                                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-bold text-sm bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 transition-colors shrink-0"
-                              >
-                                <Download size={16} />
-                                {downloadingId === q.id ? 'מוריד...' : 'הורד PDF'}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteQuote(q.id)}
-                                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors shrink-0"
-                                title="מחק מההיסטוריה"
-                              >
-                                <Trash2 size={18} />
-                              </button>
-                            </div>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )}
-                </div>
-              )}
-
-              {activeSection === 'drafts' && (
-                <div className="p-6 md:p-8">
-                  <h1 className="text-xl font-black text-slate-900 mb-1">טיוטות</h1>
-                  <p className="text-slate-500 text-sm mb-8">הטיוטות ששמרת מהסל – טען לסל להמשך עריכה או מחק</p>
-                  {drafts.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-16 text-center bg-slate-50/50 rounded-2xl border border-slate-100">
-                      <div className="w-16 h-16 rounded-2xl bg-amber-50 flex items-center justify-center mb-4 text-amber-500">
-                        <FileEdit size={32} />
-                      </div>
-                      <p className="text-slate-500 text-sm max-w-xs">
-                        אין טיוטות. שמור טיוטה מתוך הסל (כפתור "שמור טיוטה") כדי לחזור אליה מאוחר יותר.
-                      </p>
-                    </div>
-                  ) : (
-                    <ul className="space-y-3">
-                      {drafts.map((d) => (
-                        <li
-                          key={d.id}
-                          className="flex flex-col gap-3 p-4 rounded-xl border border-slate-200 bg-amber-50/30 hover:bg-amber-50/50 transition-colors"
-                        >
-                          <div className="min-w-0">
-                            <div className="font-bold text-slate-900 text-lg">{d.name}</div>
-                            <div className="text-sm text-slate-600 mt-1">
-                              {getDraftSummary(d)}
-                            </div>
-                            <div className="flex items-center gap-2 mt-2 flex-wrap text-xs text-slate-500">
-                              <span>{d.items.length} פריטים</span>
-                              <span>·</span>
-                              <span>{formatPrice(getDraftTotal(d))} סה"כ</span>
-                              <span>·</span>
-                              <span>{formatDraftDate(d.savedAt)}</span>
-                              {d.customerName?.trim() && (
-                                <>
-                                  <span>·</span>
-                                  <span>לקוח: {d.customerName}</span>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-200/80">
-                            <button
-                              type="button"
-                              onClick={() => handleLoadDraft(d)}
-                              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm bg-blue-600 text-white hover:bg-blue-700 transition-colors shrink-0"
-                            >
-                              טען לסל
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteDraft(d.id)}
-                              className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors shrink-0"
-                              title="מחק טיוטה"
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                              <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-amber-200/80">
+                                <button
+                                  type="button"
+                                  onClick={() => handleLoadDraft(d)}
+                                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm bg-blue-600 text-white hover:bg-blue-700 transition-colors shrink-0"
+                                >
+                                  טען לסל
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteDraft(d.id)}
+                                  className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors shrink-0"
+                                  title="מחק טיוטה"
+                                >
+                                  <Trash2 size={18} />
+                                </button>
+                              </div>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    );
+                  })()}
                 </div>
               )}
 
