@@ -1,10 +1,11 @@
 import Link from 'next/link';
-import { Palette, Umbrella, Droplet, Layers, Zap, Snowflake, Hammer, Link2, TreePine, Wrench, Building2, DoorOpen, Package, ChevronRight } from 'lucide-react';
+import { Palette, Umbrella, Droplet, Layers, Zap, Snowflake, Hammer, Link2, TreePine, Wrench, Building2, DoorOpen, Package, ChevronRight, Box, Radio } from 'lucide-react';
 import { categories } from './service/services';
 
 const categoryIcons: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
   paint: Palette,
   sealing: Umbrella,
+  concrete: Box,
   plumbing: Droplet,
   tiling: Layers,
   electricity: Zap,
@@ -15,12 +16,14 @@ const categoryIcons: Record<string, React.ComponentType<{ size?: number; classNa
   handyman: Wrench,
   drywall: Building2,
   doors: DoorOpen,
+  communications: Radio,
   misc: Package,
 };
 
 const categoryColors: Record<string, string> = {
   paint: 'text-amber-600',
   sealing: 'text-purple-600',
+  concrete: 'text-slate-700',
   plumbing: 'text-blue-500',
   tiling: 'text-amber-700',
   electricity: 'text-amber-500',
@@ -31,6 +34,7 @@ const categoryColors: Record<string, string> = {
   handyman: 'text-orange-600',
   drywall: 'text-slate-500',
   doors: 'text-amber-900',
+  communications: 'text-violet-600',
   misc: 'text-slate-500',
 };
 

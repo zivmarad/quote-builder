@@ -669,6 +669,11 @@ export default function ProfilePage() {
                     <p className="text-slate-500 text-sm mb-4">
                       אפשר להוסיף את האתר כמעט כאפליקציה – גישה מהירה מהמסך הראשי של הטלפון, בלי סרגל דפדפן.
                     </p>
+                    <div className="mb-4 p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-600 space-y-1">
+                      <p className="font-bold text-slate-700">תאימות:</p>
+                      <p>• <strong>אנדרואיד (Chrome):</strong> כפתור ההתקנה כאן עובד אחרי גלילה קצרה באתר. אם נכנסת מוואטסאפ – פתח את האתר ב-Chrome ואז נסה.</p>
+                      <p>• <strong>איפון (Safari):</strong> אין כפתור אוטומטי – תמיד דרך שתף → &quot;הוסף למסך הבית&quot;.</p>
+                    </div>
                     {installSuccess ? (
                       <div className="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-green-50 border border-green-200 text-green-700 font-medium">
                         <Check size={20} /> נוסף למסך הבית
@@ -685,12 +690,15 @@ export default function ProfilePage() {
                       </button>
                     ) : (
                       <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 space-y-3 max-w-md">
-                        <p className="font-bold text-slate-700 text-sm">איך מוסיפים?</p>
+                        <p className="font-bold text-slate-700 text-sm">איך מוסיפים למסך הבית?</p>
+                        <p className="text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-sm">
+                          חשוב: פתח את האתר <strong>בדפדפן Chrome או Safari</strong> (לא מתוך וואטסאפ או לינק ישיר). בדפדפן מובנה ההתקנה לא עובדת.
+                        </p>
                         <ul className="text-sm text-slate-600 space-y-1.5">
-                          <li><strong>איפון (Safari):</strong> שתף (הריבוע עם החץ) → &quot;הוסף למסך הבית&quot;</li>
-                          <li><strong>אנדרואיד (Chrome):</strong> תפריט (שלוש נקודות) → &quot;הוסף למסך הבית&quot; או &quot;התקן אפליקציה&quot;</li>
+                          <li><strong>אנדרואיד (Chrome):</strong> תפריט (⋮ שלוש נקודות) → &quot;הוסף למסך הבית&quot; או &quot;התקן אפליקציה&quot;</li>
+                          <li><strong>איפון (Safari):</strong> כפתור שתף (הריבוע עם החץ) → &quot;הוסף למסך הבית&quot;</li>
                         </ul>
-                        <p className="text-slate-500 text-xs">פתח את האתר בדפדפן (Chrome/Safari), לא מתוך וואטסאפ.</p>
+                        <p className="text-slate-500 text-xs">אם הופיעה הודעה &quot;לא ניתן להתקין&quot; – נסה לפתוח את הכתובת ישירות ב-Chrome מהשורת הכתובת.</p>
                       </div>
                     )}
                   </div>

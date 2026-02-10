@@ -1,16 +1,26 @@
 'use client';
 
+import { useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { categories } from '../../service/services';
 import RequireAuth from '../../components/RequireAuth';
 import { usePriceOverrides } from '../../contexts/PriceOverridesContext';
+import { Search } from 'lucide-react';
 
 export default function CategoryPage() {
   const { slug } = useParams();
   const router = useRouter();
   const { getBasePrice } = usePriceOverrides();
+  const [search, setSearch] = useState('');
   const categoryId = Array.isArray(slug) ? slug[0] : slug;
   const category = categories.find((c) => c.id === categoryId);
+
+  const filteredServices = useMemo(() => {
+    if (!category) return [];
+    const q = search.trim().toLowerCase();
+    if (!q) return category.services;
+    return category.services.filter((s) => s.name.toLowerCase().includes(q));
+  }, [category, search]);
 
   if (!category) {
     return (
@@ -44,10 +54,27 @@ export default function CategoryPage() {
           <p className="text-slate-500 mt-2 text-sm sm:text-base">
             בחר סוג עבודה כדי להמשיך לשאלות ולהערכת מחיר מדויקת
           </p>
+          <div className="mt-4">
+            <label htmlFor="service-search" className="sr-only">
+              חיפוש שירותים בקטגוריה
+            </label>
+            <div className="relative max-w-md">
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" aria-hidden />
+              <input
+                id="service-search"
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="חפש שירות..."
+                className="w-full pr-10 pl-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                dir="rtl"
+              />
+            </div>
+          </div>
         </header>
 
         <section className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-          {category.services.map((service) => (
+          {filteredServices.map((service) => (
             <button
               key={service.id}
               onClick={() => router.push(`/category/${category.id}/${service.id}`)}
@@ -63,9 +90,9 @@ export default function CategoryPage() {
             </button>
           ))}
 
-          {category.services.length === 0 && (
-            <p className="text-slate-400 text-sm">
-              בקרוב יתווספו שירותים בקטגוריה זו. ניתן לעדכן את קטלוג השירותים בקובץ הנתונים.
+          {filteredServices.length === 0 && (
+            <p className="text-slate-400 text-sm col-span-full">
+              {search.trim() ? 'לא נמצאו שירותים התואמים לחיפוש.' : 'בקרוב יתווספו שירותים בקטגוריה זו. ניתן לעדכן את קטלוג השירותים בקובץ הנתונים.'}
             </p>
           )}
         </section>

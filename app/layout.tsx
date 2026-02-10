@@ -14,6 +14,8 @@ import FloatingCartButton from './components/FloatingCartButton';
 import StorageQuotaAlert from './components/StorageQuotaAlert';
 import AppHeader from './components/AppHeader';
 import Footer from './components/Footer';
+import RegisterServiceWorker from './components/RegisterServiceWorker';
+import InAppBrowserBanner from './components/InAppBrowserBanner';
 
 const heebo = Heebo({
   subsets: ['hebrew', 'latin'],
@@ -38,12 +40,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <UserDataProviders>
             <QuoteBasketWithAuth>
               <AppHeader />
+              <InAppBrowserBanner />
               <div className="min-h-screen flex flex-col">
                 {children}
                 <Footer />
               </div>
               <FloatingCartButton />
               <StorageQuotaAlert />
+              <RegisterServiceWorker />
             </QuoteBasketWithAuth>
           </UserDataProviders>
         </AuthProvider>
