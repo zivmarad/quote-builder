@@ -10,6 +10,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import { generateQuotePDFAsBlob, getQuotePreviewHtml } from '../components/utils/pdfExport';
 import RequireAuth from '../components/RequireAuth';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { usePriceOverrides } from '../contexts/PriceOverridesContext';
 import { categories } from '../service/services';
 import { getDrafts, deleteDraft, type QuoteDraft } from '../../lib/drafts-storage';
@@ -25,10 +26,10 @@ interface BeforeInstallPromptEvent extends Event {
 
 type SectionId = 'details' | 'quotes-and-drafts' | 'settings';
 
-const sections: { id: SectionId; label: string; labelShort?: string; icon: React.ReactNode }[] = [
-  { id: 'details', label: 'פרטים', icon: <UserCircle size={22} /> },
-  { id: 'quotes-and-drafts', label: 'הצעות וטיוטות', labelShort: 'הצעות', icon: <FileText size={22} /> },
-  { id: 'settings', label: 'הגדרות', icon: <Settings size={22} /> },
+const sectionConfig: { id: SectionId; labelKey: string; labelShortKey?: string; icon: React.ReactNode }[] = [
+  { id: 'details', labelKey: 'profile.details', icon: <UserCircle size={22} /> },
+  { id: 'quotes-and-drafts', labelKey: 'profile.quotesAndDrafts', labelShortKey: 'profile.quotesAndDrafts', icon: <FileText size={22} /> },
+  { id: 'settings', labelKey: 'profile.settings', icon: <Settings size={22} /> },
 ];
 
 const formatPrice = (price: number) =>
@@ -62,6 +63,7 @@ export default function ProfilePage() {
   const { defaultQuoteTitle, nextQuoteNumber, validityDays, vatRate, setDefaultQuoteTitle, setNextQuoteNumber, setValidityDays, setVatRate } = useSettings();
   const { getBasePrice, setBasePrice } = usePriceOverrides();
   const { user: authUser, changePassword } = useAuth();
+  const { t, dir } = useLanguage();
   const [activeSection, setActiveSection] = useState<SectionId>('details');
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -249,13 +251,13 @@ export default function ProfilePage() {
 
   return (
     <RequireAuth>
-    <main className="min-h-screen bg-[#F8FAFC] px-3 py-4 sm:p-4 md:p-8" dir="rtl">
+    <main className="min-h-screen bg-[#F8FAFC] px-3 py-4 sm:p-4 md:p-8" dir={dir}>
       <div className="max-w-5xl mx-auto">
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 font-medium mb-4 sm:mb-6 min-h-[44px] items-center"
         >
-          <ArrowRight size={20} /> חזרה לדף הבית
+          <ArrowRight size={20} /> {t('profile.backHome')}
         </Link>
 
         <div className="flex flex-col md:flex-row gap-4 sm:gap-6 md:gap-8">
@@ -265,7 +267,7 @@ export default function ProfilePage() {
                 <h2 className="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wider">איזור אישי</h2>
               </div>
               <ul className="p-1.5 sm:p-2 grid grid-cols-2 sm:grid-cols-4 md:flex md:flex-col gap-1">
-                {sections.map((section) => (
+                {sectionConfig.map((section) => (
                   <li key={section.id}>
                     <button
                       type="button"
@@ -279,8 +281,8 @@ export default function ProfilePage() {
                       <span className="text-slate-400 shrink-0 [.button:focus_&]:text-blue-500">
                         {section.icon}
                       </span>
-                      <span className="truncate sm:hidden">{section.labelShort ?? section.label}</span>
-                      <span className="truncate hidden sm:inline">{section.label}</span>
+                      <span className="truncate sm:hidden">{section.labelShortKey ? t(section.labelShortKey) : t(section.labelKey)}</span>
+                      <span className="truncate hidden sm:inline">{t(section.labelKey)}</span>
                       {activeSection === section.id && (
                         <ChevronLeft size={16} className="mr-auto text-blue-500 hidden md:block shrink-0" />
                       )}
@@ -871,11 +873,11 @@ export default function ProfilePage() {
                 <UserCircle size={28} className="text-blue-600" />
               </div>
               <h2 id="new-user-prompt-title" className="text-xl font-black text-slate-900">
-                ברוך/ה הבא/ה
+                {t('profile.welcomeTitle')}
               </h2>
             </div>
             <p className="text-slate-600 text-sm leading-relaxed">
-              כדאי למלא את הפרטים האישיים והלוגו שיופיעו בהצעות המחיר – שם העסק, טלפון, כתובת ועוד. אפשר לעדכן תמיד מאיזור אישי.
+              {t('profile.welcomeMessage')}
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
               <button
@@ -888,7 +890,7 @@ export default function ProfilePage() {
                 }}
                 className="flex-1 py-3 px-4 rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 transition-colors"
               >
-                מלא עכשיו
+                {t('profile.fillNow')}
               </button>
               <button
                 type="button"
@@ -900,7 +902,7 @@ export default function ProfilePage() {
                 }}
                 className="flex-1 py-3 px-4 rounded-xl font-bold border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
               >
-                לא עכשיו
+                {t('profile.notNow')}
               </button>
             </div>
           </div>

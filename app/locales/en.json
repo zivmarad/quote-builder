@@ -1,0 +1,110 @@
+{
+  "common": {
+    "back": "Back",
+    "backHome": "Back to home",
+    "save": "Save",
+    "saved": "Saved successfully",
+    "loading": "Loading...",
+    "enter": "Enter",
+    "close": "Close",
+    "skip": "Skip",
+    "notNow": "Not now",
+    "fillNow": "Fill now"
+  },
+  "home": {
+    "title": "Quote Builder",
+    "subtitle": "Choose a trade to start quick, accurate pricing",
+    "profileLink": "Personal area – details, history & settings"
+  },
+  "header": {
+    "appName": "Quote Builder",
+    "profile": "Profile",
+    "login": "Log in",
+    "logout": "Log out",
+    "signup": "Sign up",
+    "hello": "Hello"
+  },
+  "login": {
+    "title": "Log in",
+    "description": "Already have an account? Enter your details below.",
+    "newUserTitle": "New user? Don't have an account yet?",
+    "signupButton": "Sign up – Create account",
+    "username": "Username or email",
+    "password": "Password",
+    "rememberUsername": "Remember username",
+    "rememberPassword": "Remember password",
+    "submit": "Log in",
+    "submitting": "Logging in...",
+    "forgotPassword": "Forgot password",
+    "forgotUsername": "Forgot username",
+    "noAccount": "Don't have an account?",
+    "signupHere": "Sign up here"
+  },
+  "signup": {
+    "title": "Sign up",
+    "stepEmail": "We'll send you a verification code by email. Then you'll choose a username and password.",
+    "stepCode": "Enter the code sent to your email",
+    "stepDetails": "Choose a username and password for your account",
+    "email": "Email",
+    "sendCode": "Send verification code",
+    "sending": "Sending...",
+    "code": "Verification code (6 digits)",
+    "continue": "Continue to username and password",
+    "checking": "Verifying code...",
+    "changeEmail": "Change email or resend",
+    "username": "Username",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "register": "Sign up",
+    "registering": "Signing up...",
+    "hasAccount": "Already have an account?",
+    "loginLink": "Log in"
+  },
+  "profile": {
+    "backHome": "Back to home",
+    "area": "Personal area",
+    "details": "Details",
+    "quotesAndDrafts": "Quotes & drafts",
+    "settings": "Settings",
+    "welcomeTitle": "Welcome",
+    "welcomeMessage": "We recommend filling in your details and logo that will appear on quotes – business name, phone, address, etc. You can always update them from your profile.",
+    "fillNow": "Fill now",
+    "notNow": "Not now"
+  },
+  "category": {
+    "chooseService": "Choose a job type to continue to questions and accurate price estimate",
+    "searchPlaceholder": "Search service...",
+    "searchLabel": "Search services in category",
+    "noResults": "No services match your search.",
+    "noServices": "No services in this category yet.",
+    "fromPrice": "From ",
+    "perUnit": " per ",
+    "quantityNote": "You can enter quantity in the questions step"
+  },
+  "requireAuth": {
+    "redirecting": "Redirecting to login..."
+  },
+  "footer": {
+    "copyright": "Quote Builder",
+    "contact": "Contact",
+    "terms": "Terms of use",
+    "privacy": "Privacy policy"
+  },
+  "categoryName": {
+    "paint": "Paint & decoration",
+    "sealing": "Waterproofing",
+    "concrete": "Concrete",
+    "plumbing": "Plumbing",
+    "tiling": "Tiling",
+    "electricity": "Electrical",
+    "ac": "Air conditioning",
+    "carpentry": "Carpentry",
+    "aluminium": "Aluminium",
+    "gardening": "Gardening",
+    "handyman": "Handyman",
+    "drywall": "Drywall",
+    "doors": "Doors",
+    "communications": "Communications",
+    "misc": "Miscellaneous"
+  }
+}

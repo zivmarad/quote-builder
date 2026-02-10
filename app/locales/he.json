@@ -1,0 +1,110 @@
+{
+  "common": {
+    "back": "חזרה",
+    "backHome": "חזרה לדף הבית",
+    "save": "נשמר",
+    "saved": "נשמר בהצלחה",
+    "loading": "טוען...",
+    "enter": "כניסה",
+    "close": "סגור",
+    "skip": "דלג",
+    "notNow": "לא עכשיו",
+    "fillNow": "מלא עכשיו"
+  },
+  "home": {
+    "title": "בונה הצעות מחיר",
+    "subtitle": "בחר תחום עבודה כדי להתחיל תמחור מהיר ומדויק",
+    "profileLink": "איזור אישי – פרטים, היסטוריה והגדרות"
+  },
+  "header": {
+    "appName": "בונה הצעות מחיר",
+    "profile": "איזור אישי",
+    "login": "התחבר",
+    "logout": "התנתק",
+    "signup": "הרשם",
+    "hello": "שלום"
+  },
+  "login": {
+    "title": "התחברות",
+    "description": "כבר יש לך חשבון? הזן פרטים למטה.",
+    "newUserTitle": "משתמש חדש? אין עדיין חשבון?",
+    "signupButton": "הרשמה – צור חשבון",
+    "username": "שם משתמש או אימייל",
+    "password": "סיסמה",
+    "rememberUsername": "זכור שם משתמש",
+    "rememberPassword": "זכור סיסמה",
+    "submit": "התחבר",
+    "submitting": "מתחבר...",
+    "forgotPassword": "שכחתי סיסמה",
+    "forgotUsername": "שכחתי שם משתמש",
+    "noAccount": "אין לך חשבון?",
+    "signupHere": "הרשם כאן"
+  },
+  "signup": {
+    "title": "הרשמה",
+    "stepEmail": "נשלח אליך קוד אימות למייל. אחר כך תבחר שם משתמש וסיסמה.",
+    "stepCode": "הזן את הקוד שנשלח למייל",
+    "stepDetails": "בחר שם משתמש וסיסמה לחשבון",
+    "email": "אימייל",
+    "sendCode": "שלח קוד אימות",
+    "sending": "שולח...",
+    "code": "קוד אימות (6 ספרות)",
+    "continue": "המשך לבחירת שם משתמש וסיסמה",
+    "checking": "בודק קוד...",
+    "changeEmail": "שינוי אימייל או שליחה מחדש",
+    "username": "שם משתמש",
+    "password": "סיסמה",
+    "confirmPassword": "אימות סיסמה",
+    "register": "הרשם",
+    "registering": "נרשם...",
+    "hasAccount": "כבר יש לך חשבון?",
+    "loginLink": "התחבר"
+  },
+  "profile": {
+    "backHome": "חזרה לדף הבית",
+    "area": "איזור אישי",
+    "details": "פרטים",
+    "quotesAndDrafts": "הצעות וטיוטות",
+    "settings": "הגדרות",
+    "welcomeTitle": "ברוך/ה הבא/ה",
+    "welcomeMessage": "כדאי למלא את הפרטים האישיים והלוגו שיופיעו בהצעות המחיר – שם העסק, טלפון, כתובת ועוד. אפשר לעדכן תמיד מאיזור אישי.",
+    "fillNow": "מלא עכשיו",
+    "notNow": "לא עכשיו"
+  },
+  "category": {
+    "chooseService": "בחר סוג עבודה כדי להמשיך לשאלות ולהערכת מחיר מדויקת",
+    "searchPlaceholder": "חפש שירות...",
+    "searchLabel": "חיפוש שירותים בקטגוריה",
+    "noResults": "לא נמצאו שירותים התואמים לחיפוש.",
+    "noServices": "בקרוב יתווספו שירותים בקטגוריה זו.",
+    "fromPrice": "החל מ־",
+    "perUnit": "לכל",
+    "quantityNote": "ניתן להזין כמות בשלב השאלות"
+  },
+  "requireAuth": {
+    "redirecting": "מפנה להתחברות..."
+  },
+  "footer": {
+    "copyright": "בונה הצעות מחיר",
+    "contact": "צור קשר",
+    "terms": "תנאי שימוש",
+    "privacy": "מדיניות פרטיות"
+  },
+  "categoryName": {
+    "paint": "צבע ודקורציה",
+    "sealing": "איטום",
+    "concrete": "בטון",
+    "plumbing": "אינסטלציה",
+    "tiling": "ריצוף",
+    "electricity": "חשמל",
+    "ac": "מיזוג אוויר",
+    "carpentry": "נגרות",
+    "aluminium": "אלומיניום",
+    "gardening": "גינון",
+    "handyman": "שיפוצים",
+    "drywall": "גבס",
+    "doors": "דלתות",
+    "communications": "תקשורת",
+    "misc": "שונות"
+  }
+}

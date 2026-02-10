@@ -1,0 +1,110 @@
+{
+  "common": {
+    "back": "Назад",
+    "backHome": "На главную",
+    "save": "Сохранить",
+    "saved": "Сохранено",
+    "loading": "Загрузка...",
+    "enter": "Вход",
+    "close": "Закрыть",
+    "skip": "Пропустить",
+    "notNow": "Не сейчас",
+    "fillNow": "Заполнить сейчас"
+  },
+  "home": {
+    "title": "Конструктор смет",
+    "subtitle": "Выберите вид работ для быстрой оценки",
+    "profileLink": "Личный кабинет – данные, история и настройки"
+  },
+  "header": {
+    "appName": "Конструктор смет",
+    "profile": "Кабинет",
+    "login": "Вход",
+    "logout": "Выход",
+    "signup": "Регистрация",
+    "hello": "Здравствуйте"
+  },
+  "login": {
+    "title": "Вход",
+    "description": "Уже есть аккаунт? Введите данные ниже.",
+    "newUserTitle": "Новый пользователь? Нет аккаунта?",
+    "signupButton": "Регистрация – Создать аккаунт",
+    "username": "Имя пользователя или email",
+    "password": "Пароль",
+    "rememberUsername": "Запомнить имя",
+    "rememberPassword": "Запомнить пароль",
+    "submit": "Войти",
+    "submitting": "Вход...",
+    "forgotPassword": "Забыли пароль",
+    "forgotUsername": "Забыли имя",
+    "noAccount": "Нет аккаунта?",
+    "signupHere": "Зарегистрироваться"
+  },
+  "signup": {
+    "title": "Регистрация",
+    "stepEmail": "Мы отправим код на email. Затем вы выберете имя и пароль.",
+    "stepCode": "Введите код, отправленный на email",
+    "stepDetails": "Выберите имя пользователя и пароль",
+    "email": "Email",
+    "sendCode": "Отправить код",
+    "sending": "Отправка...",
+    "code": "Код (6 цифр)",
+    "continue": "Далее – имя и пароль",
+    "checking": "Проверка...",
+    "changeEmail": "Изменить email или отправить снова",
+    "username": "Имя пользователя",
+    "password": "Пароль",
+    "confirmPassword": "Повторите пароль",
+    "register": "Зарегистрироваться",
+    "registering": "Регистрация...",
+    "hasAccount": "Уже есть аккаунт?",
+    "loginLink": "Войти"
+  },
+  "profile": {
+    "backHome": "На главную",
+    "area": "Личный кабинет",
+    "details": "Данные",
+    "quotesAndDrafts": "Сметы и черновики",
+    "settings": "Настройки",
+    "welcomeTitle": "Добро пожаловать",
+    "welcomeMessage": "Рекомендуем заполнить данные и логотип для смет – название, телефон, адрес. Можно изменить в кабинете.",
+    "fillNow": "Заполнить сейчас",
+    "notNow": "Не сейчас"
+  },
+  "category": {
+    "chooseService": "Выберите вид работ для вопросов и оценки",
+    "searchPlaceholder": "Поиск услуги...",
+    "searchLabel": "Поиск по категории",
+    "noResults": "Ничего не найдено.",
+    "noServices": "В этой категории пока нет услуг.",
+    "fromPrice": "От ",
+    "perUnit": " за ",
+    "quantityNote": "Количество можно указать в вопросах"
+  },
+  "requireAuth": {
+    "redirecting": "Переход к входу..."
+  },
+  "footer": {
+    "copyright": "Конструктор смет",
+    "contact": "Контакты",
+    "terms": "Условия использования",
+    "privacy": "Конфиденциальность"
+  },
+  "categoryName": {
+    "paint": "Покраска и декор",
+    "sealing": "Гидроизоляция",
+    "concrete": "Бетон",
+    "plumbing": "Сантехника",
+    "tiling": "Плитка",
+    "electricity": "Электрика",
+    "ac": "Кондиционеры",
+    "carpentry": "Столярка",
+    "aluminium": "Алюминий",
+    "gardening": "Садоводство",
+    "handyman": "Ремонт",
+    "drywall": "Гипсокартон",
+    "doors": "Двери",
+    "communications": "Связь",
+    "misc": "Разное"
+  }
+}

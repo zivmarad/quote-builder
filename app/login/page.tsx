@@ -3,12 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { SAVED_USERNAME_KEY, SAVED_PASSWORD_KEY } from '../contexts/AuthContext';
 import { LogIn, ArrowRight, UserPlus } from 'lucide-react';
 
 export default function LoginPage() {
   const [from, setFrom] = useState('/');
   const { login } = useAuth();
+  const { t, dir } = useLanguage();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [rememberUsername, setRememberUsername] = useState(true);
@@ -58,22 +60,22 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4" dir="rtl">
+    <main className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4" dir={dir}>
       <div className="w-full max-w-md">
         <Link href="/" className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 font-medium mb-6">
-          <ArrowRight size={20} /> חזרה לדף הבית
+          <ArrowRight size={20} /> {t('common.backHome')}
         </Link>
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
-          <h1 className="text-2xl font-black text-slate-900 mb-2">התחברות</h1>
-          <p className="text-slate-500 text-sm mb-4">כבר יש לך חשבון? הזן פרטים למטה.</p>
+          <h1 className="text-2xl font-black text-slate-900 mb-2">{t('login.title')}</h1>
+          <p className="text-slate-500 text-sm mb-4">{t('login.description')}</p>
           <div className="mb-5 p-4 rounded-xl bg-slate-50 border border-slate-200">
-            <p className="text-slate-700 text-sm font-medium mb-2">משתמש חדש? אין עדיין חשבון?</p>
+            <p className="text-slate-700 text-sm font-medium mb-2">{t('login.newUserTitle')}</p>
             <Link
               href={from !== '/' ? `/signup?from=${encodeURIComponent(from)}` : '/signup'}
               className="inline-flex items-center gap-2 py-2.5 px-4 rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 transition-colors text-sm"
             >
               <UserPlus size={18} />
-              הרשמה – צור חשבון
+              {t('login.signupButton')}
             </Link>
           </div>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -84,7 +86,7 @@ export default function LoginPage() {
             )}
             <div>
               <label htmlFor="login-username" className="block text-sm font-bold text-slate-700 mb-2">
-                שם משתמש או אימייל
+                {t('login.username')}
               </label>
               <input
                 id="login-username"
@@ -106,7 +108,7 @@ export default function LoginPage() {
             </div>
             <div>
               <label htmlFor="login-password" className="block text-sm font-bold text-slate-700 mb-2">
-                סיסמה
+                {t('login.password')}
               </label>
               <input
                 id="login-password"
@@ -127,7 +129,7 @@ export default function LoginPage() {
                   onChange={(e) => setRememberUsername(e.target.checked)}
                   className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                 />
-                זכור שם משתמש
+                {t('login.rememberUsername')}
               </label>
               <label className="flex items-center gap-2 cursor-pointer text-sm text-slate-700">
                 <input
@@ -136,7 +138,7 @@ export default function LoginPage() {
                   onChange={(e) => setRememberPassword(e.target.checked)}
                   className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                 />
-                זכור סיסמה
+                {t('login.rememberPassword')}
               </label>
             </div>
             <button
@@ -145,22 +147,22 @@ export default function LoginPage() {
               className="w-full py-3 min-h-[52px] rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 flex items-center justify-center gap-2 transition-colors active:scale-[0.98]"
             >
               <LogIn size={20} />
-              {loading ? 'מתחבר...' : 'התחבר'}
+              {loading ? t('login.submitting') : t('login.submit')}
             </button>
           </form>
           <p className="text-slate-500 text-sm mt-4 text-center flex flex-wrap justify-center gap-x-4 gap-y-1">
             <Link href="/forgot-password" className="text-blue-600 font-medium hover:underline">
-              שכחתי סיסמה
+              {t('login.forgotPassword')}
             </Link>
             <span className="text-slate-300">|</span>
             <Link href="/forgot-username" className="text-blue-600 font-medium hover:underline">
-              שכחתי שם משתמש
+              {t('login.forgotUsername')}
             </Link>
           </p>
           <p className="text-slate-500 text-sm mt-2 text-center">
-            אין לך חשבון?{' '}
+            {t('login.noAccount')}{' '}
             <Link href={from !== '/' ? `/signup?from=${encodeURIComponent(from)}` : '/signup'} className="text-blue-600 font-bold hover:underline">
-              הרשם כאן
+              {t('login.signupHere')}
             </Link>
           </p>
         </div>

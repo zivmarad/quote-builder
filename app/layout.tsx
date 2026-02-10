@@ -16,6 +16,7 @@ import AppHeader from './components/AppHeader';
 import Footer from './components/Footer';
 import RegisterServiceWorker from './components/RegisterServiceWorker';
 import InAppBrowserBanner from './components/InAppBrowserBanner';
+import LanguageWrapper from './components/LanguageWrapper';
 
 const heebo = Heebo({
   subsets: ['hebrew', 'latin'],
@@ -36,7 +37,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="he" dir="rtl">
       <body className={`${heebo.className} antialiased bg-[#F8FAFC]`}>
-        <AuthProvider>
+<AuthProvider>
+        <LanguageWrapper>
           <UserDataProviders>
             <QuoteBasketWithAuth>
               <AppHeader />
@@ -49,7 +51,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <StorageQuotaAlert />
               <RegisterServiceWorker />
             </QuoteBasketWithAuth>
-          </UserDataProviders>
+            </UserDataProviders>
+          </LanguageWrapper>
         </AuthProvider>
       </body>
     </html>

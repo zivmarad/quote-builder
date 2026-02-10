@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { UserPlus, ArrowRight, Mail } from 'lucide-react';
 
 type Step = 'email' | 'code' | 'details';
@@ -10,6 +11,7 @@ type Step = 'email' | 'code' | 'details';
 export default function SignupPage() {
   const [from, setFrom] = useState('/');
   const { sendVerificationCode, checkVerificationCode, signupWithEmail } = useAuth();
+  const { t, dir } = useLanguage();
   const [step, setStep] = useState<Step>('email');
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
@@ -95,17 +97,17 @@ export default function SignupPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4" dir="rtl">
+    <main className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4" dir={dir}>
       <div className="w-full max-w-md">
         <Link href="/" className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 font-medium mb-6">
-          <ArrowRight size={20} /> חזרה לדף הבית
+          <ArrowRight size={20} /> {t('common.backHome')}
         </Link>
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
-          <h1 className="text-2xl font-black text-slate-900 mb-2">הרשמה</h1>
+          <h1 className="text-2xl font-black text-slate-900 mb-2">{t('signup.title')}</h1>
           <p className="text-slate-500 text-sm mb-6">
-            {step === 'email' && 'נשלח אליך קוד אימות למייל. אחר כך תבחר שם משתמש וסיסמה.'}
-            {step === 'code' && `הזן את הקוד שנשלח ל־${email}`}
-            {step === 'details' && 'בחר שם משתמש וסיסמה לחשבון'}
+            {step === 'email' && t('signup.stepEmail')}
+            {step === 'code' && `${t('signup.stepCode')} ${email}`}
+            {step === 'details' && t('signup.stepDetails')}
           </p>
 
           {error && (
@@ -118,7 +120,7 @@ export default function SignupPage() {
             <form onSubmit={handleSendCode} className="space-y-4">
               <div>
                 <label htmlFor="signup-email" className="block text-sm font-bold text-slate-700 mb-2">
-                  אימייל
+                  {t('signup.email')}
                 </label>
                 <input
                   id="signup-email"
@@ -138,7 +140,7 @@ export default function SignupPage() {
                 className="w-full py-3 min-h-[52px] rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 flex items-center justify-center gap-2 transition-colors active:scale-[0.98]"
               >
                 <Mail size={20} />
-                {loading ? 'שולח...' : 'שלח קוד אימות'}
+                {loading ? t('signup.sending') : t('signup.sendCode')}
               </button>
             </form>
           )}
@@ -147,7 +149,7 @@ export default function SignupPage() {
             <form onSubmit={handleCodeNext} className="space-y-4">
               <div>
                 <label htmlFor="signup-code" className="block text-sm font-bold text-slate-700 mb-2">
-                  קוד אימות (6 ספרות)
+                  {t('signup.code')}
                 </label>
                 <input
                   id="signup-code"
@@ -168,14 +170,14 @@ export default function SignupPage() {
                 disabled={loading || code.trim().length !== 6}
                 className="w-full py-3 min-h-[52px] rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 transition-colors active:scale-[0.98]"
               >
-                {loading ? 'בודק קוד...' : 'המשך לבחירת שם משתמש וסיסמה'}
+                {loading ? t('signup.checking') : t('signup.continue')}
               </button>
               <button
                 type="button"
                 onClick={() => { setStep('email'); setCode(''); setError(null); }}
                 className="w-full py-2.5 text-slate-500 hover:text-slate-700 text-sm font-medium"
               >
-                שינוי אימייל או שליחה מחדש
+                {t('signup.changeEmail')}
               </button>
             </form>
           )}
@@ -184,7 +186,7 @@ export default function SignupPage() {
             <form onSubmit={handleSignup} className="space-y-4">
               <div>
                 <label htmlFor="signup-username" className="block text-sm font-bold text-slate-700 mb-2">
-                  שם משתמש
+                  {t('signup.username')}
                 </label>
                 <input
                   id="signup-username"
@@ -216,7 +218,7 @@ export default function SignupPage() {
               </div>
               <div>
                 <label htmlFor="signup-confirm" className="block text-sm font-bold text-slate-700 mb-2">
-                  אימות סיסמה
+                  {t('signup.confirmPassword')}
                 </label>
                 <input
                   id="signup-confirm"
@@ -236,15 +238,15 @@ export default function SignupPage() {
                 className="w-full py-3 min-h-[52px] rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 flex items-center justify-center gap-2 transition-colors active:scale-[0.98]"
               >
                 <UserPlus size={20} />
-                {loading ? 'נרשם...' : 'הרשם'}
+                {loading ? t('signup.registering') : t('signup.register')}
               </button>
             </form>
           )}
 
           <p className="text-slate-500 text-sm mt-6 text-center">
-            כבר יש לך חשבון?{' '}
+            {t('signup.hasAccount')}{' '}
             <Link href={from !== '/' ? `/login?from=${encodeURIComponent(from)}` : '/login'} className="text-blue-600 font-bold hover:underline">
-              התחבר
+              {t('signup.loginLink')}
             </Link>
           </p>
         </div>
