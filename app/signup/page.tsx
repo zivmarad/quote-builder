@@ -29,14 +29,11 @@ export default function SignupPage() {
   const PROFILE_PROMPT_KEY = 'quoteBuilder_showProfilePrompt';
 
   const goToTarget = () => {
-    if (typeof window !== 'undefined') {
-      try {
-        sessionStorage.setItem(PROFILE_PROMPT_KEY, '1');
-      } catch { /* ignore */ }
-      window.location.href = `${window.location.origin}/profile`;
-    } else {
-      window.location.href = '/profile';
-    }
+    if (typeof window === 'undefined') return;
+    try {
+      sessionStorage.setItem(PROFILE_PROMPT_KEY, '1');
+    } catch { /* ignore */ }
+    window.location.href = `${window.location.origin}/profile`;
   };
 
   const handleSendCode = async (e: React.FormEvent) => {
