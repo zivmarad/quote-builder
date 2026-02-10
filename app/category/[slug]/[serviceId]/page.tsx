@@ -8,11 +8,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import AddToBasketButton from '../../../components/AddToBasketButton';
 import RequireAuth from '../../../components/RequireAuth';
 import { usePriceOverrides } from '../../../contexts/PriceOverridesContext';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 export default function ServiceWizardPage() {
   const { slug, serviceId } = useParams();
   const router = useRouter();
   const { getBasePrice } = usePriceOverrides();
+  const { t, dir } = useLanguage();
 
   const categoryId = Array.isArray(slug) ? slug[0] : slug;
   const svcId = Array.isArray(serviceId) ? serviceId[0] : serviceId;
@@ -62,12 +64,13 @@ export default function ServiceWizardPage() {
             ? Math.min(qty, Math.max(1, parseInt(questionQuantities[q.id] || '1', 10) || 1))
             : null;
         const label = hasQtyLabel ? q.impact.quantityLabel! : "יח'";
+        const qText = t(`question.${service.id}.${q.id}`, q.text);
         const text = qtyQ != null && qtyQ > 0
-          ? `${q.text} (${qtyQ} ${label})`
-          : q.text;
+          ? `${qText} (${qtyQ} ${label})`
+          : qText;
         return { text, price };
       });
-  }, [service, answers, baseTotal, qty, questionQuantities]);
+  }, [service, answers, baseTotal, qty, questionQuantities, t]);
 
   const extrasTotal = useMemo(() => {
     return selectedExtrasList.reduce((sum, e) => sum + e.price, 0);
@@ -78,12 +81,14 @@ export default function ServiceWizardPage() {
   if (!category || !service) {
     return (
       <RequireAuth>
-        <main className="min-h-screen flex items-center justify-center bg-slate-50" dir="rtl">
+        <main className="min-h-screen flex items-center justify-center bg-slate-50" dir={dir}>
           <p className="text-slate-500 font-bold">השירות לא נמצא</p>
         </main>
       </RequireAuth>
     );
   }
+
+  const serviceName = t(`service.${service.id}`, service.name);
 
   const handleToggle = (question: Question, value: boolean) => {
     setAnswers((prev) => ({ ...prev, [question.id]: value }));
@@ -131,19 +136,19 @@ export default function ServiceWizardPage() {
 
   return (
     <RequireAuth>
-    <main className="min-h-screen bg-slate-50 pb-28 sm:pb-28" dir="rtl">
+    <main className="min-h-screen bg-slate-50 pb-28 sm:pb-28" dir={dir}>
       <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6">
         <button
           onClick={() => router.push(`/category/${category.id}`)}
           className="mb-4 inline-flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 min-h-[44px] px-2 -mr-2 rounded-xl active:bg-slate-100"
         >
-          <span>חזרה</span>
+          <span>{t('common.back')}</span>
           <span className="text-lg">↩</span>
         </button>
 
         <header className="mb-4 sm:mb-6">
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center justify-between gap-2 flex-wrap">
-            <span>{service.name}</span>
+            <span>{serviceName}</span>
             <span className="text-xl text-slate-500">{category.icon}</span>
           </h1>
           <p className="mt-2 text-sm text-slate-500">
@@ -186,7 +191,7 @@ export default function ServiceWizardPage() {
                 transition={{ duration: 0.3, delay: index * 0.05 }}
                 className="bg-white rounded-3xl border border-slate-100 shadow-sm px-5 py-4 flex flex-col gap-3"
               >
-                <span className="text-sm font-bold text-slate-900">{q.text}</span>
+                <span className="text-sm font-bold text-slate-900">{t(`question.${service.id}.${q.id}`, q.text)}</span>
                 <div className="flex items-center justify-between gap-3 flex-wrap">
                   <div className="flex gap-2">
                     <button
@@ -258,7 +263,7 @@ export default function ServiceWizardPage() {
             <div className="w-36 sm:w-48 shrink-0 min-w-0">
               <AddToBasketButton 
                 service={{
-                  name: service.name,
+                  name: serviceName,
                   category: category.id,
                   basePrice: baseTotal,
                   extras: selectedExtrasList,
