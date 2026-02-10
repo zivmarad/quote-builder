@@ -73,15 +73,32 @@ export const QuoteBasketProvider: React.FC<{ children: React.ReactNode; userId?:
 
     (async () => {
       if (userId) {
-        const data = await fetchSync<{ items: BasketItem[] }>('/basket', userId);
-        if (!cancelled && data && typeof data.items !== 'undefined') {
-          const arr = Array.isArray(data.items) ? data.items : [];
-          lastLoadedForUserIdRef.current = userId;
-          setItems(arr);
-          void basketStorageSet(key, JSON.stringify(arr));
-          setIsLoaded(true);
-          return;
+        const guestKey = getStorageKey(null);
+        const [serverData, guestSaved] = await Promise.all([
+          fetchSync<{ items: BasketItem[] }>('/basket', userId),
+          getBasketWithMigration(guestKey, null),
+        ]);
+        if (cancelled) return;
+        const serverItems = serverData?.items != null && Array.isArray(serverData.items) ? serverData.items : [];
+        let guestItems: BasketItem[] = [];
+        if (guestSaved) {
+          try {
+            const parsed = JSON.parse(guestSaved);
+            guestItems = Array.isArray(parsed) ? parsed : [];
+          } catch {
+            /* ignore */
+          }
         }
+        const merged = [...serverItems, ...guestItems];
+        lastLoadedForUserIdRef.current = userId;
+        setItems(merged);
+        if (merged.length > 0) {
+          void basketStorageSet(key, JSON.stringify(merged));
+          void postSync('/basket', userId, { items: merged });
+        }
+        void basketStorageRemove(guestKey);
+        setIsLoaded(true);
+        return;
       }
       const savedBasket = await getBasketWithMigration(key, userId ?? null);
       if (cancelled) return;

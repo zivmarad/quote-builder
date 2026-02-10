@@ -80,32 +80,30 @@ export function QuoteHistoryProvider({ children, userId }: { children: React.Rea
 
     (async () => {
       if (userId) {
+        const guestKey = getStorageKey(null);
+        const guestRaw = typeof window !== 'undefined' ? localStorage.getItem(guestKey) : null;
         const data = await fetchSync<{ quotes: SavedQuote[] }>('/history', userId);
-        if (!cancelled && data && typeof data.quotes !== 'undefined') {
-          const arr = Array.isArray(data.quotes) ? data.quotes : [];
-          let finalQuotes = arr;
-          if (arr.length === 0) {
-            const guestKey = getStorageKey(null);
-            const guestRaw = localStorage.getItem(guestKey);
-            if (guestRaw) {
-              try {
-                const guestArr = JSON.parse(guestRaw) as unknown;
-                if (Array.isArray(guestArr) && guestArr.length > 0) {
-                  finalQuotes = guestArr as SavedQuote[];
-                  localStorage.removeItem(guestKey);
-                  void postSync('/history', userId, { quotes: finalQuotes });
-                }
-              } catch {
-                /* ignore */
-              }
-            }
+        if (cancelled) return;
+        const serverQuotes = data?.quotes != null && Array.isArray(data.quotes) ? data.quotes : [];
+        let guestQuotes: SavedQuote[] = [];
+        if (guestRaw) {
+          try {
+            const parsed = JSON.parse(guestRaw) as unknown;
+            guestQuotes = Array.isArray(parsed) ? (parsed as SavedQuote[]) : [];
+          } catch {
+            /* ignore */
           }
-          lastLoadedForUserIdRef.current = userId;
-          setQuotes(finalQuotes);
-          localStorage.setItem(key, JSON.stringify(finalQuotes));
-          setIsLoaded(true);
-          return;
         }
+        const merged = [...serverQuotes, ...guestQuotes];
+        lastLoadedForUserIdRef.current = userId;
+        setQuotes(merged);
+        localStorage.setItem(key, JSON.stringify(merged));
+        if (guestRaw) {
+          localStorage.removeItem(guestKey);
+          void postSync('/history', userId, { quotes: merged });
+        }
+        setIsLoaded(true);
+        return;
       }
       if (!cancelled) {
         lastLoadedForUserIdRef.current = userId;

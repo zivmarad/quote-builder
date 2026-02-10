@@ -1,21 +1,15 @@
 'use client';
 
 import React from 'react';
-import { useAuth } from '../contexts/AuthContext';
 import { useQuoteBasket } from '../contexts/QuoteBasketContext';
 import { ShoppingCart } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 
 export default function FloatingCartButton() {
-  const { user } = useAuth();
   const { itemCount, totalWithVAT } = useQuoteBasket();
   const router = useRouter();
   const pathname = usePathname();
 
-  /** סל משויך למשתמש – מי שלא מחובר לא רואה את באנר הסל. */
-  if (!user) {
-    return null;
-  }
   if (itemCount === 0) {
     return null;
   }
