@@ -173,6 +173,10 @@ export default function Cart() {
   });
 
   const handleExportPDF = async () => {
+    if (!user) {
+      router.push('/login?from=' + encodeURIComponent('/cart'));
+      return;
+    }
     const { customerPhone, customerEmail, customerAddress, customerCompanyId } = getCustomerContact();
     setIsDownloading(true);
     try {
@@ -231,6 +235,10 @@ export default function Cart() {
 
   /** שלב 1: הכנת PDF. שלב 2: במודל – לחיצה על "שתף עכשיו" קוראת ל-navigator.share() במחווה ישירה, כך שמסך השיתוף נפתח במובייל. */
   const handleShareToWhatsApp = async () => {
+    if (!user) {
+      router.push('/login?from=' + encodeURIComponent('/cart'));
+      return;
+    }
     setIsSharing(true);
     const { customerPhone, customerEmail, customerAddress, customerCompanyId } = getCustomerContact();
     addQuote({
@@ -866,7 +874,13 @@ export default function Cart() {
         {items.length > 0 && (
           <button
             type="button"
-            onClick={() => setShowSaveDraftModal(true)}
+            onClick={() => {
+              if (!user) {
+                router.push('/login?from=' + encodeURIComponent('/cart'));
+                return;
+              }
+              setShowSaveDraftModal(true);
+            }}
             className="flex items-center justify-center gap-2 sm:gap-3 bg-amber-50 text-amber-800 border-2 border-amber-200 py-4 sm:py-5 px-4 sm:px-8 rounded-xl sm:rounded-2xl font-black text-base sm:text-xl hover:bg-amber-100 transition-all shadow-sm min-h-[52px] active:scale-[0.98]"
             aria-label="שמור טיוטה"
           >

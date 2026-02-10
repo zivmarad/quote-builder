@@ -6,7 +6,6 @@ import { categories } from '../../../service/services';
 import type { Question } from '../../../service/services';
 import { motion, AnimatePresence } from 'framer-motion';
 import AddToBasketButton from '../../../components/AddToBasketButton';
-import RequireAuth from '../../../components/RequireAuth';
 import { usePriceOverrides } from '../../../contexts/PriceOverridesContext';
 import { useLanguage } from '../../../contexts/LanguageContext';
 
@@ -80,11 +79,9 @@ export default function ServiceWizardPage() {
 
   if (!category || !service) {
     return (
-      <RequireAuth>
-        <main className="min-h-screen flex items-center justify-center bg-slate-50" dir={dir}>
-          <p className="text-slate-500 font-bold">{t('common.serviceNotFound')}</p>
-        </main>
-      </RequireAuth>
+      <main className="min-h-screen flex items-center justify-center bg-slate-50" dir={dir}>
+        <p className="text-slate-500 font-bold">{t('common.serviceNotFound')}</p>
+      </main>
     );
   }
 
@@ -135,7 +132,6 @@ export default function ServiceWizardPage() {
   };
 
   return (
-    <RequireAuth>
     <main className="min-h-screen bg-slate-50 pb-28 sm:pb-28" dir={dir}>
       <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6">
         <button
@@ -277,6 +273,5 @@ export default function ServiceWizardPage() {
         </div>
       </motion.div>
     </main>
-    </RequireAuth>
   );
 }

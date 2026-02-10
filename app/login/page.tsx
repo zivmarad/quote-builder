@@ -50,7 +50,12 @@ export default function LoginPage() {
             else localStorage.removeItem(SAVED_PASSWORD_KEY);
           }
         } catch { /* ignore */ }
-        window.location.href = typeof window !== 'undefined' ? `${window.location.origin}/` : '/';
+        if (typeof window !== 'undefined') {
+          const params = new URLSearchParams(window.location.search);
+          const fromParam = params.get('from');
+          const target = fromParam && fromParam.startsWith('/') ? fromParam : '/';
+          window.location.href = window.location.origin + target;
+        }
         return;
       }
       setError(result.error ?? 'שגיאה בהתחברות');

@@ -3,7 +3,6 @@
 import { useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { categories } from '../../service/services';
-import RequireAuth from '../../components/RequireAuth';
 import { usePriceOverrides } from '../../contexts/PriceOverridesContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { Search } from 'lucide-react';
@@ -26,16 +25,13 @@ export default function CategoryPage() {
 
   if (!category) {
     return (
-      <RequireAuth>
-        <main className="min-h-screen flex items-center justify-center bg-slate-50" dir={dir}>
-          <p className="text-slate-500 font-bold">{t('common.loading')}</p>
-        </main>
-      </RequireAuth>
+      <main className="min-h-screen flex items-center justify-center bg-slate-50" dir={dir}>
+        <p className="text-slate-500 font-bold">{t('common.loading')}</p>
+      </main>
     );
   }
 
   return (
-    <RequireAuth>
     <main className="min-h-screen bg-slate-50 px-4 py-6 sm:p-6 md:p-10" dir={dir}>
       <div className="max-w-4xl mx-auto text-right">
         <button
@@ -100,6 +96,5 @@ export default function CategoryPage() {
         </section>
       </div>
     </main>
-    </RequireAuth>
   );
 }

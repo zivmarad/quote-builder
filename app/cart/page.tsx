@@ -4,11 +4,9 @@ import React from 'react';
 import Cart from '../components/Cart';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import RequireAuth from '../components/RequireAuth';
 
 export default function CartPage() {
   return (
-    <RequireAuth>
     <div className="min-h-screen bg-[#F8FAFC] py-6 sm:py-8 px-3 sm:px-4 pb-28 sm:pb-8">
       <div className="max-w-4xl mx-auto">
         <Link
@@ -23,6 +21,5 @@ export default function CartPage() {
         <Cart />
       </div>
     </div>
-    </RequireAuth>
   );
 }
