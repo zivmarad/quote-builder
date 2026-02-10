@@ -16,6 +16,7 @@ import { getDrafts, deleteDraft, type QuoteDraft } from '../../lib/drafts-storag
 import { ArrowRight, UserCircle, Settings, FileText, ChevronLeft, Download, Trash2, Copy, DollarSign, KeyRound, Eye, ChevronDown, Check, Loader2, Smartphone, Plus, FileEdit } from 'lucide-react';
 
 const PENDING_DRAFT_KEY = 'quoteBuilder_pendingDraft';
+const PROFILE_PROMPT_KEY = 'quoteBuilder_showProfilePrompt';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -78,8 +79,18 @@ export default function ProfilePage() {
   const [installSuccess, setInstallSuccess] = useState(false);
   const [installLoading, setInstallLoading] = useState(false);
   const [drafts, setDrafts] = useState<QuoteDraft[]>([]);
+  const [showNewUserPrompt, setShowNewUserPrompt] = useState(false);
 
   useEffect(() => () => { if (saveToastTimeoutRef.current) clearTimeout(saveToastTimeoutRef.current); }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const shouldShow = sessionStorage.getItem(PROFILE_PROMPT_KEY) === '1';
+      const fromNewUser = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('newUser') === '1';
+      if (shouldShow || fromNewUser) setShowNewUserPrompt(true);
+    } catch { /* ignore */ }
+  }, []);
 
   useEffect(() => {
     if (activeSection === 'quotes-and-drafts' && typeof window !== 'undefined') {
@@ -843,6 +854,56 @@ export default function ProfilePage() {
         >
           <Check size={20} className="shrink-0 text-green-400" />
           נשמר בהצלחה
+        </div>
+      )}
+
+      {showNewUserPrompt && (
+        <div
+          className="fixed inset-0 z-[200] bg-black/50 flex items-center justify-center p-4"
+          dir="rtl"
+          role="dialog"
+          aria-labelledby="new-user-prompt-title"
+          aria-modal="true"
+        >
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 flex flex-col gap-5">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                <UserCircle size={28} className="text-blue-600" />
+              </div>
+              <h2 id="new-user-prompt-title" className="text-xl font-black text-slate-900">
+                ברוך/ה הבא/ה
+              </h2>
+            </div>
+            <p className="text-slate-600 text-sm leading-relaxed">
+              כדאי למלא את הפרטים האישיים והלוגו שיופיעו בהצעות המחיר – שם העסק, טלפון, כתובת ועוד. אפשר לעדכן תמיד מאיזור אישי.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  try { sessionStorage.removeItem(PROFILE_PROMPT_KEY); } catch { /* ignore */ }
+                  setShowNewUserPrompt(false);
+                  setActiveSection('details');
+                  if (typeof window !== 'undefined') window.history.replaceState({}, '', '/profile');
+                }}
+                className="flex-1 py-3 px-4 rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+              >
+                מלא עכשיו
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  try { sessionStorage.removeItem(PROFILE_PROMPT_KEY); } catch { /* ignore */ }
+                  setShowNewUserPrompt(false);
+                  if (typeof window !== 'undefined') window.history.replaceState({}, '', '/profile');
+                  router.push('/');
+                }}
+                className="flex-1 py-3 px-4 rounded-xl font-bold border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
+              >
+                לא עכשיו
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

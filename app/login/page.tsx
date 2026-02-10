@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../contexts/AuthContext';
 import { SAVED_USERNAME_KEY, SAVED_PASSWORD_KEY } from '../contexts/AuthContext';
-import { LogIn, ArrowRight } from 'lucide-react';
+import { LogIn, ArrowRight, UserPlus } from 'lucide-react';
 
 export default function LoginPage() {
   const [from, setFrom] = useState('/');
@@ -65,7 +65,17 @@ export default function LoginPage() {
         </Link>
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
           <h1 className="text-2xl font-black text-slate-900 mb-2">התחברות</h1>
-          <p className="text-slate-500 text-sm mb-6">הזן שם משתמש או אימייל וסיסמה</p>
+          <p className="text-slate-500 text-sm mb-4">כבר יש לך חשבון? הזן פרטים למטה.</p>
+          <div className="mb-5 p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <p className="text-slate-700 text-sm font-medium mb-2">משתמש חדש? אין עדיין חשבון?</p>
+            <Link
+              href={from !== '/' ? `/signup?from=${encodeURIComponent(from)}` : '/signup'}
+              className="inline-flex items-center gap-2 py-2.5 px-4 rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 transition-colors text-sm"
+            >
+              <UserPlus size={18} />
+              הרשמה – צור חשבון
+            </Link>
+          </div>
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm" role="alert">
@@ -148,9 +158,9 @@ export default function LoginPage() {
             </Link>
           </p>
           <p className="text-slate-500 text-sm mt-2 text-center">
-            עדיין אין לך חשבון?{' '}
+            אין לך חשבון?{' '}
             <Link href={from !== '/' ? `/signup?from=${encodeURIComponent(from)}` : '/signup'} className="text-blue-600 font-bold hover:underline">
-              הרשם
+              הרשם כאן
             </Link>
           </p>
         </div>
