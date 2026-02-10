@@ -9,7 +9,14 @@
     "close": "סגור",
     "skip": "דלג",
     "notNow": "לא עכשיו",
-    "fillNow": "מלא עכשיו"
+    "fillNow": "מלא עכשיו",
+    "yes": "כן",
+    "no": "לא",
+    "quantity": "כמות",
+    "totalToPay": "סה\"כ לתשלום",
+    "addToCart": "הוסף לסל",
+    "unitPc": "יח'",
+    "serviceNotFound": "השירות לא נמצא"
   },
   "home": {
     "title": "בונה הצעות מחיר",
@@ -70,6 +77,13 @@
     "welcomeMessage": "כדאי למלא את הפרטים האישיים והלוגו שיופיעו בהצעות המחיר – שם העסק, טלפון, כתובת ועוד. אפשר לעדכן תמיד מאיזור אישי.",
     "fillNow": "מלא עכשיו",
     "notNow": "לא עכשיו"
+  },
+  "serviceWizard": {
+    "basePrice": "מחיר בסיס",
+    "perUnit": "לכל",
+    "quantityUnitsTitle": "כמות יחידות",
+    "customizeTitle": "התאמת הצעת המחיר",
+    "customizeHint": "סמן את האפשרויות הרלוונטיות לעבודה."
   },
   "category": {
     "chooseService": "בחר סוג עבודה כדי להמשיך לשאלות ולהערכת מחיר מדויקת",

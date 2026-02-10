@@ -82,7 +82,7 @@ export default function ServiceWizardPage() {
     return (
       <RequireAuth>
         <main className="min-h-screen flex items-center justify-center bg-slate-50" dir={dir}>
-          <p className="text-slate-500 font-bold">השירות לא נמצא</p>
+          <p className="text-slate-500 font-bold">{t('common.serviceNotFound')}</p>
         </main>
       </RequireAuth>
     );
@@ -152,13 +152,13 @@ export default function ServiceWizardPage() {
             <span className="text-xl text-slate-500">{category.icon}</span>
           </h1>
           <p className="mt-2 text-sm text-slate-500">
-            מחיר בסיס: ₪{effectiveBasePrice.toLocaleString('he-IL')} לכל {service.unit}
+            {t('serviceWizard.basePrice')}: ₪{effectiveBasePrice.toLocaleString('he-IL')} {t('serviceWizard.perUnit')} {service.unit}
           </p>
         </header>
 
         {service.isCounter && (
           <section className="mb-4 sm:mb-6 bg-white p-4 rounded-2xl sm:rounded-3xl border border-slate-100 shadow-sm">
-            <h2 className="text-sm font-semibold text-slate-700 mb-2">כמות יחידות</h2>
+            <h2 className="text-sm font-semibold text-slate-700 mb-2">{t('serviceWizard.quantityUnitsTitle')}</h2>
             <div className="flex items-center gap-3">
               <input
                 type="text"
@@ -178,8 +178,8 @@ export default function ServiceWizardPage() {
 
         <section className="space-y-4">
           <div className="mb-2">
-            <h2 className="text-sm font-semibold text-slate-700">התאמת הצעת המחיר</h2>
-            <p className="text-xs text-slate-500">סמן את האפשרויות הרלוונטיות לעבודה.</p>
+            <h2 className="text-sm font-semibold text-slate-700">{t('serviceWizard.customizeTitle')}</h2>
+            <p className="text-xs text-slate-500">{t('serviceWizard.customizeHint')}</p>
           </div>
 
           <AnimatePresence>
@@ -202,7 +202,7 @@ export default function ServiceWizardPage() {
                           ? 'bg-blue-600 text-white shadow-md'
                           : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                       }`}
-                    >כן</button>
+                    >{t('common.yes')}</button>
                     <button
                       type="button"
                       onClick={() => handleToggle(q, false)}
@@ -211,7 +211,7 @@ export default function ServiceWizardPage() {
                           ? 'bg-slate-800 text-white shadow-md'
                           : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                       }`}
-                    >לא</button>
+                    >{t('common.no')}</button>
                   </div>
                   <span className="text-[11px] font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded-lg">
                     {q.impact.type === 'percent' 
@@ -225,7 +225,7 @@ export default function ServiceWizardPage() {
                 </div>
                 {hasQuantityInput(q) && answers[q.id] === true && (
                   <div className="flex items-center gap-3 pt-1 border-t border-slate-100">
-                    <span className="text-xs text-slate-500">כמות:</span>
+                    <span className="text-xs text-slate-500">{t('common.quantity')}:</span>
                     <input
                       type="text"
                       inputMode="numeric"
@@ -255,7 +255,7 @@ export default function ServiceWizardPage() {
         <div className="mx-auto max-w-md sm:max-w-3xl px-2 sm:px-1 flex justify-center">
           <div className="rounded-xl sm:rounded-[2.5rem] bg-slate-900 text-white px-3 py-2.5 sm:p-5 shadow-xl flex items-center justify-between gap-2 sm:gap-3 w-full max-w-sm sm:max-w-none">
             <div className="pr-1 sm:pr-2 min-w-0">
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">סה"כ לתשלום</span>
+              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">{t('common.totalToPay')}</span>
               <span className="text-lg sm:text-2xl font-black tabular-nums tracking-tight">
                 ₪{total.toLocaleString('he-IL')}
               </span>

@@ -3,6 +3,7 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuoteBasket, BasketExtra } from '../contexts/QuoteBasketContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { ShoppingCart } from 'lucide-react';
 
 interface AddToBasketButtonProps {
@@ -20,6 +21,7 @@ interface AddToBasketButtonProps {
 export default function AddToBasketButton({ service }: AddToBasketButtonProps) {
   const router = useRouter();
   const { addItem } = useQuoteBasket();
+  const { t } = useLanguage();
 
   const handleAdd = () => {
     addItem({
@@ -41,7 +43,7 @@ export default function AddToBasketButton({ service }: AddToBasketButtonProps) {
       className="w-full py-3 px-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all active:scale-95 bg-white text-slate-900 hover:bg-blue-50 shadow-sm"
     >
       <ShoppingCart size={18} />
-      <span>הוסף לסל</span>
+      <span>{t('common.addToCart', 'הוסף לסל')}</span>
     </button>
   );
 }

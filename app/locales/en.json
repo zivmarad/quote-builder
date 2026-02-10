@@ -9,7 +9,14 @@
     "close": "Close",
     "skip": "Skip",
     "notNow": "Not now",
-    "fillNow": "Fill now"
+    "fillNow": "Fill now",
+    "yes": "Yes",
+    "no": "No",
+    "quantity": "Quantity",
+    "totalToPay": "Total to pay",
+    "addToCart": "Add to cart",
+    "unitPc": "pc",
+    "serviceNotFound": "Service not found"
   },
   "home": {
     "title": "Quote Builder",
@@ -71,6 +78,13 @@
     "fillNow": "Fill now",
     "notNow": "Not now"
   },
+  "serviceWizard": {
+    "basePrice": "Base price",
+    "perUnit": "per",
+    "quantityUnitsTitle": "Quantity (units)",
+    "customizeTitle": "Customize your quote",
+    "customizeHint": "Check the options that apply to the job."
+  },
   "category": {
     "chooseService": "Choose a job type to continue to questions and accurate price estimate",
     "searchPlaceholder": "Search service...",
@@ -125,24 +139,24 @@
     "paint-parking": "צביעת חניון / מקלט",
     "paint-american-putty": "החלקת קירות שפכטל אמריקאי",
     "paint-pergola-deck": "צביעת פרגולות ודקים (עץ)",
-    "sealing-roof-bitumen": "איטום גג ביריעות ביטומניות",
-    "sealing-roof-polyurethane": "איטום גג בחומרים פוליאוריטניים/אקריליים",
-    "sealing-exterior-walls": "איטום קירות חיצוניים (סנפלינג)",
-    "sealing-balcony": "איטום מרפסת מרוצפת (ללא פירוק)",
-    "sealing-shower": "איטום מקלחת (לפני ריצוף)",
-    "sealing-windows": "איטום חלונות (מניעת חדירת מים)",
-    "sealing-underground": "איטום תת-קרקעי (מרתפים/מקלטים)",
-    "sealing-mold": "טיפול בנזקי עובש ועיבוי (קירות פנים)",
-    "sealing-gutters": "תחזוקת גגות ומרזבים",
-    "sealing-roof-tiles": "איטום גגות רעפים",
-    "sealing-pool": "איטום בריכות שחייה / מאגרי מים",
-    "sealing-planter": "איטום אדניות בנויות",
-    "sealing-negative": "איטום \"שלילי\" (מתוך המבנה)",
-    "sealing-expansion-joint": "איטום תפר התפשטות (בבניינים)",
-    "sealing-light-roof": "איטום גגות קלים (איסכורית/פנל מבודד)",
-    "sealing-concrete-restore": "שיקום בטון ותשתיות (לפני איטום)",
-    "sealing-elevator-shaft": "איטום פיר מעלית (בור ספיגה)",
-    "sealing-wall-connection": "החלפת/תיקון יריעות בחיבור לקיר (רולקות)",
+    "sealing-roof-bitumen": "Roof sealing with bituminous membranes",
+    "sealing-roof-polyurethane": "Roof sealing with polyurethane/acrylic materials",
+    "sealing-exterior-walls": "Exterior wall sealing (rappelling)",
+    "sealing-balcony": "Tiled balcony sealing (without dismantling)",
+    "sealing-shower": "Shower/bathroom sealing (before tiling)",
+    "sealing-windows": "Window sealing (prevent water penetration)",
+    "sealing-underground": "Underground sealing (basements/shelters)",
+    "sealing-mold": "Mold and condensation damage treatment (interior walls)",
+    "sealing-gutters": "Roof and gutter maintenance",
+    "sealing-roof-tiles": "Tiled roof sealing",
+    "sealing-pool": "Swimming pool / water reservoir sealing",
+    "sealing-planter": "Built planter sealing",
+    "sealing-negative": "Negative-side sealing (from inside the structure)",
+    "sealing-expansion-joint": "Expansion joint sealing (in buildings)",
+    "sealing-light-roof": "Light roof sealing (insulation/insulated panel)",
+    "sealing-concrete-restore": "Concrete and substrate restoration (before sealing)",
+    "sealing-elevator-shaft": "Elevator shaft sealing (sump)",
+    "sealing-wall-connection": "Replacing/repairing membranes at wall connection (flashings)",
     "concrete-floor": "רצפת בטון (יציקה)",
     "concrete-sidewalk": "מדרכה / מרפסת בטון",
     "concrete-foundation": "יסודות ועמודים",
@@ -388,95 +402,95 @@
       "q3": "טיפול נגד מזיקים (תולעי עץ)?"
     },
     "sealing": {
-      "q1": "קילוף שכבת איטום ישנה (זפת/יריעות)?",
-      "q2": "יריעות 5 מ\"מ (במקום 4)?",
-      "q3": "הרמת דודים/מזגנים על הגבהות תקניות?",
-      "q4": "בדיקת הצפה (כולל סתימת מרזבים ל-72 שעות)?"
+      "q1": "Strip old waterproofing layer (tar/membranes)?",
+      "q2": "5 mm membranes (instead of 4)?",
+      "q3": "Raising water heaters/AC units on standard stands?",
+      "q4": "Flood test (including blocking gutters for 72 hours)?"
     },
     "sealing-roof-polyurethane": {
-      "q1": "יישום רשת אינטרגלס לחיזוק?",
-      "q2": "שכבה כפולה (פריימר + 2 שכבות)?",
-      "q3": "צבע הלבנה להגנת UV?"
+      "q1": "Apply fiberglass mesh for reinforcement?",
+      "q2": "Double layer (primer + 2 coats)?",
+      "q3": "White coating for UV protection?"
     },
     "sealing-exterior-walls": {
-      "q1": "איטום סדקים מבניים (פתיחת סדק ומילוי)?",
-      "q2": "התזת סילר שקוף (למניעת ספיגה)?",
-      "q3": "שיקום בטון (ברזל חשוף)?"
+      "q1": "Seal structural cracks (crack opening and filling)?",
+      "q2": "Spray clear sealer (to prevent absorption)?",
+      "q3": "Concrete restoration (exposed rebar)?"
     },
     "sealing-balcony": {
-      "q1": "חריצת רובה קיימת ומילוי מחדש?",
-      "q2": "איטום בסיליקון שקוף/חומר פוליאוריטני מעל הריצוף?",
-      "q3": "איטום סף דלת (יציאה למרפסת)?"
+      "q1": "Groove existing grout and refill?",
+      "q2": "Seal with clear silicone/polyurethane over tiling?",
+      "q3": "Seal door threshold (exit to balcony)?"
     },
     "sealing-shower": {
-      "q1": "מריחת חומר איטום צמנטי (2 שכבות)?",
-      "q2": "איטום פינות עם סרט איטום ייעודי?",
-      "q3": "איטום \"נקז כפול\" (מערכת ניקוז)?"
+      "q1": "Apply cementitious waterproofing (2 coats)?",
+      "q2": "Seal corners with dedicated waterproofing tape?",
+      "q3": "Double-drain sealing (drainage system)?"
     },
     "sealing-windows": {
-      "q1": "הסרת סיליקון ישן ויבש?",
-      "q2": "איטום חיצוני בגובה (מנצ'ר/סולם גבוה)?",
-      "q3": "איטום מסילות וקדח ניקוז?"
+      "q1": "Remove old, dry silicone?",
+      "q2": "External sealing at height (scaffolding/ladder)?",
+      "q3": "Seal tracks and drain holes?"
     },
     "sealing-underground": {
-      "q1": "הזרקת פוליאוריטן לעצירת נזילות פעילות?",
-      "q2": "חפירה חיצונית לחשיפת היסודות?",
-      "q3": "התקנת יריעות ניקוז (שוקולדה)?"
+      "q1": "Polyurethane injection to stop active leaks?",
+      "q2": "External excavation to expose foundations?",
+      "q3": "Install drainage sheets (drainage mat)?"
     },
     "sealing-mold": {
-      "q1": "ניקוי עמוק בחומר קוטל פטריות (כלור מרוכז)?",
-      "q2": "צביעה בצבע תרמי מבודד (למניעת גשר קור)?",
-      "q3": "התקנת ונטה/מפוח ליציאת אדים?"
+      "q1": "Deep clean with fungicide (concentrated chlorine)?",
+      "q2": "Paint with thermal insulating paint (prevent cold bridge)?",
+      "q3": "Install vent/fan for moisture exhaust?"
     },
     "sealing-gutters": {
-      "q1": "פתיחת סתימה במרזב (כולל בדיקת זרימה)?",
-      "q2": "התקנת רשתות הגנה נגד יונים/עלים?",
-      "q3": "תיקון/החלפת מרזב חיצוני (למטר)?"
+      "q1": "Clear gutter blockage (including flow check)?",
+      "q2": "Install bird/leaf guard mesh?",
+      "q3": "Repair/replace external gutter (per meter)?"
     },
     "sealing-roof-tiles": {
-      "q1": "החלפת רעפים שבורים (עד 10 יחידות)?",
-      "q2": "איטום רוכבים (בטון/חומר גמיש)?",
-      "q3": "הדבקת יריעה נצמדת בחיבור לקיר?"
+      "q1": "Replace broken tiles (up to 10 units)?",
+      "q2": "Seal battens (concrete/flexible compound)?",
+      "q3": "Bond membrane at wall connection?"
     },
     "sealing-pool": {
-      "q1": "איטום צמנטי גמיש (3 שכבות)?",
-      "q2": "בדיקת נזירוּת (בדיקת מפלס מים)?",
-      "q3": "חיזוק פינות ברצועות בוטיליות?"
+      "q1": "Flexible cementitious sealing (3 coats)?",
+      "q2": "Watertightness test (water level check)?",
+      "q3": "Reinforce corners with butyl strips?"
     },
     "sealing-planter": {
-      "q1": "מריחת חומר מונע חדירת שורשים?",
-      "q2": "התקנת יריעת ניקוז והגנה?",
-      "q3": "חיבור לניקוז (מרזב ייעודי)?"
+      "q1": "Apply root-barrier compound?",
+      "q2": "Install drainage and protection sheet?",
+      "q3": "Connect to drainage (dedicated gutter)?"
     },
     "sealing-negative": {
-      "q1": "הסרת טיח קיים עד הבלוק?",
-      "q2": "הזרקות קריסטליות (חומר שחודר לבטון)?",
-      "q3": "יישום טיח איטום ייעודי?"
+      "q1": "Remove existing plaster down to block?",
+      "q2": "Crystalline injection (penetrating compound)?",
+      "q3": "Apply dedicated waterproofing plaster?"
     },
     "sealing-expansion-joint": {
-      "q1": "מילוי בספוג \"בקרוד\"?",
-      "q2": "איטום במסטיק פוליאוריטני כבד?",
-      "q3": "כיסוי בפח אלומיניום/גומי ייעודי?"
+      "q1": "Fill with backer rod?",
+      "q2": "Seal with heavy polyurethane mastic?",
+      "q3": "Cover with aluminum/rubber trim?"
     },
     "sealing-light-roof": {
-      "q1": "איטום ברגים (ראש בורג)?",
-      "q2": "הדבקת סרטי בוטילי במפגשי לוחות?",
-      "q3": "טיפול בחלודה מקומית?"
+      "q1": "Seal screw heads?",
+      "q2": "Bond butyl tape at panel joints?",
+      "q3": "Treat local rust?"
     },
     "sealing-concrete-restore": {
-      "q1": "ניקוי ברזל זיון וציפוי במגן חלודה?",
-      "q2": "שחזור בטון בחומר צמנטי ללא התכווצות?",
-      "q3": "עבודה בגובה?"
+      "q1": "Clean rebar and apply rust inhibitor?",
+      "q2": "Concrete restoration with non-shrink cement?",
+      "q3": "Work at height?"
     },
     "sealing-elevator-shaft": {
-      "q1": "שאיבת מים קיימים?",
-      "q2": "עצירת פריצות מים (דליפות לחץ)?",
-      "q3": "איטום קריסטלי מלא?"
+      "q1": "Pump out existing water?",
+      "q2": "Stop water breakthrough (pressure leaks)?",
+      "q3": "Full crystalline sealing?"
     },
     "sealing-wall-connection": {
-      "q1": "פירוק פח הגנה (פלאשונג)?",
-      "q2": "התקנת סרגל אלומיניום חדש?",
-      "q3": "איטום במסטיק עליון?"
+      "q1": "Remove protective flashing?",
+      "q2": "Install new aluminum trim?",
+      "q3": "Seal with top mastic?"
     },
     "concrete": {
       "q1": "כולל פירוק ריצוף ישן?",
