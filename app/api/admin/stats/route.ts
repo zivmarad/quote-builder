@@ -2,12 +2,11 @@ import { NextResponse } from 'next/server';
 import { getUsersCount, getNewUsersCount } from '../../auth/lib/users-store';
 import { supabaseAdmin } from '../../../../lib/supabase-server';
 
+/** מפתח אדמין – רק מ-header (לא מ-URL) */
 function getAdminKey(request: Request): string | null {
   const secret = process.env.ADMIN_SECRET?.trim();
   if (!secret) return null;
-  const authHeader = request.headers.get('x-admin-key');
-  const urlKey = new URL(request.url).searchParams.get('key');
-  const provided = authHeader ?? urlKey;
+  const provided = request.headers.get('x-admin-key');
   return provided === secret ? secret : null;
 }
 

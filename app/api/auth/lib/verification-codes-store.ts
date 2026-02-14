@@ -1,3 +1,4 @@
+import { randomInt } from 'crypto';
 import { supabaseAdmin } from '../../../../lib/supabase-server';
 
 const TABLE = 'verification_codes';
@@ -63,6 +64,7 @@ export async function consumeVerificationCode(email: string, code: string): Prom
   return !!data;
 }
 
+/** קוד 6 ספרות – קריפטוגרפי (לאבטחה) */
 export function generateSixDigitCode(): string {
-  return String(Math.floor(100000 + Math.random() * 900000));
+  return String(randomInt(100000, 1000000));
 }
