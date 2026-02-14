@@ -1,21 +1,34 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useQuoteBasket } from '../contexts/QuoteBasketContext';
 import { ShoppingCart } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
+
+const HIDE_PATHS = ['/cart', '/login', '/signup', '/profile', '/checkout', '/contact', '/privacy', '/terms', '/admin', '/forgot-password', '/forgot-username'];
 
 export default function FloatingCartButton() {
   const { itemCount, totalWithVAT } = useQuoteBasket();
   const router = useRouter();
   const pathname = usePathname();
+  const prevCountRef = useRef(itemCount);
+  const [bounce, setBounce] = useState(false);
 
-  if (itemCount === 0) {
-    return null;
-  }
-  /** בדף הסל ובדף שירות (שאלות + מחיר למטה) לא מציגים את הבאנר – כדי שלא יסתיר את "סה״כ לתשלום". */
+  useEffect(() => {
+    if (itemCount > prevCountRef.current && itemCount > 0) {
+      setBounce(true);
+      const t = setTimeout(() => setBounce(false), 600);
+      return () => clearTimeout(t);
+    }
+    prevCountRef.current = itemCount;
+  }, [itemCount]);
+
+  if (itemCount === 0) return null;
+
   const parts = pathname.split('/').filter(Boolean);
-  if (pathname === '/cart' || (parts[0] === 'category' && parts.length >= 3)) {
+  const isCategoryServicePage = parts[0] === 'category' && parts.length >= 3;
+  const isServiceSelectionPage = pathname === '/' || (parts[0] === 'category' && parts.length === 2);
+  if (HIDE_PATHS.includes(pathname) || isCategoryServicePage || !isServiceSelectionPage) {
     return null;
   }
 
@@ -31,7 +44,7 @@ export default function FloatingCartButton() {
   return (
     <button
       onClick={() => router.push('/cart')}
-      className="fixed z-50 flex items-center justify-between gap-3 sm:gap-4 bg-[#2563EB] text-white rounded-full shadow-xl hover:shadow-blue-500/40 active:scale-[0.98] sm:hover:scale-105 transition-all duration-300 group min-h-[64px] pl-5 pr-5 sm:pl-6 sm:pr-6 py-4 bottom-5 left-5 right-5 sm:left-auto sm:right-6 sm:min-w-[200px]"
+      className={`fixed z-50 flex items-center justify-between gap-3 sm:gap-4 bg-[#2563EB] text-white rounded-full shadow-xl hover:shadow-blue-500/40 active:scale-[0.98] sm:hover:scale-105 transition-all duration-300 group min-h-[64px] pl-5 pr-5 sm:pl-6 sm:pr-6 py-4 bottom-5 left-5 right-5 sm:left-auto sm:right-6 sm:min-w-[200px] ${bounce ? 'cart-bump' : ''}`}
       style={{ marginBottom: 'max(20px, env(safe-area-inset-bottom, 0px))' }}
     >
       <div className="text-right flex-1 min-w-0 flex flex-col items-end gap-0.5">

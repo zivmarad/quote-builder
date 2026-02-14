@@ -15,6 +15,7 @@ import { usePriceOverrides } from '../contexts/PriceOverridesContext';
 import { categories } from '../service/services';
 import { getDrafts, deleteDraft, type QuoteDraft } from '../../lib/drafts-storage';
 import { ArrowRight, UserCircle, Settings, FileText, ChevronLeft, Download, Trash2, Copy, DollarSign, KeyRound, Eye, ChevronDown, Check, Loader2, Smartphone, Plus, FileEdit } from 'lucide-react';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 const PENDING_DRAFT_KEY = 'quoteBuilder_pendingDraft';
 const PROFILE_PROMPT_KEY = 'quoteBuilder_showProfilePrompt';
@@ -82,6 +83,8 @@ export default function ProfilePage() {
   const [installLoading, setInstallLoading] = useState(false);
   const [drafts, setDrafts] = useState<QuoteDraft[]>([]);
   const [showNewUserPrompt, setShowNewUserPrompt] = useState(false);
+  const [deleteDraftId, setDeleteDraftId] = useState<string | null>(null);
+  const [deleteQuoteId, setDeleteQuoteId] = useState<string | null>(null);
 
   useEffect(() => () => { if (saveToastTimeoutRef.current) clearTimeout(saveToastTimeoutRef.current); }, []);
 
@@ -156,7 +159,6 @@ export default function ProfilePage() {
   };
 
   const handleDeleteDraft = async (draftId: string) => {
-    if (!window.confirm('למחוק את הטיוטה?')) return;
     await deleteDraft(authUser?.id ?? null, draftId);
     setDrafts((prev) => prev.filter((d) => d.id !== draftId));
   };
@@ -179,7 +181,6 @@ export default function ProfilePage() {
   };
 
   const handleDeleteQuote = (quoteId: string) => {
-    if (!window.confirm('למחוק הצעה זו מההיסטוריה? לא ניתן לשחזר.')) return;
     deleteQuote(quoteId);
   };
 
@@ -534,7 +535,7 @@ export default function ProfilePage() {
                                   </button>
                                   <button
                                     type="button"
-                                    onClick={() => handleDeleteQuote(q.id)}
+                                    onClick={() => setDeleteQuoteId(q.id)}
                                     className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors shrink-0"
                                     title="מחק מההיסטוריה"
                                   >
@@ -580,7 +581,7 @@ export default function ProfilePage() {
                                 </button>
                                 <button
                                   type="button"
-                                  onClick={() => handleDeleteDraft(d.id)}
+                                  onClick={() => setDeleteDraftId(d.id)}
                                   className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors shrink-0"
                                   title="מחק טיוטה"
                                 >
@@ -952,6 +953,30 @@ export default function ProfilePage() {
           </div>
         );
       })()}
+      <ConfirmDialog
+        open={!!deleteDraftId}
+        title="מחיקת טיוטה"
+        message="למחוק את הטיוטה? לא ניתן לשחזר."
+        confirmLabel="מחק"
+        cancelLabel="ביטול"
+        danger
+        onConfirm={() => {
+          if (deleteDraftId) handleDeleteDraft(deleteDraftId);
+        }}
+        onCancel={() => setDeleteDraftId(null)}
+      />
+      <ConfirmDialog
+        open={!!deleteQuoteId}
+        title="מחיקת הצעה מההיסטוריה"
+        message="למחוק הצעה זו מההיסטוריה? לא ניתן לשחזר."
+        confirmLabel="מחק"
+        cancelLabel="ביטול"
+        danger
+        onConfirm={() => {
+          if (deleteQuoteId) handleDeleteQuote(deleteQuoteId);
+        }}
+        onCancel={() => setDeleteQuoteId(null)}
+      />
     </main>
     </RequireAuth>
   );

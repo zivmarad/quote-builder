@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Palette, Umbrella, Droplet, Layers, Zap, Snowflake, Hammer, Link2, TreePine, Wrench, Building2, DoorOpen, Package, ChevronRight, Box, Radio } from 'lucide-react';
+import { Palette, Umbrella, Droplet, Layers, Zap, Snowflake, Hammer, Link2, TreePine, Wrench, Building2, DoorOpen, Package, ChevronRight, Box, Radio, Cog } from 'lucide-react';
 import { categories } from './service/services';
 import { useLanguage } from './contexts/LanguageContext';
 
@@ -17,6 +17,7 @@ const categoryIcons: Record<string, React.ComponentType<{ size?: number; classNa
   aluminium: Link2,
   gardening: TreePine,
   handyman: Wrench,
+  welder: Cog,
   drywall: Building2,
   doors: DoorOpen,
   communications: Radio,
@@ -35,6 +36,7 @@ const categoryColors: Record<string, string> = {
   aluminium: 'text-slate-600',
   gardening: 'text-green-600',
   handyman: 'text-orange-600',
+  welder: 'text-slate-700',
   drywall: 'text-slate-500',
   doors: 'text-amber-900',
   communications: 'text-violet-600',

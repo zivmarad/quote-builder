@@ -15,6 +15,7 @@ import {
   Eye,
   Trash2,
 } from 'lucide-react';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 const ADMIN_KEY_STORAGE = 'quoteBuilder_adminKey';
 
@@ -44,6 +45,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [listError, setListError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteUserRow, setDeleteUserRow] = useState<UserRow | null>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -113,12 +115,8 @@ export default function AdminPage() {
     setListError(null);
   };
 
-  const handleDeleteUser = async (u: UserRow, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const doDeleteUser = async (u: UserRow) => {
     if (!savedKey) return;
-    const msg = `להסיר את "${u.username}"${u.email && u.email !== '—' ? ` (${u.email})` : ''}? כל הנתונים יימחקו.`;
-    if (!window.confirm(msg)) return;
     setDeletingId(u.id);
     try {
       const res = await fetch(`/api/admin/user/${u.id}`, {
@@ -142,6 +140,12 @@ export default function AdminPage() {
     } finally {
       setDeletingId(null);
     }
+  };
+
+  const handleDeleteUser = (u: UserRow, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDeleteUserRow(u);
   };
 
   const formatDate = (iso: string) => {
@@ -390,6 +394,20 @@ export default function AdminPage() {
           </>
         )}
       </div>
+      {deleteUserRow && (
+        <ConfirmDialog
+          open={!!deleteUserRow}
+          title="הסרת משתמש"
+          message={`להסיר את "${deleteUserRow.username}"${deleteUserRow.email && deleteUserRow.email !== '—' ? ` (${deleteUserRow.email})` : ''}? כל הנתונים יימחקו.`}
+          confirmLabel="הסר"
+          cancelLabel="ביטול"
+          danger
+          onConfirm={() => {
+            doDeleteUser(deleteUserRow);
+          }}
+          onCancel={() => setDeleteUserRow(null)}
+        />
+      )}
     </main>
   );
 }

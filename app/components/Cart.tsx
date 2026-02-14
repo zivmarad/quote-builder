@@ -9,6 +9,7 @@ import { useQuoteHistory } from '../contexts/QuoteHistoryContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { saveDraft } from '../../lib/drafts-storage';
 import { Trash2, Edit2, Check, X, ShoppingBag, Plus, FileText, Share2, Eye, Loader2, ChevronDown, ChevronUp, Save } from 'lucide-react';
+import ConfirmDialog from './ConfirmDialog';
 
 const PENDING_DRAFT_KEY = 'quoteBuilder_pendingDraft';
 import { generateQuotePDFAsBlob, getQuotePreviewHtml } from './utils/pdfExport';
@@ -56,6 +57,8 @@ export default function Cart() {
   const [showCustomerDetails, setShowCustomerDetails] = useState(false);
   const [showSaveDraftModal, setShowSaveDraftModal] = useState(false);
   const [draftName, setDraftName] = useState('');
+  const [deleteItemId, setDeleteItemId] = useState<string | null>(null);
+  const [showClearBasketConfirm, setShowClearBasketConfirm] = useState(false);
 
   useEffect(() => {
     if (!toast) return;
@@ -528,7 +531,7 @@ export default function Cart() {
           </div>
           <button
             type="button"
-            onClick={() => window.confirm('לנקות את כל פריטי הסל? לא ניתן לשחזר.') && clearBasket()}
+            onClick={() => setShowClearBasketConfirm(true)}
             className="text-slate-400 hover:text-red-400 text-xs font-bold bg-white/5 px-3 py-2.5 sm:py-2 rounded-lg transition-colors min-h-[44px] shrink-0"
             aria-label="נקה את כל פריטי הסל"
           >
@@ -583,7 +586,7 @@ export default function Cart() {
                             {item.overridePrice !== undefined && <span className="text-[10px] text-orange-600 font-bold bg-orange-50 px-1.5 py-0.5 rounded block text-center mt-0.5">מחיר מותאם</span>}
                           </div>
                           <button onClick={() => handleStartEdit(item.id, currentPrice)} className="p-2 text-slate-400 hover:text-blue-600 rounded-lg transition-colors" title="ערוך פריט"><Edit2 size={18} /></button>
-                          <button onClick={() => removeItem(item.id)} className="p-2 text-slate-400 hover:text-red-600 rounded-lg transition-colors" title="הסר שירות"><Trash2 size={18} /></button>
+                          <button onClick={() => setDeleteItemId(item.id)} className="p-2 text-slate-400 hover:text-red-600 rounded-lg transition-colors" title="הסר שירות"><Trash2 size={18} /></button>
                         </>
                       )}
                     </div>
@@ -614,7 +617,7 @@ export default function Cart() {
                       )}
                       <button
                         type="button"
-                        onClick={() => { removeItem(item.id); setEditingId(null); }}
+                        onClick={() => setDeleteItemId(item.id)}
                         className="w-full sm:w-auto py-2.5 px-4 rounded-xl text-sm font-bold bg-red-100 text-red-700 hover:bg-red-200 transition-colors flex items-center justify-center gap-2"
                         title="הסר שירות מהסל"
                       >
@@ -1035,6 +1038,31 @@ export default function Cart() {
         </div>
       )}
     </div>
+    <ConfirmDialog
+      open={!!deleteItemId}
+      title="הסרת שירות מהסל"
+      message="האם להסיר את השירות מהסל? לא ניתן לשחזר."
+      confirmLabel="הסר"
+      cancelLabel="ביטול"
+      danger
+      onConfirm={() => {
+        if (deleteItemId) {
+          removeItem(deleteItemId);
+          if (editingId === deleteItemId) setEditingId(null);
+        }
+      }}
+      onCancel={() => setDeleteItemId(null)}
+    />
+    <ConfirmDialog
+      open={showClearBasketConfirm}
+      title="ניקוי הסל"
+      message="לנקות את כל פריטי הסל? לא ניתן לשחזר."
+      confirmLabel="נקה הכל"
+      cancelLabel="ביטול"
+      danger
+      onConfirm={() => clearBasket()}
+      onCancel={() => setShowClearBasketConfirm(false)}
+    />
     {toastEl}
     </>
   );

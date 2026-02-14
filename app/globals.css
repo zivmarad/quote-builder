@@ -123,3 +123,13 @@ body {
   margin-top: 24px;
   color: #444;
 }
+
+/* אנימציה לכפתור הסל הצף כשמוסיפים פריט */
+@keyframes cart-bump {
+  0%, 100% { transform: scale(1); }
+  40% { transform: scale(1.12); }
+  70% { transform: scale(0.97); }
+}
+.cart-bump {
+  animation: cart-bump 0.55s ease-out;
+}

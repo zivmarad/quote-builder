@@ -14,6 +14,7 @@ import {
   Calendar,
   Trash2,
 } from 'lucide-react';
+import ConfirmDialog from '../../../components/ConfirmDialog';
 
 const ADMIN_KEY_STORAGE = 'quoteBuilder_adminKey';
 
@@ -33,6 +34,7 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     params.then((p) => setUserId(p.userId));
@@ -62,10 +64,8 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
       .finally(() => setLoading(false));
   }, [userId]);
 
-  const handleDelete = async () => {
+  const doDeleteUser = async () => {
     if (!userId || !data?.user) return;
-    const msg = `להסיר את המשתמש "${data.user.username}"${data.user.email ? ` (${data.user.email})` : ''}?\nכל הנתונים שלו יימחקו – פרופיל, סל, היסטוריה והגדרות.`;
-    if (!window.confirm(msg)) return;
     const key = typeof window !== 'undefined' ? sessionStorage.getItem(ADMIN_KEY_STORAGE) : null;
     if (!key) return;
     setDeleting(true);
@@ -149,7 +149,7 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
             </div>
             <button
               type="button"
-              onClick={handleDelete}
+              onClick={() => setShowDeleteConfirm(true)}
               disabled={deleting}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 disabled:opacity-60 transition-colors font-medium text-sm"
             >
@@ -277,6 +277,16 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
           )}
         </div>
       </div>
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        title="הסרת משתמש"
+        message={data?.user ? `להסיר את המשתמש "${data.user.username}"${data.user.email ? ` (${data.user.email})` : ''}? כל הנתונים שלו יימחקו – פרופיל, סל, היסטוריה והגדרות.` : ''}
+        confirmLabel="הסר"
+        cancelLabel="ביטול"
+        danger
+        onConfirm={() => doDeleteUser()}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
     </main>
   );
 }
