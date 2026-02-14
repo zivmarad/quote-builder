@@ -90,7 +90,7 @@ export function ProfileProvider({ children, userId }: { children: React.ReactNod
           const merged: UserProfile = { ...defaultProfile, ...fromApi };
           (Object.keys(fromLocal) as (keyof UserProfile)[]).forEach((k) => {
             const v = fromLocal[k];
-            if (v !== undefined && v !== null && v !== '') (merged as Record<string, unknown>)[k] = v;
+            if (v !== undefined && v !== null && v !== '') (merged as unknown as Record<string, unknown>)[k] = v;
           });
           lastLoadedForUserIdRef.current = userId;
           setProfileState(merged);
