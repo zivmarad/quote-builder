@@ -2,8 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
-/** הסשן (מי מחובר כרגע) נשמר ב-localStorage; רשימת המשתמשים נשמרת בשרת (API) וזמינה מכל מכשיר. */
-const CURRENT_USER_KEY = 'quoteBuilder_currentUser';
+/** הסשן נשמר ב-cookie (JWT) בצד שרת. טעינת "מי מחובר" דרך GET /api/auth/me. */
 export const SAVED_USERNAME_KEY = 'quoteBuilder_savedUsername';
 export const SAVED_PASSWORD_KEY = 'quoteBuilder_savedPassword';
 
@@ -18,30 +17,6 @@ export interface CurrentUser {
   id: string;
   username: string;
   email?: string;
-}
-
-function getCurrentUser(): CurrentUser | null {
-  if (typeof window === 'undefined') return null;
-  try {
-    const raw = localStorage.getItem(CURRENT_USER_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw) as CurrentUser;
-  } catch {
-    return null;
-  }
-}
-
-function setCurrentUser(user: CurrentUser | null) {
-  if (typeof window === 'undefined') return;
-  try {
-    if (user) {
-      localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
-    } else {
-      localStorage.removeItem(CURRENT_USER_KEY);
-    }
-  } catch (e) {
-    console.warn('Auth: could not save session to localStorage', e);
-  }
 }
 
 interface AuthContextType {
@@ -59,6 +34,18 @@ interface AuthContextType {
   logout: () => void;
 }
 
+async function fetchMe(): Promise<CurrentUser | null> {
+  try {
+    const res = await fetch('/api/auth/me', { credentials: 'include' });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data?.ok && data?.user) return data.user as CurrentUser;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -66,8 +53,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    setUser(getCurrentUser());
-    setIsLoaded(true);
+    let cancelled = false;
+    fetchMe().then((u) => {
+      if (!cancelled) setUser(u);
+      if (!cancelled) setIsLoaded(true);
+    });
+    return () => { cancelled = true; };
   }, []);
 
   const login = useCallback(async (usernameOrEmail: string, password: string) => {
@@ -80,6 +71,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: trimmed, password }),
+        credentials: 'include',
       });
       const data = await res.json();
       if (!res.ok) {
@@ -87,7 +79,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       if (data.ok && data.user) {
         const current: CurrentUser = { id: data.user.id, username: data.user.username, email: data.user.email };
-        setCurrentUser(current);
         setUser(current);
         return { ok: true };
       }
@@ -99,14 +90,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const changePassword = useCallback(async (currentPassword: string, newPassword: string) => {
-    const u = getCurrentUser();
-    if (!u) return { ok: false, error: 'לא מחובר' };
+    if (!user) return { ok: false, error: 'לא מחובר' };
     if (!newPassword || newPassword.length < 4) return { ok: false, error: 'הסיסמה החדשה חייבת לפחות 4 תווים' };
     try {
       const res = await fetch('/api/auth/change-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: u.id, currentPassword, newPassword }),
+        body: JSON.stringify({ currentPassword, newPassword }),
+        credentials: 'include',
       });
       const data = await res.json();
       if (!res.ok) return { ok: false, error: data.error ?? 'שגיאה בשינוי סיסמה' };
@@ -115,7 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.warn('Change password failed', e);
       return { ok: false, error: 'לא ניתן לשנות סיסמה. בדוק חיבור לאינטרנט.' };
     }
-  }, []);
+  }, [user]);
 
   const signup = useCallback(async (username: string, password: string) => {
     const trimmed = username.trim();
@@ -133,6 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: trimmed, password }),
+        credentials: 'include',
       });
       const data = await res.json();
       if (!res.ok) {
@@ -140,7 +132,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       if (data.ok && data.user) {
         const current: CurrentUser = { id: data.user.id, username: data.user.username, email: data.user.email };
-        setCurrentUser(current);
         setUser(current);
         return { ok: true };
       }
@@ -212,6 +203,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: trimmedEmail, code: trimmedCode, username: trimmedUsername, password }),
+        credentials: 'include',
       });
       let data: { ok?: boolean; error?: string; user?: { id: string; username: string; email?: string } } = {};
       try {
@@ -223,7 +215,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!res.ok) return { ok: false, error: data.error ?? 'שגיאה בהרשמה' };
       if (data.ok && data.user) {
         const current: CurrentUser = { id: data.user.id, username: data.user.username, email: data.user.email };
-        setCurrentUser(current);
         setUser(current);
         return { ok: true };
       }
@@ -309,7 +300,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = useCallback(() => {
-    setCurrentUser(null);
+    fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
     setUser(null);
   }, []);
 

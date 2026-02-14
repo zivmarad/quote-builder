@@ -1,21 +1,26 @@
 import { NextResponse } from 'next/server';
 import { readUsers, writeUsers, hashPassword } from '../lib/users-store';
+import { getCurrentUser } from '../../../../lib/auth-server';
 
-/** שינוי סיסמה כשמחובר – דורש סיסמה נוכחית */
+/** שינוי סיסמה כשמחובר – דורש סיסמה נוכחית. המשתמש נקבע לפי ה-JWT. */
 export async function POST(request: Request) {
   try {
+    const user = await getCurrentUser(request);
+    if (!user) {
+      return NextResponse.json({ ok: false, error: 'נא להתחבר' }, { status: 401 });
+    }
     const body = await request.json();
-    const userId = typeof body.userId === 'string' ? body.userId.trim() : '';
     const currentPassword = typeof body.currentPassword === 'string' ? body.currentPassword : '';
     const newPassword = typeof body.newPassword === 'string' ? body.newPassword : '';
 
-    if (!userId || !currentPassword || !newPassword) {
+    if (!currentPassword || !newPassword) {
       return NextResponse.json({ ok: false, error: 'נא למלא סיסמה נוכחית וסיסמה חדשה' }, { status: 400 });
     }
     if (newPassword.length < 4) {
       return NextResponse.json({ ok: false, error: 'הסיסמה החדשה חייבת להכיל לפחות 4 תווים' }, { status: 400 });
     }
 
+    const userId = user.id;
     const users = await readUsers();
     const idx = users.findIndex((u) => u.id === userId);
     if (idx === -1) {

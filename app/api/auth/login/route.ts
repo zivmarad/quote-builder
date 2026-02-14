@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { readUsers, hashPassword } from '../lib/users-store';
+import { createSessionToken, setSessionCookie } from '../../../../lib/auth-server';
 
 export async function POST(request: Request) {
   try {
@@ -25,10 +26,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: 'שם משתמש/אימייל או סיסמה שגויים' }, { status: 401 });
     }
 
-    return NextResponse.json({
+    const token = await createSessionToken({
+      id: found.id,
+      username: found.username,
+      email: found.email,
+    });
+    const response = NextResponse.json({
       ok: true,
       user: { id: found.id, username: found.username, email: found.email },
     });
+    setSessionCookie(response, token);
+    return response;
   } catch (e) {
     console.error('Login error:', e);
     return NextResponse.json({ ok: false, error: 'שגיאה בשרת' }, { status: 500 });

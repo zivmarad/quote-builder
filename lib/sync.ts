@@ -4,7 +4,7 @@ export const isSyncAvailable = typeof window !== 'undefined' && !!process.env.NE
 export async function fetchSync<T>(path: string, userId: string | null): Promise<T | null> {
   if (!userId || !isSyncAvailable) return null;
   try {
-    const res = await fetch(`/api/sync${path}?userId=${encodeURIComponent(userId)}`);
+    const res = await fetch(`/api/sync${path}?userId=${encodeURIComponent(userId)}`, { credentials: 'include' });
     if (!res.ok) return null;
     const data = await res.json();
     return data?.ok ? data : null;
@@ -24,6 +24,7 @@ export async function postSync(
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId, ...payload }),
+      credentials: 'include',
     });
     if (!res.ok) return false;
     const data = await res.json();

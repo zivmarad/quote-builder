@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { readUsers, writeUsers, hashPassword, generateId, type StoredUser } from '../lib/users-store';
+import { createSessionToken, setSessionCookie } from '../../../../lib/auth-server';
 
 export async function POST(request: Request) {
   try {
@@ -32,10 +33,16 @@ export async function POST(request: Request) {
     users.push(newUser);
     await writeUsers(users);
 
-    return NextResponse.json({
+    const token = await createSessionToken({
+      id: newUser.id,
+      username: newUser.username,
+    });
+    const response = NextResponse.json({
       ok: true,
       user: { id: newUser.id, username: newUser.username },
     });
+    setSessionCookie(response, token);
+    return response;
   } catch (e) {
     console.error('Signup error:', e);
     return NextResponse.json({ ok: false, error: 'שגיאה בשרת' }, { status: 500 });

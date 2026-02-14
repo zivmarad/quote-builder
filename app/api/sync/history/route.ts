@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin, isSupabaseConfigured } from '../../../../lib/supabase-server';
+import { getCurrentUser } from '../../../../lib/auth-server';
 
 export async function GET(request: NextRequest) {
+  const user = await getCurrentUser(request);
+  if (!user) {
+    return NextResponse.json({ ok: false, error: 'נא להתחבר' }, { status: 401 });
+  }
   if (!isSupabaseConfigured) {
     return NextResponse.json({ ok: false, error: 'Supabase לא מוגדר' }, { status: 503 });
   }
-  const userId = request.nextUrl.searchParams.get('userId');
-  if (!userId) {
-    return NextResponse.json({ ok: false, error: 'חסר userId' }, { status: 400 });
-  }
+  const userId = user.id;
   try {
     const { data, error } = await supabaseAdmin!
       .from('quote_history')
@@ -28,15 +30,20 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const user = await getCurrentUser(request);
+  if (!user) {
+    return NextResponse.json({ ok: false, error: 'נא להתחבר' }, { status: 401 });
+  }
   if (!isSupabaseConfigured) {
     return NextResponse.json({ ok: false, error: 'Supabase לא מוגדר' }, { status: 503 });
   }
   try {
     const body = await request.json();
-    const { userId, quotes } = body as { userId: string; quotes: unknown[] };
-    if (!userId || !Array.isArray(quotes)) {
-      return NextResponse.json({ ok: false, error: 'חסר userId או quotes' }, { status: 400 });
+    const { quotes } = body as { quotes: unknown[] };
+    if (!Array.isArray(quotes)) {
+      return NextResponse.json({ ok: false, error: 'חסר quotes' }, { status: 400 });
     }
+    const userId = user.id;
     const { error } = await supabaseAdmin!
       .from('quote_history')
       .upsert({ user_id: userId, quotes, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });

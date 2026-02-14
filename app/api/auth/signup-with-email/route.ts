@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { readUsers, writeUsers, hashPassword, generateId, type StoredUser } from '../lib/users-store';
 import { consumeVerificationCode } from '../lib/verification-codes-store';
 import { sendNewUserNotificationEmail } from '../lib/send-email';
+import { createSessionToken, setSessionCookie } from '../../../../lib/auth-server';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -69,10 +70,17 @@ export async function POST(request: Request) {
       console.warn('Failed to send admin notification email:', e);
     }
 
-    return NextResponse.json({
+    const token = await createSessionToken({
+      id: newUser.id,
+      username: newUser.username,
+      email: newUser.email,
+    });
+    const response = NextResponse.json({
       ok: true,
       user: { id: newUser.id, username: newUser.username, email: newUser.email },
     });
+    setSessionCookie(response, token);
+    return response;
   } catch (e) {
     console.error('Signup with email error:', e);
     return NextResponse.json({ ok: false, error: 'שגיאה בשרת' }, { status: 500 });
