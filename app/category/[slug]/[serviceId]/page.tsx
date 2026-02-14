@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { categories } from '../../../service/services';
 import type { Question } from '../../../service/services';
@@ -96,6 +96,17 @@ export default function ServiceWizardPage() {
     setQuantityInput(digits === '' ? '' : digits);
   };
 
+  /** מציב סמן בסוף השדה כדי שניתן יהיה להוסיף ספרות (10 ולא 01) ולמחוק עם Backspace */
+  const focusEnd = useCallback((el: HTMLInputElement | null) => {
+    if (!el) return;
+    const len = (el.value || '').length;
+    const setEnd = () => {
+      el.setSelectionRange(len, len);
+    };
+    setEnd();
+    requestAnimationFrame(setEnd);
+  }, []);
+
   const handleQuantityBlur = () => {
     const num = parseInt(quantityInput, 10);
     if (quantityInput === '' || Number.isNaN(num) || num < 1) {
@@ -162,6 +173,7 @@ export default function ServiceWizardPage() {
                 pattern="[0-9]*"
                 value={quantityInput}
                 onChange={(e) => handleQuantityChange(e.target.value)}
+                onFocus={(e) => focusEnd(e.currentTarget)}
                 onBlur={handleQuantityBlur}
                 placeholder="1"
                 className="w-24 min-h-[44px] rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-right text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -228,6 +240,7 @@ export default function ServiceWizardPage() {
                       pattern="[0-9]*"
                       value={questionQuantities[q.id] ?? '1'}
                       onChange={(e) => handleQuestionQuantityChange(q.id, e.target.value)}
+                      onFocus={(e) => focusEnd(e.currentTarget)}
                       onBlur={() => handleQuestionQuantityBlur(q.id)}
                       placeholder="1"
                       className="w-20 min-h-[40px] rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-right text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500"

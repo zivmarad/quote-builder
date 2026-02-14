@@ -26,6 +26,7 @@
   "header": {
     "appName": "בונה הצעות מחיר",
     "profile": "איזור אישי",
+    "guest": "אורח",
     "login": "התחבר",
     "logout": "התנתק",
     "signup": "הרשם",

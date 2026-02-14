@@ -86,10 +86,11 @@ export function ProfileProvider({ children, userId }: { children: React.ReactNod
             }
           }
           const fromApi = data.profile as Partial<UserProfile>;
-          const merged: UserProfile = { ...defaultProfile, ...fromLocal };
-          (Object.keys(fromApi) as (keyof UserProfile)[]).forEach((k) => {
-            const v = fromApi[k];
-            if (v !== undefined && v !== null && v !== '') merged[k] = v as never;
+          // התחל מהשרת, אחר כך העדף ערכים מקומיים לא־ריקים – כדי שפרטים ולוגו שנשמרו מקומית לא יימחקו
+          const merged: UserProfile = { ...defaultProfile, ...fromApi };
+          (Object.keys(fromLocal) as (keyof UserProfile)[]).forEach((k) => {
+            const v = fromLocal[k];
+            if (v !== undefined && v !== null && v !== '') (merged as Record<string, unknown>)[k] = v;
           });
           lastLoadedForUserIdRef.current = userId;
           setProfileState(merged);

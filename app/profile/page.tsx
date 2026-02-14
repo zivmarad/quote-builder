@@ -220,7 +220,42 @@ export default function ProfilePage() {
     const file = e.target.files?.[0];
     if (!file || !file.type.startsWith('image/')) return;
     const reader = new FileReader();
-    reader.onload = () => setProfile({ logo: reader.result as string });
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      // דחיסת לוגו כדי שיישמר (מתחת למגבלת גודל בשרת) ויישאר יציב
+      const img = new Image();
+      img.onload = () => {
+        const max = 400;
+        let w = img.width;
+        let h = img.height;
+        if (w > max || h > max) {
+          if (w > h) {
+            h = Math.round((h * max) / w);
+            w = max;
+          } else {
+            w = Math.round((w * max) / h);
+            h = max;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          setProfile({ logo: dataUrl });
+          return;
+        }
+        ctx.drawImage(img, 0, 0, w, h);
+        try {
+          const compressed = canvas.toDataURL('image/jpeg', 0.85);
+          setProfile({ logo: compressed });
+        } catch {
+          setProfile({ logo: dataUrl });
+        }
+      };
+      img.onerror = () => setProfile({ logo: dataUrl });
+      img.src = dataUrl;
+    };
     reader.readAsDataURL(file);
   };
 
