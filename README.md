@@ -18,19 +18,30 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ### דף אדמין
 
-- **כתובת:** `/admin` (מקומית: http://localhost:3000/admin)
-- **כניסה:** שם משתמש וסיסמה מהמשתנים `ADMIN_USERNAME` ו־`ADMIN_SECRET` ב־`.env.local` (כבר מוגדרים אצלך).
-- **בפריסה (Vercel):** ב־Project → Settings → Environment Variables הוסף `ADMIN_USERNAME` ו־`ADMIN_SECRET` עם אותם ערכים.
+- **כתובת:** `/admin`
+- **כניסה:** שם משתמש וסיסמה מהמשתנים `ADMIN_USERNAME` ו־`ADMIN_SECRET`. המפתח נשלח ב-header `X-Admin-Key` (לא ב-URL).
 
-### התחברות מכל מכשיר (מחשב + טלפון)
+### משתני סביבה ל-production (Vercel / וכו')
 
-המשתמשים נשמרים בשרת בתיקייה `data/users.json`. כדי שהטלפון יוכל להתחבר עם אותו חשבון:
+ב־Project → Settings → Environment Variables הגדר:
 
-1. הרץ את השרת במחשב: `npm run dev`
-2. בטלפון, פתח את האתר בכתובת של המחשב ברשת (למשל `http://192.168.1.x:3000` – החלף ב־IP של המחשב ברשת הבית).
-3. הרשמה/התחברות מהטלפון תשתמש באותו שרת, ולכן אותו משתמש יעבוד במחשב ובטלפון.
+| משתנה | חובה | תיאור |
+|--------|------|--------|
+| `JWT_SECRET` | כן | מפתח לחתימת סשן (לפחות 32 תווים). ייחודי וסודי. |
+| `NEXT_PUBLIC_SUPABASE_URL` | לסנכרון | כתובת פרויקט Supabase (Project Settings → API). |
+| `SUPABASE_SERVICE_ROLE_KEY` | לסנכרון | מפתח service_role מאותו מקום. **לא לחשוף בצד לקוח.** |
+| `EMAIL_USER` | לשליחת מייל | כתובת Gmail שממנה נשלחים קודי אימות וכו'. |
+| `EMAIL_APP_PASSWORD` | לשליחת מייל | סיסמת אפליקציה של Gmail (לא סיסמת הכניסה). |
+| `ADMIN_USERNAME` | לאדמין | שם משתמש לכניסת אדמין. |
+| `ADMIN_SECRET` | לאדמין | סיסמה/מפתח לכניסת אדמין (נשלח כ־X-Admin-Key). |
 
-**הערה:** בפריסה ל־Vercel האחסון בקובץ לא נשמר בין בקשות. לפרודקשן רצוי לחבר מסד נתונים (למשל Supabase) או להריץ על שרת Node (Railway, Render וכו').
+**אופציונלי:** `NOTIFY_ADMIN_EMAIL`, `NOTIFY_SMS_EMAIL` – לקבלת מייל/SMS על הרשמה חדשה.
+
+**חשוב:** אל תעלה קבצי `.env` או `.env.local` ל-Git; הסודות רק במשתני הסביבה של הפלטפורמה.
+
+### התחברות וסנכרון
+
+משתמשים ונתונים (פרופיל, סל, היסטוריה) נשמרים ב-Supabase. התחברות מכל מכשיר עם אותו חשבון מסנכרנת את הנתונים אוטומטית.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 

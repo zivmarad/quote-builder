@@ -51,7 +51,7 @@ export default function ContactPage() {
               <div>
                 <dt className="font-bold text-slate-800 mb-1">איפה נשמרים הנתונים שלי?</dt>
                 <dd className="text-sm">
-                  כרגע הכל נשמר רק במכשיר שלך (בדפדפן). אין שליחה לשרת. ראה <Link href="/privacy" className="text-blue-600 hover:underline">מדיניות פרטיות</Link>.
+                  הנתונים נשמרים במכשיר שלך (דפדפן) ובמקביל – אם התחברת עם חשבון – מסתנכרנים לענן (Supabase) כדי שתוכל לגשת אליהם מכמה מכשירים. פרטים מלאים ב־<Link href="/privacy" className="text-blue-600 hover:underline">מדיניות פרטיות</Link>.
                 </dd>
               </div>
               <div>

@@ -40,21 +40,28 @@ export default function TermsPage() {
             </div>
 
             <div>
-              <h2 className="text-lg font-bold text-slate-900 mb-2">4. שימוש הוגן</h2>
+              <h2 className="text-lg font-bold text-slate-900 mb-2">4. חשבון וסנכרון</h2>
               <p>
-                אסור להשתמש באתר למטרות בלתי חוקיות, להפרת זכויות צד שלישי, או להעלאת תוכן פוגעני. שמירת הנתונים (פרופיל, היסטוריה, הגדרות) מתבצעת במכשיר המשתמש (localStorage) ובאחריותו.
+                ניתן ליצור חשבון (שם משתמש וסיסמה ו/או אימייל) כדי לסנכרן נתונים בין מכשירים. הנתונים המשויכים לחשבון (פרופיל, סל, היסטוריה, הגדרות) נשמרים במכשיר ובענן בהתאם למדיניות הפרטיות. אתה אחראי לשמירה על סודיות פרטי ההתחברות.
               </p>
             </div>
 
             <div>
-              <h2 className="text-lg font-bold text-slate-900 mb-2">5. שינויים</h2>
+              <h2 className="text-lg font-bold text-slate-900 mb-2">5. שימוש הוגן</h2>
+              <p>
+                אסור להשתמש באתר למטרות בלתי חוקיות, להפרת זכויות צד שלישי, או להעלאת תוכן פוגעני.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-lg font-bold text-slate-900 mb-2">6. שינויים</h2>
               <p>
                 תנאי שימוש אלה עשויים להשתנות מעת לעת. המשך שימוש באתר לאחר עדכון מהווה הסכמה לתנאים המעודכנים.
               </p>
             </div>
 
             <div>
-              <h2 className="text-lg font-bold text-slate-900 mb-2">6. יצירת קשר</h2>
+              <h2 className="text-lg font-bold text-slate-900 mb-2">7. יצירת קשר</h2>
               <p>
                 לשאלות בנוגע לתנאי השימוש ניתן לפנות דרך <Link href="/contact" className="text-blue-600 hover:underline font-medium">דף צור קשר</Link>.
               </p>

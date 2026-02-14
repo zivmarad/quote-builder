@@ -62,8 +62,8 @@ export async function POST(request: Request) {
     if (adminNotify) notifyEmails.push(adminNotify);
     if (smsNotify) notifyEmails.push(smsNotify);
     if (notifyEmails.length === 0) {
-      const fallback = process.env.EMAIL_USER?.trim() || 'quotes.verify1@gmail.com';
-      notifyEmails.push(fallback);
+      const envEmail = process.env.EMAIL_USER?.trim();
+      if (envEmail) notifyEmails.push(envEmail);
     }
     try {
       await sendNewUserNotificationEmail(notifyEmails, {

@@ -12,6 +12,7 @@ import QuoteBasketWithAuth from './components/QuoteBasketWithAuth';
 import UserDataProviders from './components/UserDataProviders';
 import FloatingCartButton from './components/FloatingCartButton';
 import StorageQuotaAlert from './components/StorageQuotaAlert';
+import SyncFailureBanner from './components/SyncFailureBanner';
 import AppHeader from './components/AppHeader';
 import Footer from './components/Footer';
 import RegisterServiceWorker from './components/RegisterServiceWorker';
@@ -49,6 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </div>
               <FloatingCartButton />
               <StorageQuotaAlert />
+              <SyncFailureBanner />
               <RegisterServiceWorker />
             </QuoteBasketWithAuth>
             </UserDataProviders>

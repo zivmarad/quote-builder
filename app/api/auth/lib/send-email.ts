@@ -1,23 +1,20 @@
 import nodemailer from 'nodemailer';
 
-function getTransporter() {
-  const fromEmail = (process.env.EMAIL_USER ?? 'quotes.verify1@gmail.com').trim();
-  const raw = process.env.EMAIL_APP_PASSWORD?.trim() ?? '';
-  const appPassword = raw.replace(/\s/g, ''); // Gmail מקבל עם או בלי רווחים
-  if (!appPassword) {
-    throw new Error('EMAIL_APP_PASSWORD לא מוגדר ב-.env');
-  }
-  return nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: fromEmail,
-      pass: appPassword,
-    },
-  });
+function getFromEmail(): string {
+  const email = process.env.EMAIL_USER?.trim();
+  if (!email) throw new Error('EMAIL_USER לא מוגדר ב-.env');
+  return email;
 }
 
-function getFromEmail() {
-  return (process.env.EMAIL_USER ?? 'quotes.verify1@gmail.com').trim();
+function getTransporter() {
+  const fromEmail = getFromEmail();
+  const raw = process.env.EMAIL_APP_PASSWORD?.trim() ?? '';
+  const appPassword = raw.replace(/\s/g, '');
+  if (!appPassword) throw new Error('EMAIL_APP_PASSWORD לא מוגדר ב-.env');
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: { user: fromEmail, pass: appPassword },
+  });
 }
 
 export async function sendVerificationEmail(to: string, code: string): Promise<void> {
