@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { readUsers } from '../lib/users-store';
+import { getUserByLogin } from '../lib/users-store';
 import { sendUsernameToEmail } from '../lib/send-email';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -14,8 +14,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: 'כתובת אימייל לא תקינה' }, { status: 400 });
     }
 
-    const users = await readUsers();
-    const user = users.find((u) => u.email?.toLowerCase() === email);
+    const user = await getUserByLogin(email);
     if (user) {
       try {
         await sendUsernameToEmail(email, user.username);

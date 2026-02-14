@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { readUsers, writeUsers, hashPassword, generateId, type StoredUser } from '../lib/users-store';
+import { usernameExists, hashPassword, generateId, createUser } from '../lib/users-store';
 import { createSessionToken, setSessionCookie } from '../../../../lib/auth-server';
 
 export async function POST(request: Request) {
@@ -18,20 +18,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: 'הסיסמה חייבת להכיל לפחות 4 תווים' }, { status: 400 });
     }
 
-    const users = await readUsers();
-    const exists = users.some((u) => u.username.toLowerCase() === username.toLowerCase());
-    if (exists) {
+    if (await usernameExists(username)) {
       return NextResponse.json({ ok: false, error: 'שם המשתמש כבר תפוס' }, { status: 400 });
     }
 
-    const newUser: StoredUser = {
+    const newUser = {
       id: generateId(),
       username,
-      passwordHash: hashPassword(password),
+      passwordHash: await hashPassword(password),
       createdAt: new Date().toISOString(),
     };
-    users.push(newUser);
-    await writeUsers(users);
+    const created = await createUser(newUser);
+    if (!created) {
+      return NextResponse.json({ ok: false, error: 'שגיאה בשמירת המשתמש' }, { status: 500 });
+    }
 
     const token = await createSessionToken({
       id: newUser.id,

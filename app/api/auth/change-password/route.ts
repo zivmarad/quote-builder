@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { readUsers, writeUsers, hashPassword } from '../lib/users-store';
+import { getUserById, verifyPassword, hashPassword, updatePasswordHash } from '../lib/users-store';
 import { getCurrentUser } from '../../../../lib/auth-server';
 
 /** שינוי סיסמה כשמחובר – דורש סיסמה נוכחית. המשתמש נקבע לפי ה-JWT. */
@@ -20,20 +20,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: 'הסיסמה החדשה חייבת להכיל לפחות 4 תווים' }, { status: 400 });
     }
 
-    const userId = user.id;
-    const users = await readUsers();
-    const idx = users.findIndex((u) => u.id === userId);
-    if (idx === -1) {
+    const stored = await getUserById(user.id);
+    if (!stored) {
       return NextResponse.json({ ok: false, error: 'משתמש לא נמצא' }, { status: 404 });
     }
 
-    const currentHash = hashPassword(currentPassword);
-    if (currentHash !== users[idx].passwordHash) {
+    const valid = await verifyPassword(currentPassword, stored.passwordHash);
+    if (!valid) {
       return NextResponse.json({ ok: false, error: 'הסיסמה הנוכחית שגויה' }, { status: 401 });
     }
 
-    users[idx] = { ...users[idx], passwordHash: hashPassword(newPassword) };
-    await writeUsers(users);
+    const newHash = await hashPassword(newPassword);
+    const updated = await updatePasswordHash(user.id, newHash);
+    if (!updated) {
+      return NextResponse.json({ ok: false, error: 'שגיאה בעדכון הסיסמה' }, { status: 500 });
+    }
 
     return NextResponse.json({ ok: true, message: 'הסיסמה עודכנה' });
   } catch (e) {

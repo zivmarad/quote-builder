@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { readUsers } from '../../auth/lib/users-store';
+import { getUsersList } from '../../auth/lib/users-store';
 import { supabaseAdmin } from '../../../../lib/supabase-server';
 
 function getAdminKey(request: Request): string | null {
@@ -18,7 +18,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const users = await readUsers();
+    const users = await getUsersList();
     const quoteCountByUser: Record<string, number> = {};
     if (supabaseAdmin) {
       const { data: historyRows } = await supabaseAdmin.from('quote_history').select('user_id, quotes');

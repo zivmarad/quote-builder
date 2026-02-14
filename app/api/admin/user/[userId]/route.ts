@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { readUsers, deleteUserById } from '../../../auth/lib/users-store';
+import { getUserById, deleteUserById } from '../../../auth/lib/users-store';
 import { supabaseAdmin } from '../../../../../lib/supabase-server';
 
 function getAdminKey(request: Request): string | null {
@@ -25,8 +25,7 @@ export async function GET(
   }
 
   try {
-    const users = await readUsers();
-    const user = users.find((u) => u.id === userId);
+    const user = await getUserById(userId);
     if (!user) {
       return NextResponse.json({ error: 'משתמש לא נמצא' }, { status: 404 });
     }

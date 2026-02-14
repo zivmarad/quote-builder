@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { readUsers, writeUsers, hashPassword, generateId, type StoredUser } from '../lib/users-store';
+import { emailExists, usernameExists, hashPassword, generateId, createUser } from '../lib/users-store';
 import { consumeVerificationCode } from '../lib/verification-codes-store';
 import { sendNewUserNotificationEmail } from '../lib/send-email';
 import { createSessionToken, setSessionCookie } from '../../../../lib/auth-server';
@@ -33,23 +33,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: 'קוד לא תקין או שפג תוקפו' }, { status: 401 });
     }
 
-    const users = await readUsers();
-    if (users.some((u) => u.email?.toLowerCase() === email)) {
+    if (await emailExists(email)) {
       return NextResponse.json({ ok: false, error: 'כתובת המייל כבר רשומה במערכת' }, { status: 400 });
     }
-    if (users.some((u) => u.username.toLowerCase() === username.toLowerCase())) {
+    if (await usernameExists(username)) {
       return NextResponse.json({ ok: false, error: 'שם המשתמש כבר תפוס' }, { status: 400 });
     }
 
-    const newUser: StoredUser = {
+    const newUser = {
       id: generateId(),
       username,
       email,
-      passwordHash: hashPassword(password),
+      passwordHash: await hashPassword(password),
       createdAt: new Date().toISOString(),
     };
-    users.push(newUser);
-    await writeUsers(users);
+    const created = await createUser(newUser);
+    if (!created) {
+      return NextResponse.json({ ok: false, error: 'שגיאה בשמירת המשתמש' }, { status: 500 });
+    }
 
     const notifyEmails: string[] = [];
     const adminNotify = process.env.NOTIFY_ADMIN_EMAIL?.trim();

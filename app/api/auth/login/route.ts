@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { readUsers, hashPassword } from '../lib/users-store';
+import { getUserByLogin, verifyPassword, rehashToBcryptIfNeeded } from '../lib/users-store';
 import { createSessionToken, setSessionCookie } from '../../../../lib/auth-server';
 
 export async function POST(request: Request) {
@@ -12,19 +12,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: 'נא למלא שם משתמש או אימייל וסיסמה' }, { status: 400 });
     }
 
-    const users = await readUsers();
-    const isEmail = login.includes('@');
-    const found = isEmail
-      ? users.find((u) => u.email?.toLowerCase() === login.toLowerCase())
-      : users.find((u) => u.username.toLowerCase() === login.toLowerCase());
+    const found = await getUserByLogin(login);
     if (!found) {
       return NextResponse.json({ ok: false, error: 'שם משתמש/אימייל או סיסמה שגויים' }, { status: 401 });
     }
 
-    const hash = hashPassword(password);
-    if (hash !== found.passwordHash) {
+    const valid = await verifyPassword(password, found.passwordHash);
+    if (!valid) {
       return NextResponse.json({ ok: false, error: 'שם משתמש/אימייל או סיסמה שגויים' }, { status: 401 });
     }
+
+    await rehashToBcryptIfNeeded(found.id, password, found.passwordHash);
 
     const token = await createSessionToken({
       id: found.id,

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { readUsers } from '../../auth/lib/users-store';
+import { getUsersCount, getNewUsersCount } from '../../auth/lib/users-store';
 import { supabaseAdmin } from '../../../../lib/supabase-server';
 
 function getAdminKey(request: Request): string | null {
@@ -18,14 +18,11 @@ export async function GET(request: Request) {
   }
 
   try {
-    const users = await readUsers();
-    const now = Date.now();
-    const day = 24 * 60 * 60 * 1000;
-    const sevenDaysAgo = new Date(now - 7 * day).toISOString();
-    const thirtyDaysAgo = new Date(now - 30 * day).toISOString();
-
-    const newUsers7 = users.filter((u) => u.createdAt >= sevenDaysAgo).length;
-    const newUsers30 = users.filter((u) => u.createdAt >= thirtyDaysAgo).length;
+    const [totalUsers, newUsers7d, newUsers30d] = await Promise.all([
+      getUsersCount(),
+      getNewUsersCount(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()),
+      getNewUsersCount(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
+    ]);
 
     let totalQuotes = 0;
     if (supabaseAdmin) {
@@ -39,9 +36,9 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.json({
-      totalUsers: users.length,
-      newUsers7d: newUsers7,
-      newUsers30d: newUsers30,
+      totalUsers,
+      newUsers7d,
+      newUsers30d,
       totalQuotes,
     });
   } catch (e) {

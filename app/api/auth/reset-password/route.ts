@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { readUsers, hashPassword, updatePasswordByEmail } from '../lib/users-store';
+import { emailExists, hashPassword, updatePasswordByEmail } from '../lib/users-store';
 import { consumeVerificationCode } from '../lib/verification-codes-store';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -22,9 +22,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: 'הסיסמה חייבת להכיל לפחות 4 תווים' }, { status: 400 });
     }
 
-    const users = await readUsers();
-    const user = users.find((u) => u.email?.toLowerCase() === email);
-    if (!user) {
+    if (!(await emailExists(email))) {
       return NextResponse.json({ ok: false, error: 'לא נמצא משתמש עם אימייל זה' }, { status: 404 });
     }
 
@@ -33,8 +31,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: 'קוד לא תקין או שפג תוקפו' }, { status: 401 });
     }
 
-    const newHash = hashPassword(newPassword);
-    await updatePasswordByEmail(email, newHash);
+    const newHash = await hashPassword(newPassword);
+    const updated = await updatePasswordByEmail(email, newHash);
+    if (!updated) {
+      return NextResponse.json({ ok: false, error: 'שגיאה בעדכון הסיסמה' }, { status: 500 });
+    }
 
     return NextResponse.json({ ok: true, message: 'הסיסמה עודכנה' });
   } catch (e) {

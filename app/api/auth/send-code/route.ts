@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { saveVerificationCode, generateSixDigitCode } from '../lib/verification-codes-store';
 import { sendVerificationEmail } from '../lib/send-email';
-import { readUsers } from '../lib/users-store';
+import { emailExists } from '../lib/users-store';
 import { isSupabaseConfigured } from '../../../../lib/supabase-server';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -19,8 +19,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: 'כתובת האימייל אינה תקינה' }, { status: 400 });
     }
 
-    const users = await readUsers();
-    const emailRegistered = users.some((u) => u.email?.toLowerCase() === email);
+    const emailRegistered = await emailExists(email);
 
     if (intent === 'signup') {
       if (emailRegistered) {

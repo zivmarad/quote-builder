@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
-import { readUsers, writeUsers, generateId } from '../lib/users-store';
+import { getUserByLogin } from '../lib/users-store';
 import { consumeVerificationCode } from '../lib/verification-codes-store';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+/** מאמת קוד ומחזיר משתמש קיים אם יש (לפי אימייל). לא יוצר משתמש חדש. */
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -22,25 +23,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: 'קוד לא תקין או שפג תוקפו' }, { status: 401 });
     }
 
-    const users = await readUsers();
-    let user = users.find((u) => u.email?.toLowerCase() === email);
-
-    if (!user) {
-      const displayName = email.split('@')[0];
-      user = {
-        id: generateId(),
-        username: displayName,
-        email,
-        passwordHash: '',
-        createdAt: new Date().toISOString(),
-      };
-      users.push(user);
-      await writeUsers(users);
-    }
-
+    const user = await getUserByLogin(email);
     return NextResponse.json({
       ok: true,
-      user: { id: user.id, username: user.username },
+      user: user ? { id: user.id, username: user.username } : null,
     });
   } catch (e) {
     console.error('Verify code error:', e);
