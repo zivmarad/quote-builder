@@ -35,10 +35,7 @@ export default function SignupPage() {
     try {
       sessionStorage.setItem(PROFILE_PROMPT_KEY, '1');
     } catch { /* ignore */ }
-    const params = new URLSearchParams(window.location.search);
-    const fromParam = params.get('from');
-    const target = fromParam && fromParam.startsWith('/') ? fromParam : '/';
-    window.location.href = `${window.location.origin}${target}`;
+    window.location.href = `${window.location.origin}/`;
   };
 
   const handleSendCode = async (e: React.FormEvent) => {

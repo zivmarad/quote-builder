@@ -41,7 +41,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ### התחברות וסנכרון
 
-משתמשים ונתונים (פרופיל, סל, היסטוריה) נשמרים ב-Supabase. התחברות מכל מכשיר עם אותו חשבון מסנכרנת את הנתונים אוטומטית.
+משתמשים ונתונים (פרופיל, סל, היסטוריה) נשמרים ב-Supabase. **כדי שפרטי הפרופיל (שם, טלפון, לוגו) יישמרו בין כניסות ומכשירים** – הגדר ב-Vercel את `NEXT_PUBLIC_SUPABASE_URL` ו־`SUPABASE_SERVICE_ROLE_KEY`, והרץ את `supabase-schema.sql` ב-Supabase (SQL Editor). התחברות מכל מכשיר עם אותו חשבון מסנכרנת את הנתונים אוטומטית.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 

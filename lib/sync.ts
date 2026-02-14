@@ -10,17 +10,17 @@ function notifySyncFailed(): void {
 }
 
 export async function fetchSync<T>(path: string, userId: string | null): Promise<T | null> {
-  if (!userId || !isSyncAvailable) return null;
+  if (!userId) return null;
   try {
     const res = await fetch(`/api/sync${path}?userId=${encodeURIComponent(userId)}`, { credentials: 'include' });
     if (!res.ok) {
-      if (res.status !== 401) notifySyncFailed();
+      if (res.status !== 401 && res.status !== 503) notifySyncFailed();
       return null;
     }
     const data = await res.json();
     return data?.ok ? data : null;
   } catch {
-    notifySyncFailed();
+    if (isSyncAvailable) notifySyncFailed();
     return null;
   }
 }
@@ -30,7 +30,7 @@ export async function postSync(
   userId: string | null,
   payload: Record<string, unknown>
 ): Promise<boolean> {
-  if (!userId || !isSyncAvailable) return false;
+  if (!userId) return false;
   try {
     const res = await fetch(`/api/sync${path}`, {
       method: 'POST',
@@ -39,13 +39,13 @@ export async function postSync(
       credentials: 'include',
     });
     if (!res.ok) {
-      if (res.status !== 401) notifySyncFailed();
+      if (res.status !== 401 && res.status !== 503) notifySyncFailed();
       return false;
     }
     const data = await res.json();
     return !!data?.ok;
   } catch {
-    notifySyncFailed();
+    if (isSyncAvailable) notifySyncFailed();
     return false;
   }
 }
