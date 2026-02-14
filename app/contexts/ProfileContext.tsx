@@ -44,18 +44,19 @@ export function ProfileProvider({ children, userId }: { children: React.ReactNod
       setIsLoaded(true);
       return;
     }
-    setIsLoaded(false);
-    lastLoadedForUserIdRef.current = undefined;
-    let cancelled = false;
     const key = getStorageKey(userId);
     const loadFromStorage = (): UserProfile => {
       let raw = localStorage.getItem(key);
       if (!raw) {
         const legacy = localStorage.getItem('quoteBuilderProfile');
         if (legacy) {
-          localStorage.setItem(key, legacy);
-          localStorage.removeItem('quoteBuilderProfile');
-          raw = legacy;
+          try {
+            localStorage.setItem(key, legacy);
+            localStorage.removeItem('quoteBuilderProfile');
+            raw = legacy;
+          } catch {
+            raw = legacy;
+          }
         }
       }
       if (!raw) return defaultProfile;
@@ -67,46 +68,59 @@ export function ProfileProvider({ children, userId }: { children: React.ReactNod
       }
     };
 
+    // טעינה מיידית מ־localStorage כדי שהפרטים יופיעו מיד ולא יימחקו
+    const initial = loadFromStorage();
+    lastLoadedForUserIdRef.current = userId;
+    setProfileState(initial);
+    setIsLoaded(true);
+
+    if (!userId) return;
+
+    let cancelled = false;
     (async () => {
-      if (userId) {
-        const data = await fetchSync<{ profile: UserProfile }>('/profile', userId);
-        if (!cancelled && data && data.profile && typeof data.profile === 'object') {
-          let fromLocal = loadFromStorage();
-          const guestKey = getStorageKey(null);
-          if (guestKey !== key) {
-            const guestRaw = localStorage.getItem(guestKey);
-            if (guestRaw) {
-              try {
-                const guest = JSON.parse(guestRaw) as Partial<UserProfile>;
-                fromLocal = { ...defaultProfile, ...fromLocal, ...guest };
-                localStorage.removeItem(guestKey);
-              } catch {
-                /* ignore */
-              }
-            }
+      const data = await fetchSync<{ profile: UserProfile }>('/profile', userId);
+      if (cancelled) return;
+
+      let fromLocal = loadFromStorage();
+      const guestKey = getStorageKey(null);
+      if (guestKey !== key) {
+        const guestRaw = localStorage.getItem(guestKey);
+        if (guestRaw) {
+          try {
+            const guest = JSON.parse(guestRaw) as Partial<UserProfile>;
+            fromLocal = { ...defaultProfile, ...fromLocal, ...guest };
+            localStorage.removeItem(guestKey);
+          } catch {
+            /* ignore */
           }
-          const fromApi = data.profile as Partial<UserProfile>;
-          // התחל מהשרת, אחר כך העדף ערכים מקומיים לא־ריקים – כדי שפרטים ולוגו שנשמרו מקומית לא יימחקו
-          const merged: UserProfile = { ...defaultProfile, ...fromApi };
-          (Object.keys(fromLocal) as (keyof UserProfile)[]).forEach((k) => {
-            const v = fromLocal[k];
-            if (v !== undefined && v !== null && v !== '') (merged as unknown as Record<string, unknown>)[k] = v;
-          });
-          lastLoadedForUserIdRef.current = userId;
-          setProfileState(merged);
-          localStorage.setItem(key, JSON.stringify(merged));
-          if (JSON.stringify(merged) !== JSON.stringify(fromApi)) {
-            void postSync('/profile', userId, { profile: merged });
-          }
-          setIsLoaded(true);
-          return;
         }
       }
-      if (!cancelled) {
-        lastLoadedForUserIdRef.current = userId;
-        setProfileState(loadFromStorage());
+
+      const fromApi = data?.profile && typeof data.profile === 'object' ? (data.profile as Partial<UserProfile>) : null;
+      // תמיד העדף ערכים מקומיים לא־ריקים – פרטים ולוגו לא יימחקו גם אם השרת ריק או נכשל
+      const merged: UserProfile = { ...defaultProfile, ...(fromApi ?? {}) };
+      (Object.keys(fromLocal) as (keyof UserProfile)[]).forEach((k) => {
+        const v = fromLocal[k];
+        if (v !== undefined && v !== null && v !== '') (merged as unknown as Record<string, unknown>)[k] = v;
+      });
+      setProfileState(merged);
+      try {
+        localStorage.setItem(key, JSON.stringify(merged));
+      } catch (e) {
+        console.warn('Profile localStorage full, trying without logo', e);
+        const withoutLogo = { ...merged, logo: '' };
+        try {
+          localStorage.setItem(key, JSON.stringify(withoutLogo));
+          setProfileState(withoutLogo);
+        } catch {
+          /* keep in memory only */
+        }
       }
-      setIsLoaded(true);
+      if (fromApi && JSON.stringify(merged) !== JSON.stringify(fromApi)) {
+        void postSync('/profile', userId, { profile: merged });
+      } else if (!fromApi) {
+        void postSync('/profile', userId, { profile: merged });
+      }
     })();
     return () => {
       cancelled = true;
@@ -117,13 +131,19 @@ export function ProfileProvider({ children, userId }: { children: React.ReactNod
     setProfileState((prev) => {
       const next = { ...prev, ...patch };
       if (typeof window !== 'undefined') {
+        const key = getStorageKey(userId);
         try {
-          const key = getStorageKey(userId);
           localStorage.setItem(key, JSON.stringify(next));
-          if (userId && lastLoadedForUserIdRef.current === userId) void postSync('/profile', userId, { profile: next });
         } catch (e) {
-          console.error('Failed to save profile', e);
+          console.warn('Profile save failed (quota?), retrying without logo', e);
+          try {
+            const withoutLogo = { ...next, logo: '' };
+            localStorage.setItem(key, JSON.stringify(withoutLogo));
+          } catch {
+            /* keep in memory only */
+          }
         }
+        if (userId && lastLoadedForUserIdRef.current === userId) void postSync('/profile', userId, { profile: next });
       }
       return next;
     });
