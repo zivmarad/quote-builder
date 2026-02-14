@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
 import { getUserByLogin, verifyPassword, rehashToBcryptIfNeeded } from '../lib/users-store';
 import { createSessionToken, setSessionCookie } from '../../../../lib/auth-server';
+import { rateLimitResponse } from '../../../../lib/api-helpers';
+import { LIMITS } from '../../../../lib/rate-limit';
 
 export async function POST(request: Request) {
+  const rateLimited = rateLimitResponse(request, LIMITS.AUTH);
+  if (rateLimited) return rateLimited;
   try {
     const body = await request.json();
     const login = typeof body.username === 'string' ? body.username.trim() : (typeof body.login === 'string' ? body.login.trim() : '');

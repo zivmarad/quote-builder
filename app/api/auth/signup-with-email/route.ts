@@ -3,11 +3,15 @@ import { emailExists, usernameExists, hashPassword, generateId, createUser } fro
 import { consumeVerificationCode } from '../lib/verification-codes-store';
 import { sendNewUserNotificationEmail } from '../lib/send-email';
 import { createSessionToken, setSessionCookie } from '../../../../lib/auth-server';
+import { rateLimitResponse } from '../../../../lib/api-helpers';
+import { LIMITS } from '../../../../lib/rate-limit';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** הרשמה אחרי אימות אימייל: קוד + שם משתמש + סיסמה */
 export async function POST(request: Request) {
+  const rateLimited = rateLimitResponse(request, LIMITS.AUTH);
+  if (rateLimited) return rateLimited;
   try {
     const body = await request.json();
     const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';

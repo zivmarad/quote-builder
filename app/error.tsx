@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 
+/** תפיסת שגיאות ברמת האפליקציה – מונע מסך לבן ומציג הודעה ידידותית */
 export default function Error({
   error,
   reset,
@@ -10,23 +11,28 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error(error);
+    console.error('App error:', error);
   }, [error]);
 
-  const friendlyMessage =
-    error.message?.toLowerCase().includes('object') && error.message?.toLowerCase().includes('not be found')
-      ? 'נראה שנפתחת מתוך וואטסאפ או אפליקציה אחרת. נסה לפתוח את הקישור בדפדפן רגיל (Chrome או Safari): לחץ על החץ או שלוש הנקודות ליד הכתובת ובחר "פתח בדפדפן" או "Open in browser".'
-      : error.message || 'אירעה שגיאה לא צפויה';
   return (
-    <div className="min-h-[50vh] flex flex-col items-center justify-center gap-4 p-8" dir="rtl">
-      <h2 className="text-xl font-bold">משהו השתבש</h2>
-      <p className="text-gray-600 text-center">{friendlyMessage}</p>
+    <div className="min-h-[60vh] flex flex-col items-center justify-center px-4" dir="rtl">
+      <h1 className="text-xl font-bold text-slate-800 mb-2">אופס, משהו השתבש</h1>
+      <p className="text-slate-600 mb-6 text-center max-w-md">
+        אירעה שגיאה. נסה לרענן את הדף או לחזור לדף הבית.
+      </p>
       <button
+        type="button"
         onClick={reset}
-        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+        className="px-5 py-2.5 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition"
       >
         נסה שוב
       </button>
+      <a
+        href="/"
+        className="mt-4 text-slate-600 underline hover:text-slate-800"
+      >
+        חזרה לדף הבית
+      </a>
     </div>
   );
 }

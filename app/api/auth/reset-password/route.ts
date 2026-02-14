@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server';
 import { emailExists, hashPassword, updatePasswordByEmail } from '../lib/users-store';
 import { consumeVerificationCode } from '../lib/verification-codes-store';
+import { rateLimitResponse } from '../../../../lib/api-helpers';
+import { LIMITS } from '../../../../lib/rate-limit';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** שחזור סיסמה: אימייל + קוד אימות + סיסמה חדשה */
 export async function POST(request: Request) {
+  const rateLimited = rateLimitResponse(request, LIMITS.AUTH);
+  if (rateLimited) return rateLimited;
   try {
     const body = await request.json();
     const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';

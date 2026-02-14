@@ -3,10 +3,14 @@ import { saveVerificationCode, generateSixDigitCode } from '../lib/verification-
 import { sendVerificationEmail } from '../lib/send-email';
 import { emailExists } from '../lib/users-store';
 import { isSupabaseConfigured } from '../../../../lib/supabase-server';
+import { rateLimitResponse } from '../../../../lib/api-helpers';
+import { LIMITS } from '../../../../lib/rate-limit';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(request: Request) {
+  const rateLimited = rateLimitResponse(request, LIMITS.SEND_CODE);
+  if (rateLimited) return rateLimited;
   try {
     const body = await request.json();
     const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
