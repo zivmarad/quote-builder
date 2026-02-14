@@ -13,12 +13,12 @@ export function rateLimitResponse(request: Request, options: RateLimitOptions): 
   );
 }
 
-/** בודק Content-Length; מחזיר 413 אם גודל הגוף חורג ממגבלת 1MB. */
-export function checkBodySize(request: Request): NextResponse | null {
+/** בודק Content-Length; מחזיר 413 אם גודל הגוף חורג ממגבלה. */
+export function checkBodySize(request: Request, maxBytes: number = MAX_BODY_BYTES): NextResponse | null {
   const cl = request.headers.get('content-length');
   if (cl) {
     const n = parseInt(cl, 10);
-    if (!Number.isNaN(n) && n > MAX_BODY_BYTES) {
+    if (!Number.isNaN(n) && n > maxBytes) {
       return NextResponse.json(
         { ok: false, error: 'גודל הנתונים חורג מהמגבלה' },
         { status: 413 }
@@ -26,4 +26,10 @@ export function checkBodySize(request: Request): NextResponse | null {
     }
   }
   return null;
+}
+
+const MAX_PROFILE_BODY_BYTES = 3 * 1024 * 1024; // 3MB לפרופיל (לוגו base64)
+
+export function checkProfileBodySize(request: Request): NextResponse | null {
+  return checkBodySize(request, MAX_PROFILE_BODY_BYTES);
 }

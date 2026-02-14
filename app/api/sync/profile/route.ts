@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin, isSupabaseConfigured } from '../../../../lib/supabase-server';
 import { getCurrentUser } from '../../../../lib/auth-server';
-import { rateLimitResponse, checkBodySize } from '../../../../lib/api-helpers';
+import { rateLimitResponse, checkProfileBodySize } from '../../../../lib/api-helpers';
 import { LIMITS } from '../../../../lib/rate-limit';
 
 export async function GET(request: NextRequest) {
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const rateLimited = rateLimitResponse(request, LIMITS.SYNC);
   if (rateLimited) return rateLimited;
-  const bodyTooBig = checkBodySize(request);
+  const bodyTooBig = checkProfileBodySize(request);
   if (bodyTooBig) return bodyTooBig;
   const user = await getCurrentUser(request);
   if (!user) {

@@ -222,10 +222,9 @@ export default function ProfilePage() {
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = reader.result as string;
-      // דחיסת לוגו כדי שיישמר (מתחת למגבלת גודל בשרת) ויישאר יציב
       const img = new Image();
       img.onload = () => {
-        const max = 400;
+        const max = 220;
         let w = img.width;
         let h = img.height;
         if (w > max || h > max) {
@@ -247,7 +246,7 @@ export default function ProfilePage() {
         }
         ctx.drawImage(img, 0, 0, w, h);
         try {
-          const compressed = canvas.toDataURL('image/jpeg', 0.85);
+          const compressed = canvas.toDataURL('image/jpeg', 0.78);
           setProfile({ logo: compressed });
         } catch {
           setProfile({ logo: dataUrl });
