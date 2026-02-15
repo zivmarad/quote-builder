@@ -58,7 +58,7 @@ const quoteStatusColors: Record<QuoteWorkflowStatus, string> = {
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { profile, setProfile } = useProfile();
+  const { profile, setProfile, syncStatus } = useProfile();
   const { quotes, deleteQuote, updateQuoteStatus } = useQuoteHistory();
   const { loadBasket } = useQuoteBasket();
   const { defaultQuoteTitle, nextQuoteNumber, validityDays, vatRate, setDefaultQuoteTitle, setNextQuoteNumber, setValidityDays, setVatRate } = useSettings();
@@ -438,6 +438,20 @@ export default function ProfilePage() {
                       />
                     </div>
                     <p className="text-slate-500 text-sm pt-2">הפרטים נשמרים אוטומטית ויופיעו בהצעת המחיר.</p>
+                    {syncStatus === 'saving' && (
+                      <p className="text-blue-600 text-sm font-medium pt-2" role="status">שומר...</p>
+                    )}
+                    {syncStatus === 'saved' && (
+                      <p className="text-green-600 text-sm font-medium pt-2" role="status">נשמר בהצלחה (מקומית ובשרת)</p>
+                    )}
+                    {syncStatus === 'error' && (
+                      <p className="text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-sm font-medium mt-2" role="alert">
+                        שמירה לשרת נכשלה – הפרטים והלוגו נשמרו במכשיר זה בלבד. להצגה מכל מכשיר: הגדר Supabase ב-Vercel (ראה README).
+                      </p>
+                    )}
+                    <p className="text-slate-400 text-xs pt-3 mt-3 border-t border-slate-100">
+                      הפרטים והלוגו נשמרים אוטומטית במכשיר זה; כשמוגדר חיבור ל-Supabase הם נשמרים גם בשרת ונטענים בכל כניסה.
+                    </p>
                   </form>
                 </div>
               )}

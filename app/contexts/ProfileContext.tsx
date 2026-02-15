@@ -26,10 +26,13 @@ const defaultProfile: UserProfile = {
   logo: '',
 };
 
+export type ProfileSyncStatus = 'idle' | 'saving' | 'saved' | 'error';
+
 interface ProfileContextType {
   profile: UserProfile;
   setProfile: (p: Partial<UserProfile>) => void;
   isLoaded: boolean;
+  syncStatus: ProfileSyncStatus;
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -37,7 +40,9 @@ const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 export function ProfileProvider({ children, userId }: { children: React.ReactNode; userId?: string | null }) {
   const [profile, setProfileState] = useState<UserProfile>(defaultProfile);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<ProfileSyncStatus>('idle');
   const lastLoadedForUserIdRef = useRef<string | null | undefined>(undefined);
+  const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -124,6 +129,7 @@ export function ProfileProvider({ children, userId }: { children: React.ReactNod
     })();
     return () => {
       cancelled = true;
+      if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
     };
   }, [userId]);
 
@@ -143,14 +149,22 @@ export function ProfileProvider({ children, userId }: { children: React.ReactNod
             /* keep in memory only */
           }
         }
-        if (userId && lastLoadedForUserIdRef.current === userId) void postSync('/profile', userId, { profile: next });
+        if (userId && lastLoadedForUserIdRef.current === userId) {
+          const nextForSync = next;
+          setSyncStatus('saving');
+          if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
+          postSync('/profile', userId, { profile: nextForSync }).then((ok) => {
+            setSyncStatus(ok ? 'saved' : 'error');
+            syncTimeoutRef.current = setTimeout(() => setSyncStatus('idle'), 4000);
+          });
+        }
       }
       return next;
     });
   }, [userId]);
 
   return (
-    <ProfileContext.Provider value={{ profile, setProfile, isLoaded }}>
+    <ProfileContext.Provider value={{ profile, setProfile, isLoaded, syncStatus }}>
       {children}
     </ProfileContext.Provider>
   );
