@@ -13,6 +13,7 @@ import {
   Building2,
   Calendar,
   Trash2,
+  Loader2,
 } from 'lucide-react';
 import ConfirmDialog from '../../../components/ConfirmDialog';
 
@@ -97,8 +98,11 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
 
   if (!userId || loading) {
     return (
-      <main className="min-h-screen bg-slate-50/80 p-6" dir="rtl">
-        <div className="max-w-4xl mx-auto text-center py-20 text-slate-500">טוען...</div>
+      <main className="min-h-screen bg-slate-50/90 p-6 flex items-center justify-center" dir="rtl">
+        <div className="flex flex-col items-center gap-4 text-slate-500">
+          <Loader2 size={40} className="animate-spin text-blue-500" />
+          <span>טוען...</span>
+        </div>
       </main>
     );
   }
@@ -120,15 +124,18 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
   const profileEntries = Object.entries(profile).filter(([, v]) => v != null && v !== '');
 
   return (
-    <main className="min-h-screen bg-slate-50/80 p-4 md:p-6" dir="rtl">
-      <div className="max-w-4xl mx-auto">
-        <Link
-          href="/admin"
-          className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 font-medium mb-6"
-        >
-          <ArrowRight size={20} /> חזרה ללוח הבקרה
-        </Link>
-
+    <main className="min-h-screen bg-slate-50/90 pb-12" dir="rtl">
+      <div className="sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-slate-200 px-4 py-3 mb-6">
+        <div className="max-w-4xl mx-auto">
+          <Link
+            href="/admin"
+            className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 font-medium"
+          >
+            <ArrowRight size={20} /> חזרה ללוח הבקרה
+          </Link>
+        </div>
+      </div>
+      <div className="max-w-4xl mx-auto px-4 md:px-6">
         <header className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm mb-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="flex items-center gap-3">

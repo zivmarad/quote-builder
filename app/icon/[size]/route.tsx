@@ -9,6 +9,7 @@ export async function GET(
   const { size } = await params;
   const s = parseInt(size, 10) || 192;
   const validSize = s === 512 ? 512 : 192;
+  const scale = validSize / 192;
 
   return new ImageResponse(
     (
@@ -19,20 +20,40 @@ export async function GET(
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+          background: 'linear-gradient(145deg, #1e40af 0%, #2563eb 50%, #3b82f6 100%)',
           borderRadius: validSize >= 512 ? 96 : 36,
+          boxShadow: `0 ${20 * scale}px ${40 * scale}px -12px rgba(30, 64, 175, 0.35)`,
         }}
       >
-        <span
+        <div
           style={{
-            fontSize: validSize >= 512 ? 200 : 80,
-            fontWeight: 900,
-            color: 'white',
-            fontFamily: 'system-ui, sans-serif',
+            width: 76 * scale,
+            height: 92 * scale,
+            background: 'white',
+            borderRadius: 10 * scale,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'flex-start',
+            paddingTop: 16 * scale,
+            paddingLeft: 14 * scale,
+            paddingRight: 14 * scale,
+            boxShadow: `0 ${6 * scale}px ${20 * scale}px rgba(0,0,0,0.12)`,
           }}
         >
-          הצ
-        </span>
+          <div style={{ width: '100%', height: 7 * scale, background: '#2563eb', borderRadius: 4 * scale, marginBottom: 10 * scale }} />
+          <div style={{ width: '88%', height: 7 * scale, background: '#93c5fd', borderRadius: 4 * scale, marginBottom: 10 * scale }} />
+          <div style={{ width: '76%', height: 7 * scale, background: '#bfdbfe', borderRadius: 4 * scale, marginBottom: 14 * scale }} />
+          <div
+            style={{
+              width: '100%',
+              height: 10 * scale,
+              background: 'linear-gradient(90deg, #1e40af, #2563eb)',
+              borderRadius: 5 * scale,
+              marginTop: 4 * scale,
+            }}
+          />
+        </div>
       </div>
     ),
     {

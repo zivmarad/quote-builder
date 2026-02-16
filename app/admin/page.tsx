@@ -14,6 +14,8 @@ import {
   BarChart3,
   Eye,
   Trash2,
+  Smartphone,
+  Loader2,
 } from 'lucide-react';
 import ConfirmDialog from '../components/ConfirmDialog';
 
@@ -158,22 +160,22 @@ export default function AdminPage() {
 
   if (savedKey === null) {
     return (
-      <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex items-center justify-center p-4" dir="rtl">
+      <main className="min-h-screen bg-gradient-to-b from-slate-100 via-white to-slate-50 flex items-center justify-center p-4" dir="rtl">
         <div className="w-full max-w-md">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 font-medium mb-6"
+            className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 font-medium mb-6 transition-colors"
           >
             <ArrowRight size={20} /> חזרה לדף הבית
           </Link>
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/50 p-6 md:p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 rounded-xl bg-slate-100">
-                <Lock size={28} className="text-slate-700" />
+          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xl shadow-slate-300/30 p-6 md:p-8">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-500/25">
+                <Lock size={28} className="text-white" />
               </div>
               <div>
                 <h1 className="text-2xl font-black text-slate-900">כניסת מנהל</h1>
-                <p className="text-slate-500 text-sm">שם משתמש וסיסמה לניהול האתר</p>
+                <p className="text-slate-500 text-sm mt-0.5">שם משתמש וסיסמה לניהול האתר</p>
               </div>
             </div>
             {loginError && (
@@ -184,7 +186,7 @@ export default function AdminPage() {
                 {loginError}
               </div>
             )}
-            <form onSubmit={handleLogin} className="space-y-4">
+            <form onSubmit={handleLogin} className="space-y-5">
               <div>
                 <label htmlFor="admin-username" className="block text-sm font-bold text-slate-700 mb-2">
                   שם משתמש
@@ -195,7 +197,7 @@ export default function AdminPage() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="שם משתמש אדמין"
-                  className="w-full px-4 py-3 min-h-[48px] rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 min-h-[48px] rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
                   dir="ltr"
                   autoComplete="username"
                 />
@@ -210,7 +212,7 @@ export default function AdminPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="סיסמת ניהול"
-                  className="w-full px-4 py-3 min-h-[48px] rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 min-h-[48px] rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
                   dir="ltr"
                   autoComplete="current-password"
                 />
@@ -218,7 +220,7 @@ export default function AdminPage() {
               <button
                 type="submit"
                 disabled={!username.trim() || !password}
-                className="w-full py-3 min-h-[52px] rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 transition-colors"
+                className="w-full py-3 min-h-[52px] rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-all shadow-md hover:shadow-lg disabled:shadow-none"
               >
                 כניסה
               </button>
@@ -230,29 +232,37 @@ export default function AdminPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50/80 p-4 md:p-6" dir="rtl">
-      <div className="max-w-5xl mx-auto">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 font-medium"
-          >
-            <ArrowRight size={20} /> חזרה לדף הבית
-          </Link>
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="inline-flex items-center gap-2 text-slate-500 hover:text-red-600 text-sm font-medium"
-          >
-            <LogOut size={18} /> יציאה מניהול
-          </button>
+    <main className="min-h-screen bg-slate-50/90 pb-12" dir="rtl">
+      {/* Sticky header */}
+      <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+        <div className="max-w-5xl mx-auto px-4 md:px-6 py-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 font-medium transition-colors"
+            >
+              <ArrowRight size={20} /> חזרה לדף הבית
+            </Link>
+            <div className="flex items-center gap-3">
+              <h1 className="text-lg font-black text-slate-800 hidden sm:block">לוח ניהול</h1>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="inline-flex items-center gap-2 text-slate-500 hover:text-red-600 text-sm font-medium px-3 py-2 rounded-xl hover:bg-red-50 transition-colors"
+              >
+                <LogOut size={18} /> יציאה
+              </button>
+            </div>
+          </div>
         </div>
+      </div>
 
-        <header className="mb-8">
-          <h1 className="text-2xl md:text-3xl font-black text-slate-900 flex items-center gap-2">
-            <BarChart3 size={32} /> לוח בקרה – ניהול
-          </h1>
-          <p className="text-slate-500 mt-1">מעקב משתמשים וסטטיסטיקות</p>
+      <div className="max-w-5xl mx-auto px-4 md:px-6 pt-6">
+        <header className="mb-6">
+          <h2 className="text-xl md:text-2xl font-black text-slate-900 flex items-center gap-2">
+            <BarChart3 size={28} className="text-blue-600" /> לוח בקרה
+          </h2>
+          <p className="text-slate-500 text-sm mt-0.5">מעקב משתמשים וסטטיסטיקות</p>
         </header>
 
         {listError && (
@@ -262,9 +272,27 @@ export default function AdminPage() {
         )}
 
         {loading ? (
-          <div className="flex items-center justify-center py-20 text-slate-500">טוען...</div>
+          <div className="flex flex-col items-center justify-center py-24 gap-4 text-slate-500">
+            <Loader2 size={40} className="animate-spin text-blue-500" />
+            <span>טוען...</span>
+          </div>
         ) : (
           <>
+            {/* הוספה למסך הבית – מובייל */}
+            <section className="mb-6 p-4 rounded-2xl bg-gradient-to-br from-blue-50 to-slate-50 border border-blue-100/80">
+              <div className="flex items-start gap-3">
+                <div className="p-2.5 rounded-xl bg-blue-100 text-blue-600 shrink-0">
+                  <Smartphone size={22} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-800 text-sm">להוספת לוח הניהול למסך הבית (טלפון)</h3>
+                  <p className="text-slate-600 text-xs mt-1 leading-relaxed">
+                    פתח דף זה במובייל בדפדפן Chrome או Safari → תפריט (⋮) או שתף → &quot;הוסף למסך הבית&quot;. כך תגיע ללוח הניהול במהירות מהמסך הראשי.
+                  </p>
+                </div>
+              </div>
+            </section>
+
             {/* סטטיסטיקות */}
             <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8" aria-label="סטטיסטיקות">
               <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm hover:shadow-md transition-shadow">
@@ -314,21 +342,21 @@ export default function AdminPage() {
             </section>
 
             {/* רשימת משתמשים */}
-            <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-              <div className="px-4 sm:px-6 py-4 border-b border-slate-200 bg-slate-50/70">
+            <section className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="px-4 sm:px-6 py-4 border-b border-slate-200 bg-slate-50/80">
                 <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                   <Users size={22} className="text-slate-600" />
                   רשימת נרשמים
                 </h2>
-                <p className="text-slate-500 text-sm mt-0.5">לחץ על שורה או על כפתור "צפייה בפרטים" כדי לראות היסטוריה, סל והגדרות</p>
+                <p className="text-slate-500 text-sm mt-0.5">לחץ על שורה או על &quot;צפייה&quot; כדי לראות היסטוריה, סל והגדרות</p>
               </div>
               {users.length === 0 ? (
-                <div className="p-12 text-center text-slate-500">אין נרשמים עדיין</div>
+                <div className="p-16 text-center text-slate-500 bg-slate-50/50">אין נרשמים עדיין</div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-right border-collapse">
-                        <thead>
-                      <tr className="bg-slate-100/80 border-b border-slate-200">
+                <div className="overflow-x-auto -mx-px">
+                  <table className="w-full text-right border-collapse min-w-[640px]">
+                    <thead className="sticky top-0 z-10 bg-slate-100 border-b border-slate-200 shadow-sm">
+                      <tr>
                         <th className="px-4 py-3 text-sm font-bold text-slate-700 w-40">פעולות</th>
                         <th className="px-4 py-3 text-sm font-bold text-slate-700">#</th>
                         <th className="px-4 py-3 text-sm font-bold text-slate-700">שם משתמש</th>
