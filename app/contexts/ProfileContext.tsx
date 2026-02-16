@@ -6,6 +6,9 @@ import { fetchSync, postSync } from '../../lib/sync';
 const getStorageKey = (userId: string | null | undefined) =>
   `quoteBuilderProfile_${userId ?? 'guest'}`;
 
+const getLogoStorageKey = (userId: string | null | undefined) =>
+  `quoteBuilderProfile_logo_${userId ?? 'guest'}`;
+
 export interface UserProfile {
   businessName: string;
   contactName?: string;
@@ -64,10 +67,37 @@ export function ProfileProvider({ children, userId }: { children: React.ReactNod
           }
         }
       }
-      if (!raw) return defaultProfile;
+      if (!raw) {
+        const logoKey = getLogoStorageKey(userId);
+        const logoOnly = localStorage.getItem(logoKey);
+        if (logoOnly) {
+          try {
+            const data = JSON.parse(logoOnly) as string;
+            if (typeof data === 'string' && data.startsWith('data:')) {
+              return { ...defaultProfile, logo: data };
+            }
+          } catch {
+            /* ignore */
+          }
+        }
+        return defaultProfile;
+      }
       try {
         const parsed = JSON.parse(raw) as Partial<UserProfile>;
-        return { ...defaultProfile, ...parsed };
+        const profile = { ...defaultProfile, ...parsed };
+        if (!profile.logo || profile.logo === '') {
+          const logoKey = getLogoStorageKey(userId);
+          const logoOnly = localStorage.getItem(logoKey);
+          if (logoOnly) {
+            try {
+              const data = JSON.parse(logoOnly) as string;
+              if (typeof data === 'string' && data.startsWith('data:')) profile.logo = data;
+            } catch {
+              /* ignore */
+            }
+          }
+        }
+        return profile;
       } catch {
         return defaultProfile;
       }
@@ -111,14 +141,35 @@ export function ProfileProvider({ children, userId }: { children: React.ReactNod
       setProfileState(merged);
       try {
         localStorage.setItem(key, JSON.stringify(merged));
+        try {
+          localStorage.removeItem(getLogoStorageKey(userId));
+        } catch {
+          /* ignore */
+        }
       } catch (e) {
         console.warn('Profile localStorage full, trying without logo', e);
         const withoutLogo = { ...merged, logo: '' };
         try {
           localStorage.setItem(key, JSON.stringify(withoutLogo));
-          setProfileState(withoutLogo);
+          if (merged.logo) {
+            try {
+              localStorage.setItem(getLogoStorageKey(userId), JSON.stringify(merged.logo));
+            } catch {
+              /* logo key also full */
+            }
+          }
+          setProfileState(merged);
         } catch {
-          /* keep in memory only */
+          if (merged.logo) {
+            try {
+              localStorage.setItem(getLogoStorageKey(userId), JSON.stringify(merged.logo));
+              setProfileState(merged);
+            } catch {
+              setProfileState(withoutLogo);
+            }
+          } else {
+            setProfileState(withoutLogo);
+          }
         }
       }
       if (fromApi && JSON.stringify(merged) !== JSON.stringify(fromApi)) {
@@ -140,11 +191,23 @@ export function ProfileProvider({ children, userId }: { children: React.ReactNod
         const key = getStorageKey(userId);
         try {
           localStorage.setItem(key, JSON.stringify(next));
+          try {
+            localStorage.removeItem(getLogoStorageKey(userId));
+          } catch {
+            /* ignore */
+          }
         } catch (e) {
           console.warn('Profile save failed (quota?), retrying without logo', e);
           try {
             const withoutLogo = { ...next, logo: '' };
             localStorage.setItem(key, JSON.stringify(withoutLogo));
+            if (next.logo) {
+              try {
+                localStorage.setItem(getLogoStorageKey(userId), JSON.stringify(next.logo));
+              } catch {
+                /* logo key also full */
+              }
+            }
           } catch {
             /* keep in memory only */
           }
