@@ -99,6 +99,17 @@ export function ProfileProvider({ children, userId }: { children: React.ReactNod
         }
         return profile;
       } catch {
+        // אם ה־parse נכשל (למשל פרופיל גדול) – לפחות ננסה להציל את הלוגו מהמפתח הנפרד
+        const logoKey = getLogoStorageKey(userId);
+        const logoOnly = localStorage.getItem(logoKey);
+        if (logoOnly) {
+          try {
+            const data = JSON.parse(logoOnly) as string;
+            if (typeof data === 'string' && data.startsWith('data:')) return { ...defaultProfile, logo: data };
+          } catch {
+            /* ignore */
+          }
+        }
         return defaultProfile;
       }
     };
@@ -138,6 +149,8 @@ export function ProfileProvider({ children, userId }: { children: React.ReactNod
         const v = fromLocal[k];
         if (v !== undefined && v !== null && v !== '') (merged as unknown as Record<string, unknown>)[k] = v;
       });
+      // הגנה: אל תדרוס לוגו מקומי בריק – מניעת מחיקת לוגו בהתחברות חדשה כשהשרת עדיין בלי לוגו
+      if ((!merged.logo || merged.logo === '') && fromLocal.logo) merged.logo = fromLocal.logo;
       setProfileState(merged);
       try {
         localStorage.setItem(key, JSON.stringify(merged));
