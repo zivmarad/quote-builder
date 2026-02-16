@@ -511,6 +511,7 @@ export default function AdminPage() {
                 ) : filteredUsers.length === 0 ? (
                   <div className="p-12 text-center text-slate-500">אין תוצאות לחיפוש</div>
                 ) : (
+                  <div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-right border-collapse min-w-[640px]">
                       <thead>
@@ -524,7 +525,7 @@ export default function AdminPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {filteredUsers.map((u, i) => (
+                        {paginatedUsers.map((u, i) => (
                           <tr
                             key={u.id}
                             role="button"
@@ -620,8 +621,9 @@ export default function AdminPage() {
                       </div>
                     </div>
                   )}
-                  </>
+                  </div>
                 )}
+                </div>
               </section>
             </>
           )}
