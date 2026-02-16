@@ -20,6 +20,8 @@ import {
   Search,
   Check,
   ExternalLink,
+  Menu,
+  X,
 } from 'lucide-react';
 import ConfirmDialog from '../components/ConfirmDialog';
 
@@ -63,8 +65,11 @@ export default function AdminPage() {
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [installSuccess, setInstallSuccess] = useState(false);
   const [installLoading, setInstallLoading] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const PAGE_SIZE = 25;
+
+  const closeSidebar = () => setSidebarOpen(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -314,21 +319,50 @@ export default function AdminPage() {
   // ——— לוח ניהול ———
   return (
     <div className="min-h-screen flex bg-slate-100" dir="rtl">
-      {/* סיידבר */}
-      <aside className="w-64 shrink-0 bg-slate-900 text-white flex flex-col border-l border-slate-700">
-        <div className="p-5 border-b border-slate-700">
-          <h1 className="text-lg font-black text-white flex items-center gap-2">
+      {/* Overlay מובייל כשהסיידבר פתוח */}
+      {sidebarOpen && (
+        <button
+          type="button"
+          aria-label="סגור תפריט"
+          onClick={closeSidebar}
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+        />
+      )}
+
+      {/* סיידבר: במובייל drawer, במחשב תמיד גלוי */}
+      <aside
+        className={`
+          w-64 shrink-0 bg-slate-900 text-white flex flex-col border-l border-slate-700
+          fixed md:relative top-0 bottom-0 z-50 md:z-auto
+          transition-transform duration-200 ease-out
+          ${sidebarOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}
+        `}
+        style={{ height: '100dvh' }}
+      >
+        <div className="p-5 border-b border-slate-700 flex items-center justify-between">
+          <div className="flex items-center gap-2">
             <LayoutDashboard size={22} className="text-blue-400" />
-            לוח ניהול
-          </h1>
-          <p className="text-slate-400 text-xs mt-1">בונה הצעות מחיר</p>
+            <div>
+              <h1 className="text-lg font-black text-white">לוח ניהול</h1>
+              <p className="text-slate-400 text-xs mt-0.5">בונה הצעות מחיר</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            aria-label="סגור תפריט"
+            onClick={closeSidebar}
+            className="p-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white md:hidden"
+          >
+            <X size={24} />
+          </button>
         </div>
-        <nav className="p-3 flex-1">
+        <nav className="p-3 flex-1 overflow-auto">
           <Link
             href="/"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-colors mb-2"
+            onClick={closeSidebar}
+            className="flex items-center gap-3 px-4 py-3 min-h-[48px] rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-colors mb-2"
           >
             <ExternalLink size={20} />
             <span>פתח את האתר</span>
@@ -336,29 +370,28 @@ export default function AdminPage() {
         </nav>
         <div className="p-3 space-y-2 border-t border-slate-700">
           {installSuccess ? (
-            <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-500/20 text-emerald-400 text-sm">
+            <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-500/20 text-emerald-400 text-sm min-h-[48px]">
               <Check size={20} /> נוסף למסך הבית
             </div>
           ) : installPrompt ? (
             <button
               type="button"
-              onClick={handleInstallApp}
+              onClick={() => { handleInstallApp(); closeSidebar(); }}
               disabled={installLoading}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-medium disabled:opacity-60 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-3 min-h-[48px] rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-medium disabled:opacity-60 transition-colors"
             >
               <Smartphone size={20} />
               {installLoading ? 'מתקין...' : 'הורד לאפליקציה'}
             </button>
           ) : (
-            <div className="px-4 py-3 rounded-xl bg-slate-800 text-slate-400 text-xs">
-              <p className="font-medium text-slate-300 mb-1">להוספה למסך הבית</p>
-              <p>בטלפון: תפריט (⋮) → הוסף למסך הבית</p>
+            <div className="px-4 py-3 rounded-xl bg-slate-800 text-slate-400 text-xs min-h-[48px] flex items-center">
+              <p className="font-medium text-slate-300">להוספה למסך הבית: תפריט → הוסף למסך הבית</p>
             </div>
           )}
           <button
             type="button"
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-red-500/20 hover:text-red-400 transition-colors"
+            onClick={() => { handleLogout(); closeSidebar(); }}
+            className="w-full flex items-center gap-3 px-4 py-3 min-h-[48px] rounded-xl text-slate-400 hover:bg-red-500/20 hover:text-red-400 transition-colors"
           >
             <LogOut size={20} /> יציאה
           </button>
@@ -366,8 +399,8 @@ export default function AdminPage() {
       </aside>
 
       {/* תוכן ראשי */}
-      <main className="flex-1 min-w-0 overflow-auto pb-12">
-        <div className="max-w-5xl mx-auto px-4 md:px-6 py-6">
+      <main className="flex-1 min-w-0 overflow-auto pb-12 min-h-screen">
+        <div className="max-w-5xl mx-auto px-4 md:px-6 py-4 md:py-6">
           {listError && (
             <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm" role="alert">
               {listError}
@@ -381,83 +414,93 @@ export default function AdminPage() {
             </div>
           ) : (
             <>
-              {/* כותרת דשבורד */}
-              <header className="mb-8">
-                <h2 className="text-2xl font-black text-slate-900">דשבורד</h2>
-                <p className="text-slate-500 text-sm mt-0.5">סקירה כללית ושליטה במשתמשים</p>
+              {/* כותרת + כפתור תפריט מובייל (דביק במובייל) */}
+              <header className="sticky top-0 z-30 -mx-4 px-4 py-3 md:py-0 md:static md:mx-0 md:px-0 bg-slate-100 md:bg-transparent mb-6 md:mb-8 flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-xl md:text-2xl font-black text-slate-900">דשבורד</h2>
+                  <p className="text-slate-500 text-sm mt-0.5 hidden sm:block">סקירה כללית ושליטה במשתמשים</p>
+                </div>
+                <button
+                  type="button"
+                  aria-label="פתח תפריט"
+                  onClick={() => setSidebarOpen(true)}
+                  className="p-3 rounded-xl bg-slate-800 text-white hover:bg-slate-700 active:bg-slate-600 md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center shrink-0"
+                >
+                  <Menu size={24} />
+                </button>
               </header>
 
               {/* כרטיסי סטטיסטיקות – לחיצה מעבירה לרשימה מסוננת */}
-              <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8" aria-label="סטטיסטיקות">
+              <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8" aria-label="סטטיסטיקות">
                 <button
                   type="button"
                   onClick={() => setListFilter('all')}
-                  className={`text-right rounded-2xl border p-6 shadow-sm transition-all hover:shadow-md hover:border-slate-300 ${
+                  className={`text-right rounded-xl md:rounded-2xl border p-4 md:p-6 shadow-sm transition-all hover:shadow-md hover:border-slate-300 active:scale-[0.98] min-h-[88px] md:min-h-0 ${
                     listFilter === 'all' ? 'ring-2 ring-blue-500 border-blue-300 bg-blue-50/50' : 'bg-white border-slate-200'
                   }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-slate-500 text-sm font-medium">סה"כ משתמשים</p>
-                      <p className="text-3xl font-black text-slate-900 tabular-nums mt-1">{stats?.totalUsers ?? 0}</p>
-                      <p className="text-xs text-slate-400 mt-2">לחץ לצפייה ברשימה</p>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-slate-500 text-xs md:text-sm font-medium truncate">סה"כ משתמשים</p>
+                      <p className="text-2xl md:text-3xl font-black text-slate-900 tabular-nums mt-0.5 md:mt-1">{stats?.totalUsers ?? 0}</p>
+                      <p className="text-[10px] md:text-xs text-slate-400 mt-1 hidden sm:block">לחץ לצפייה</p>
                     </div>
-                    <div className="p-3 rounded-xl bg-blue-100 text-blue-600">
-                      <Users size={28} />
+                    <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-blue-100 text-blue-600 shrink-0">
+                      <Users size={22} className="md:w-7 md:h-7" />
                     </div>
                   </div>
                 </button>
                 <button
                   type="button"
                   onClick={() => setListFilter('7d')}
-                  className={`text-right rounded-2xl border p-6 shadow-sm transition-all hover:shadow-md hover:border-slate-300 ${
+                  className={`text-right rounded-xl md:rounded-2xl border p-4 md:p-6 shadow-sm transition-all hover:shadow-md hover:border-slate-300 active:scale-[0.98] min-h-[88px] md:min-h-0 ${
                     listFilter === '7d' ? 'ring-2 ring-emerald-500 border-emerald-300 bg-emerald-50/50' : 'bg-white border-slate-200'
                   }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-slate-500 text-sm font-medium">נרשמו (7 ימים)</p>
-                      <p className="text-3xl font-black text-slate-900 tabular-nums mt-1">{stats?.newUsers7d ?? 0}</p>
-                      <p className="text-xs text-slate-400 mt-2">לחץ לראות מי</p>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-slate-500 text-xs md:text-sm font-medium truncate">נרשמו (7 ימים)</p>
+                      <p className="text-2xl md:text-3xl font-black text-slate-900 tabular-nums mt-0.5 md:mt-1">{stats?.newUsers7d ?? 0}</p>
+                      <p className="text-[10px] md:text-xs text-slate-400 mt-1 hidden sm:block">לחץ לראות מי</p>
                     </div>
-                    <div className="p-3 rounded-xl bg-emerald-100 text-emerald-600">
-                      <UserPlus size={28} />
+                    <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-emerald-100 text-emerald-600 shrink-0">
+                      <UserPlus size={22} className="md:w-7 md:h-7" />
                     </div>
                   </div>
                 </button>
                 <button
                   type="button"
                   onClick={() => setListFilter('30d')}
-                  className={`text-right rounded-2xl border p-6 shadow-sm transition-all hover:shadow-md hover:border-slate-300 ${
+                  className={`text-right rounded-xl md:rounded-2xl border p-4 md:p-6 shadow-sm transition-all hover:shadow-md hover:border-slate-300 active:scale-[0.98] min-h-[88px] md:min-h-0 ${
                     listFilter === '30d' ? 'ring-2 ring-amber-500 border-amber-300 bg-amber-50/50' : 'bg-white border-slate-200'
                   }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-slate-500 text-sm font-medium">נרשמו (30 יום)</p>
-                      <p className="text-3xl font-black text-slate-900 tabular-nums mt-1">{stats?.newUsers30d ?? 0}</p>
-                      <p className="text-xs text-slate-400 mt-2">לחץ לראות מי</p>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-slate-500 text-xs md:text-sm font-medium truncate">נרשמו (30 יום)</p>
+                      <p className="text-2xl md:text-3xl font-black text-slate-900 tabular-nums mt-0.5 md:mt-1">{stats?.newUsers30d ?? 0}</p>
+                      <p className="text-[10px] md:text-xs text-slate-400 mt-1 hidden sm:block">לחץ לראות מי</p>
                     </div>
-                    <div className="p-3 rounded-xl bg-amber-100 text-amber-600">
-                      <TrendingUp size={28} />
+                    <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-amber-100 text-amber-600 shrink-0">
+                      <TrendingUp size={22} className="md:w-7 md:h-7" />
                     </div>
                   </div>
                 </button>
                 <button
                   type="button"
                   onClick={() => setListFilter('top_quotes')}
-                  className={`text-right rounded-2xl border p-6 shadow-sm transition-all hover:shadow-md hover:border-slate-300 ${
+                  className={`text-right rounded-xl md:rounded-2xl border p-4 md:p-6 shadow-sm transition-all hover:shadow-md hover:border-slate-300 active:scale-[0.98] min-h-[88px] md:min-h-0 ${
                     listFilter === 'top_quotes' ? 'ring-2 ring-violet-500 border-violet-300 bg-violet-50/50' : 'bg-white border-slate-200'
                   }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-slate-500 text-sm font-medium">סה"כ הצעות</p>
-                      <p className="text-3xl font-black text-slate-900 tabular-nums mt-1">{stats?.totalQuotes ?? 0}</p>
-                      <p className="text-xs text-slate-400 mt-2">משתמשים לפי הצעות</p>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-slate-500 text-xs md:text-sm font-medium truncate">סה"כ הצעות</p>
+                      <p className="text-2xl md:text-3xl font-black text-slate-900 tabular-nums mt-0.5 md:mt-1">{stats?.totalQuotes ?? 0}</p>
+                      <p className="text-[10px] md:text-xs text-slate-400 mt-1 hidden sm:block">לפי הצעות</p>
                     </div>
-                    <div className="p-3 rounded-xl bg-violet-100 text-violet-600">
-                      <FileText size={28} />
+                    <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-violet-100 text-violet-600 shrink-0">
+                      <FileText size={22} className="md:w-7 md:h-7" />
                     </div>
                   </div>
                 </button>
@@ -512,7 +555,55 @@ export default function AdminPage() {
                   <div className="p-12 text-center text-slate-500">אין תוצאות לחיפוש</div>
                 ) : (
                   <div>
-                  <div className="overflow-x-auto">
+                  {/* רשימת כרטיסים למובייל */}
+                  <div className="flex flex-col gap-3 md:hidden pb-4">
+                    {paginatedUsers.map((u, i) => (
+                      <div
+                        key={u.id}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => router.push(`/admin/user/${u.id}`)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            router.push(`/admin/user/${u.id}`);
+                          }
+                        }}
+                        className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm active:bg-slate-50"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <p className="font-bold text-slate-900 truncate">{u.username}</p>
+                            <p className="text-slate-500 text-sm truncate mt-0.5" dir="ltr">{u.email || '—'}</p>
+                            <div className="flex items-center gap-3 mt-2 text-slate-500 text-xs">
+                              <span className="inline-flex items-center gap-1">
+                                <FileText size={14} /> {u.quoteCount} הצעות
+                              </span>
+                              <span>{formatDate(u.createdAt)}</span>
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
+                            <Link
+                              href={`/admin/user/${u.id}`}
+                              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700"
+                            >
+                              <Eye size={18} /> צפייה
+                            </Link>
+                            <button
+                              type="button"
+                              onClick={(e) => handleDeleteUser(u, e)}
+                              disabled={deletingId === u.id}
+                              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg border border-red-200 bg-red-50 text-red-700 text-sm font-medium hover:bg-red-100 disabled:opacity-60"
+                              title="הסר משתמש"
+                            >
+                              <Trash2 size={18} /> {deletingId === u.id ? '...' : 'הסר'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="hidden md:block overflow-x-auto">
                     <table className="w-full text-right border-collapse min-w-[640px]">
                       <thead>
                         <tr className="bg-slate-50 border-b border-slate-200">
@@ -574,20 +665,20 @@ export default function AdminPage() {
                   </div>
                   {/* Pagination */}
                   {totalPages > 1 && (
-                    <div className="px-4 sm:px-6 py-4 border-t border-slate-200 flex flex-wrap items-center justify-between gap-4 bg-slate-50/50">
-                      <p className="text-slate-600 text-sm">
+                    <div className="px-4 sm:px-6 py-4 border-t border-slate-200 flex flex-col sm:flex-row flex-wrap items-center justify-between gap-4 bg-slate-50/50">
+                      <p className="text-slate-600 text-sm order-2 sm:order-1">
                         עמוד {currentPage} מתוך {totalPages}
                       </p>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 order-1 sm:order-2 flex-wrap justify-center">
                         <button
                           type="button"
                           onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                           disabled={currentPage <= 1}
-                          className="px-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:pointer-events-none text-sm font-medium"
+                          className="min-h-[44px] min-w-[44px] px-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:pointer-events-none text-sm font-medium inline-flex items-center justify-center"
                         >
                           הקודם
                         </button>
-                        <span className="flex items-center gap-1 px-2">
+                        <span className="flex items-center gap-1">
                           {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                             let pageNum: number;
                             if (totalPages <= 5) pageNum = i + 1;
@@ -599,7 +690,7 @@ export default function AdminPage() {
                                 key={pageNum}
                                 type="button"
                                 onClick={() => setCurrentPage(pageNum)}
-                                className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors ${
+                                className={`min-h-[44px] min-w-[44px] rounded-lg text-sm font-medium transition-colors inline-flex items-center justify-center ${
                                   currentPage === pageNum
                                     ? 'bg-blue-600 text-white'
                                     : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
@@ -614,7 +705,7 @@ export default function AdminPage() {
                           type="button"
                           onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                           disabled={currentPage >= totalPages}
-                          className="px-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:pointer-events-none text-sm font-medium"
+                          className="min-h-[44px] min-w-[44px] px-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:pointer-events-none text-sm font-medium inline-flex items-center justify-center"
                         >
                           הבא
                         </button>
