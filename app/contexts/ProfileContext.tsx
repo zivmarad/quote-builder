@@ -171,6 +171,8 @@ export function ProfileProvider({ children, userId }: { children: React.ReactNod
             setProfileState(withoutLogo);
           }
         }
+        // גם כש־localStorage מלא – שומרים את הפרופיל המלא (כולל לוגו) בשרת כדי שיסונכרן בין מכשירים
+        if (userId) void postSync('/profile', userId, { profile: merged });
       }
       if (fromApi && JSON.stringify(merged) !== JSON.stringify(fromApi)) {
         void postSync('/profile', userId, { profile: merged });
@@ -189,6 +191,7 @@ export function ProfileProvider({ children, userId }: { children: React.ReactNod
       const next = { ...prev, ...patch };
       if (typeof window !== 'undefined') {
         const key = getStorageKey(userId);
+        let syncedInCatch = false;
         try {
           localStorage.setItem(key, JSON.stringify(next));
           try {
@@ -211,8 +214,18 @@ export function ProfileProvider({ children, userId }: { children: React.ReactNod
           } catch {
             /* keep in memory only */
           }
+          // גם כש־localStorage מלא – שומרים את הפרופיל המלא (כולל לוגו) בשרת כדי שיסונכרן בין מכשירים
+          if (userId && lastLoadedForUserIdRef.current === userId) {
+            syncedInCatch = true;
+            setSyncStatus('saving');
+            postSync('/profile', userId, { profile: next }).then((ok) => {
+              setSyncStatus(ok ? 'saved' : 'error');
+              if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
+              syncTimeoutRef.current = setTimeout(() => setSyncStatus('idle'), 4000);
+            });
+          }
         }
-        if (userId && lastLoadedForUserIdRef.current === userId) {
+        if (userId && lastLoadedForUserIdRef.current === userId && !syncedInCatch) {
           const nextForSync = next;
           setSyncStatus('saving');
           if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
