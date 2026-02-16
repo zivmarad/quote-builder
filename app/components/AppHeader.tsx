@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useAuth } from '../contexts/AuthContext';
 import { useProfile } from '../contexts/ProfileContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { User, LogIn, UserPlus, LogOut, Globe } from 'lucide-react';
+import { User, LogIn, UserPlus, LogOut, Globe, Home } from 'lucide-react';
 
 const LOCALE_LABELS: Record<string, string> = {
   he: 'עב',
@@ -46,14 +46,18 @@ export default function AppHeader() {
       className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100"
       style={{ paddingTop: 'var(--safe-area-inset-top)' }}
     >
-      <div className="max-w-5xl mx-auto px-3 sm:px-4 md:px-8 py-2.5 sm:py-3 flex items-center justify-between gap-2 min-h-[52px] sm:min-h-0">
+      <div className="max-w-5xl mx-auto px-3 sm:px-4 md:px-8 py-2.5 sm:py-3 flex items-center justify-between gap-2 min-h-[52px] sm:min-h-0 min-w-0">
         <Link
           href="/"
-          className="font-black text-slate-900 text-base sm:text-lg md:text-xl truncate max-w-[140px] sm:max-w-none"
+          className="font-black text-slate-900 flex items-center gap-2 min-w-0 shrink-0 sm:min-w-0"
+          aria-label={t('header.appName')}
         >
-          {t('header.appName')}
+          <span className="sm:hidden flex items-center justify-center w-10 h-10 rounded-xl hover:bg-slate-100 text-slate-700">
+            <Home size={22} />
+          </span>
+          <span className="hidden sm:inline truncate text-base sm:text-lg md:text-xl">{t('header.appName')}</span>
         </Link>
-        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0 min-w-0">
           <div className="relative" ref={dropdownRef}>
             <button
               type="button"
@@ -93,11 +97,11 @@ export default function AppHeader() {
           </div>
           <Link
             href="/profile"
-            className="flex items-center justify-center gap-1.5 sm:gap-2 text-slate-600 hover:text-slate-900 font-medium text-xs sm:text-sm px-3 sm:px-4 py-2.5 sm:py-2 rounded-xl hover:bg-slate-100 transition-colors min-h-[44px] min-w-[44px] sm:min-w-0"
+            className="flex items-center justify-center gap-1.5 sm:gap-2 text-slate-600 hover:text-slate-900 font-medium text-xs sm:text-sm px-2.5 sm:px-4 py-2.5 sm:py-2 rounded-xl hover:bg-slate-100 transition-colors min-h-[44px] min-w-[44px] sm:min-w-0"
             aria-label={t('header.profile')}
           >
             <User size={20} className="shrink-0" />
-            <span className="inline max-w-[95px] sm:max-w-none truncate">{t('header.profile')}</span>
+            <span className="hidden sm:inline max-w-[95px] truncate">{t('header.profile')}</span>
           </Link>
           {isLoaded &&
             (user ? (
@@ -120,18 +124,17 @@ export default function AppHeader() {
             ) : (
               <>
                 {displayName && (
-                  <span className="text-slate-600 font-medium text-xs sm:text-sm truncate max-w-[100px] sm:max-w-[120px]">
+                  <span className="hidden sm:inline text-slate-600 font-medium text-xs sm:text-sm truncate max-w-[120px]">
                     {t('header.hello')} {displayName}
                   </span>
                 )}
                 <Link
                   href="/login"
-                  className="flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 font-medium text-xs sm:text-sm px-2.5 sm:px-3 py-2.5 sm:py-2 rounded-xl hover:bg-slate-100 transition-colors min-h-[44px] min-w-[44px] sm:min-w-0"
+                  className="flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 font-medium text-xs sm:text-sm px-2.5 sm:px-3 py-2.5 sm:py-2 rounded-xl hover:bg-slate-100 transition-colors min-h-[44px] min-w-0 shrink-0"
                   aria-label={t('header.login')}
-                  title={t('header.login')}
                 >
                   <LogIn size={18} className="shrink-0" />
-                  <span className="hidden sm:inline">{t('header.login')}</span>
+                  <span className="inline">{t('header.login')}</span>
                 </Link>
                 <Link
                   href="/signup"
