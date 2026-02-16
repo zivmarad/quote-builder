@@ -126,19 +126,21 @@ export default function AppHeader() {
                 )}
                 <Link
                   href="/login"
-                  className="flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 font-medium text-xs sm:text-sm px-2.5 sm:px-3 py-2.5 sm:py-2 rounded-xl hover:bg-slate-100 transition-colors min-h-[44px] min-w-0"
+                  className="flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 font-medium text-xs sm:text-sm px-2.5 sm:px-3 py-2.5 sm:py-2 rounded-xl hover:bg-slate-100 transition-colors min-h-[44px] min-w-[44px] sm:min-w-0"
                   aria-label={t('header.login')}
+                  title={t('header.login')}
                 >
                   <LogIn size={18} className="shrink-0" />
-                  <span>{t('header.login')}</span>
+                  <span className="hidden sm:inline">{t('header.login')}</span>
                 </Link>
                 <Link
                   href="/signup"
-                  className="flex items-center justify-center gap-1.5 bg-blue-600 text-white font-bold text-xs sm:text-sm px-2.5 sm:px-3 py-2.5 sm:py-2 rounded-xl hover:bg-blue-700 transition-colors min-h-[44px] min-w-0"
+                  className="flex items-center justify-center gap-1.5 bg-blue-600 text-white font-bold text-xs sm:text-sm px-2.5 sm:px-3 py-2.5 sm:py-2 rounded-xl hover:bg-blue-700 transition-colors min-h-[44px] min-w-[44px] sm:min-w-0"
                   aria-label={t('header.signup')}
+                  title={t('header.signup')}
                 >
                   <UserPlus size={18} className="shrink-0" />
-                  <span>{t('header.signup')}</span>
+                  <span className="hidden sm:inline">{t('header.signup')}</span>
                 </Link>
               </>
             ))}
