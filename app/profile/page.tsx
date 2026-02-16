@@ -36,24 +36,25 @@ const sectionConfig: { id: SectionId; labelKey: string; labelShortKey?: string; 
 const formatPrice = (price: number) =>
   new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(price);
 
-const exportLabels: Record<ExportMethod, string> = {
-  download: 'הורד למחשב',
-  whatsapp: 'נשלח בוואטסאפ',
-  email: 'נשלח במייל',
-};
-
-const quoteStatusLabels: Record<QuoteWorkflowStatus, string> = {
-  draft: 'טיוטה',
-  sent: 'נשלח',
-  approved: 'אושר',
-  paid: 'שולם',
-};
 
 const quoteStatusColors: Record<QuoteWorkflowStatus, string> = {
   draft: 'bg-slate-100 text-slate-700',
   sent: 'bg-blue-50 text-blue-700',
   approved: 'bg-green-50 text-green-700',
   paid: 'bg-emerald-600 text-white',
+};
+
+const exportLabelKeys: Record<ExportMethod, string> = {
+  download: 'profile.exportDownload',
+  whatsapp: 'profile.exportWhatsapp',
+  email: 'profile.exportEmail',
+};
+
+const quoteStatusKeys: Record<QuoteWorkflowStatus, string> = {
+  draft: 'profile.quoteStatusDraft',
+  sent: 'profile.quoteStatusSent',
+  approved: 'profile.quoteStatusApproved',
+  paid: 'profile.quoteStatusPaid',
 };
 
 export default function ProfilePage() {
@@ -65,6 +66,8 @@ export default function ProfilePage() {
   const { getBasePrice, setBasePrice } = usePriceOverrides();
   const { user: authUser, changePassword } = useAuth();
   const { t, dir } = useLanguage();
+  const exportLabels: Record<ExportMethod, string> = { download: t(exportLabelKeys.download), whatsapp: t(exportLabelKeys.whatsapp), email: t(exportLabelKeys.email) };
+  const quoteStatusLabels: Record<QuoteWorkflowStatus, string> = { draft: t(quoteStatusKeys.draft), sent: t(quoteStatusKeys.sent), approved: t(quoteStatusKeys.approved), paid: t(quoteStatusKeys.paid) };
   const [activeSection, setActiveSection] = useState<SectionId>('details');
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -263,11 +266,11 @@ export default function ProfilePage() {
     setPasswordError(null);
     setPasswordSuccess(false);
     if (newPassword !== confirmNewPassword) {
-      setPasswordError('הסיסמאות לא תואמות');
+      setPasswordError(t('profile.passwordMismatch'));
       return;
     }
     if (newPassword.length < 4) {
-      setPasswordError('הסיסמה החדשה חייבת לפחות 4 תווים');
+      setPasswordError(t('profile.passwordMinLength'));
       return;
     }
     setPasswordLoading(true);
@@ -278,7 +281,7 @@ export default function ProfilePage() {
         setCurrentPassword('');
         setNewPassword('');
         setConfirmNewPassword('');
-      } else setPasswordError(result.error ?? 'שגיאה בשינוי סיסמה');
+      } else setPasswordError(result.error ?? t('profile.passwordChangeError'));
     } finally {
       setPasswordLoading(false);
     }
@@ -299,7 +302,7 @@ export default function ProfilePage() {
           <nav className="md:w-56 shrink-0">
             <div className="bg-white rounded-xl sm:rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
               <div className="px-3 sm:px-4 py-2.5 sm:py-3 border-b border-slate-100 bg-slate-50/80">
-                <h2 className="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wider">איזור אישי</h2>
+                <h2 className="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wider">{t('profile.area')}</h2>
               </div>
               <ul className="p-1.5 sm:p-2 grid grid-cols-2 sm:grid-cols-4 md:flex md:flex-col gap-1">
                 {sectionConfig.map((section) => (
@@ -333,17 +336,17 @@ export default function ProfilePage() {
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
               {activeSection === 'details' && (
                 <div className="p-6 md:p-8">
-                  <h1 className="text-xl font-black text-slate-900 mb-1">פרטים</h1>
-                  <p className="text-slate-500 text-sm mb-6">הפרטים והלוגו שיופיעו בהצעת המחיר</p>
+                  <h1 className="text-xl font-black text-slate-900 mb-1">{t('profile.details')}</h1>
+                  <p className="text-slate-500 text-sm mb-6">{t('profile.detailsSubtitle')}</p>
                   {authUser?.email && (
                     <div className="mb-4 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                      <span className="text-xs font-bold text-slate-500 block mb-1">אימייל החשבון (להתחברות)</span>
+                      <span className="text-xs font-bold text-slate-500 block mb-1">{t('profile.accountEmailLabel')}</span>
                       <span className="text-slate-800 font-medium" dir="ltr">{authUser.email}</span>
                     </div>
                   )}
                   <form onSubmit={(e) => e.preventDefault()} className="space-y-5">
                     <div>
-                      <label className="block text-sm font-bold text-slate-700 mb-2">לוגו</label>
+                      <label className="block text-sm font-bold text-slate-700 mb-2">{t('profile.logo')}</label>
                       <div className="flex items-start gap-4">
                         <div
                           className="w-20 h-20 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0 cursor-pointer"
@@ -353,104 +356,104 @@ export default function ProfilePage() {
                           onKeyDown={(e) => e.key === 'Enter' && fileInputRef.current?.click()}
                         >
                           {profile.logo ? (
-                            <img src={profile.logo} alt="לוגו" className="w-full h-full object-contain" />
+                            <img src={profile.logo} alt={t('profile.logo')} className="w-full h-full object-contain" />
                           ) : (
-                            <span className="text-slate-400 text-xs px-2">העלה לוגו</span>
+                            <span className="text-slate-400 text-xs px-2">{t('profile.uploadLogo')}</span>
                           )}
                         </div>
                         <input ref={fileInputRef} type="file" accept="image/*" onChange={handleLogoChange} className="hidden" />
-                        <p className="text-slate-500 text-sm">לחץ להעלאת לוגו (PNG, JPG)</p>
+                        <p className="text-slate-500 text-sm">{t('profile.uploadLogoHint')}</p>
                       </div>
                     </div>
                     <div>
-                      <label htmlFor="businessName" className="block text-sm font-bold text-slate-700 mb-2">שם העסק / שם מלא</label>
+                      <label htmlFor="businessName" className="block text-sm font-bold text-slate-700 mb-2">{t('profile.businessName')}</label>
                       <input
                         id="businessName"
                         type="text"
                         value={profile.businessName}
                         onChange={(e) => setProfile({ businessName: e.target.value })}
                         onBlur={showSaveToast}
-                        placeholder="למשל: משה שירותי מיזוג"
+                        placeholder={t('profile.businessNamePlaceholder')}
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
                     <div>
-                      <label htmlFor="contactName" className="block text-sm font-bold text-slate-700 mb-2">שם ליצירת קשר (אופציונלי)</label>
+                      <label htmlFor="contactName" className="block text-sm font-bold text-slate-700 mb-2">{t('profile.contactName')}</label>
                       <input
                         id="contactName"
                         type="text"
                         value={profile.contactName ?? ''}
                         onChange={(e) => setProfile({ contactName: e.target.value || undefined })}
                         onBlur={showSaveToast}
-                        placeholder="למשל: משה כהן"
+                        placeholder={t('profile.contactNamePlaceholder')}
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
                     <div>
-                      <label htmlFor="companyId" className="block text-sm font-bold text-slate-700 mb-2">ח.פ (אופציונלי)</label>
+                      <label htmlFor="companyId" className="block text-sm font-bold text-slate-700 mb-2">{t('profile.companyId')}</label>
                       <input
                         id="companyId"
                         type="text"
                         value={profile.companyId ?? ''}
                         onChange={(e) => setProfile({ companyId: e.target.value || undefined })}
                         onBlur={showSaveToast}
-                        placeholder="למשל: 123456789"
+                        placeholder={t('profile.companyIdPlaceholder')}
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         dir="ltr"
                       />
                     </div>
                     <div>
-                      <label htmlFor="phone" className="block text-sm font-bold text-slate-700 mb-2">טלפון</label>
+                      <label htmlFor="phone" className="block text-sm font-bold text-slate-700 mb-2">{t('profile.phone')}</label>
                       <input
                         id="phone"
                         type="tel"
                         value={profile.phone}
                         onChange={(e) => setProfile({ phone: e.target.value })}
                         onBlur={showSaveToast}
-                        placeholder="050-1234567"
+                        placeholder={t('profile.phonePlaceholder')}
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         dir="ltr"
                       />
                     </div>
                     <div>
-                      <label htmlFor="email" className="block text-sm font-bold text-slate-700 mb-2">אימייל (אופציונלי)</label>
+                      <label htmlFor="email" className="block text-sm font-bold text-slate-700 mb-2">{t('profile.email')}</label>
                       <input
                         id="email"
                         type="email"
                         value={profile.email ?? ''}
                         onChange={(e) => setProfile({ email: e.target.value || undefined })}
                         onBlur={showSaveToast}
-                        placeholder="example@email.com"
+                        placeholder={t('profile.emailPlaceholder')}
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         dir="ltr"
                       />
                     </div>
                     <div>
-                      <label htmlFor="address" className="block text-sm font-bold text-slate-700 mb-2">כתובת (אופציונלי)</label>
+                      <label htmlFor="address" className="block text-sm font-bold text-slate-700 mb-2">{t('profile.address')}</label>
                       <input
                         id="address"
                         type="text"
                         value={profile.address ?? ''}
                         onChange={(e) => setProfile({ address: e.target.value || undefined })}
                         onBlur={showSaveToast}
-                        placeholder="רחוב, עיר"
+                        placeholder={t('profile.addressPlaceholder')}
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
-                    <p className="text-slate-500 text-sm pt-2">הפרטים נשמרים אוטומטית ויופיעו בהצעת המחיר.</p>
+                    <p className="text-slate-500 text-sm pt-2">{t('profile.detailsAutoSave')}</p>
                     {syncStatus === 'saving' && (
-                      <p className="text-blue-600 text-sm font-medium pt-2" role="status">שומר...</p>
+                      <p className="text-blue-600 text-sm font-medium pt-2" role="status">{t('profile.saving')}</p>
                     )}
                     {syncStatus === 'saved' && (
-                      <p className="text-green-600 text-sm font-medium pt-2" role="status">נשמר בהצלחה (מקומית ובשרת)</p>
+                      <p className="text-green-600 text-sm font-medium pt-2" role="status">{t('profile.savedLocalAndServer')}</p>
                     )}
                     {syncStatus === 'error' && (
                       <p className="text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-sm font-medium mt-2" role="alert">
-                        שמירה לשרת נכשלה – הפרטים והלוגו נשמרו במכשיר זה בלבד. להצגה מכל מכשיר: הגדר Supabase ב-Vercel (ראה README).
+                        {t('profile.syncError')}
                       </p>
                     )}
                     <p className="text-slate-400 text-xs pt-3 mt-3 border-t border-slate-100">
-                      הפרטים והלוגו נשמרים אוטומטית במכשיר זה; כשמוגדר חיבור ל-Supabase הם נשמרים גם בשרת ונטענים בכל כניסה.
+                      {t('profile.detailsNote')}
                     </p>
                   </form>
                 </div>
@@ -458,8 +461,8 @@ export default function ProfilePage() {
 
               {activeSection === 'quotes-and-drafts' && (
                 <div className="p-6 md:p-8">
-                  <h1 className="text-xl font-black text-slate-900 mb-1">הצעות וטיוטות</h1>
-                  <p className="text-slate-500 text-sm mb-8">כל ההצעות ששמרת או שלחת, יחד עם הטיוטות – במקום אחד מסודר</p>
+                  <h1 className="text-xl font-black text-slate-900 mb-1">{t('profile.quotesTitle')}</h1>
+                  <p className="text-slate-500 text-sm mb-8">{t('profile.quotesSubtitle')}</p>
                   {(() => {
                     type QuoteItem = { type: 'quote'; id: string; date: string; data: SavedQuote };
                     type DraftItem = { type: 'draft'; id: string; date: string; data: QuoteDraft };
@@ -475,7 +478,7 @@ export default function ProfilePage() {
                             <FileText size={32} />
                           </div>
                           <p className="text-slate-500 text-sm max-w-xs">
-                            עדיין אין הצעות או טיוטות. כל הצעה שתוריד כ-PDF או תשלח תישמר כאן; טיוטות נשמרות מתוך הסל.
+                            {t('profile.noQuotesYet')}
                           </p>
                         </div>
                       );
@@ -498,12 +501,12 @@ export default function ProfilePage() {
                                 className="flex flex-col gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-colors"
                               >
                                 <div className="flex items-center gap-2 text-slate-500 text-xs font-medium">
-                                  <FileText size={14} /> הצעת מחיר
+                                  <FileText size={14} /> {t('profile.quoteLabel')}
                                 </div>
                                 <div className="min-w-0">
                                   <div className="flex items-center gap-2 flex-wrap">
                                     <span className="font-bold text-slate-900">
-                                      {q.customerName?.trim() || '— ללא שם לקוח'}
+                                      {q.customerName?.trim() || t('profile.noCustomerName')}
                                     </span>
                                     {q.quoteNumber != null && (
                                       <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
@@ -514,7 +517,7 @@ export default function ProfilePage() {
                                   <div className="text-sm text-slate-500">{dateStr}</div>
                                   <div className="flex items-center gap-2 mt-1 flex-wrap">
                                     <span className="text-sm font-semibold text-blue-600">
-                                      {formatPrice(q.totalWithVAT)} סה&quot;כ
+                                      {formatPrice(q.totalWithVAT)} {t('profile.total')}
                                     </span>
                                     <div className="relative">
                                       <button
@@ -558,19 +561,19 @@ export default function ProfilePage() {
                                     type="button"
                                     onClick={() => setPreviewQuoteId(q.id)}
                                     className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-sm border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors shrink-0"
-                                    title="תצוגה מקדימה"
+                                    title={t('profile.preview')}
                                   >
                                     <Eye size={16} />
-                                    תצוגה מקדימה
+                                    {t('profile.preview')}
                                   </button>
                                   <button
                                     type="button"
                                     onClick={() => handleDuplicateQuote(q.id)}
                                     className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-sm border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors shrink-0"
-                                    title="שכפל לסל"
+                                    title={t('profile.duplicate')}
                                   >
                                     <Copy size={16} />
-                                    שכפל
+                                    {t('profile.duplicate')}
                                   </button>
                                   <button
                                     type="button"
@@ -579,13 +582,13 @@ export default function ProfilePage() {
                                     className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-bold text-sm bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 transition-colors shrink-0"
                                   >
                                     <Download size={16} />
-                                    {downloadingId === q.id ? 'מוריד...' : 'הורד PDF'}
+                                    {downloadingId === q.id ? t('profile.downloading') : t('profile.downloadPdf')}
                                   </button>
                                   <button
                                     type="button"
                                     onClick={() => setDeleteQuoteId(q.id)}
                                     className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors shrink-0"
-                                    title="מחק מההיסטוריה"
+                                    title={t('profile.deleteFromHistory')}
                                   >
                                     <Trash2 size={18} />
                                   </button>
@@ -600,21 +603,21 @@ export default function ProfilePage() {
                               className="flex flex-col gap-3 p-4 rounded-xl border border-amber-200 bg-amber-50/40 hover:bg-amber-50/60 transition-colors"
                             >
                               <div className="flex items-center gap-2 text-amber-700 text-xs font-medium">
-                                <FileEdit size={14} /> טיוטה
+                                <FileEdit size={14} /> {t('profile.draftLabel')}
                               </div>
                               <div className="min-w-0">
                                 <div className="font-bold text-slate-900 text-lg">{d.name}</div>
                                 <div className="text-sm text-slate-600 mt-1">{getDraftSummary(d)}</div>
                                 <div className="flex items-center gap-2 mt-2 flex-wrap text-xs text-slate-500">
-                                  <span>{d.items.length} פריטים</span>
+                                  <span>{d.items.length} {t('profile.itemsCount')}</span>
                                   <span>·</span>
-                                  <span>{formatPrice(getDraftTotal(d))} סה&quot;כ</span>
+                                  <span>{formatPrice(getDraftTotal(d))} {t('profile.total')}</span>
                                   <span>·</span>
                                   <span>{formatDraftDate(d.savedAt)}</span>
                                   {d.customerName?.trim() && (
                                     <>
                                       <span>·</span>
-                                      <span>לקוח: {d.customerName}</span>
+                                      <span>{t('profile.customer')}: {d.customerName}</span>
                                     </>
                                   )}
                                 </div>
@@ -625,13 +628,13 @@ export default function ProfilePage() {
                                   onClick={() => handleLoadDraft(d)}
                                   className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm bg-blue-600 text-white hover:bg-blue-700 transition-colors shrink-0"
                                 >
-                                  טען לסל
+                                  {t('profile.loadToCart')}
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => setDeleteDraftId(d.id)}
                                   className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors shrink-0"
-                                  title="מחק טיוטה"
+                                  title={t('profile.deleteDraft')}
                                 >
                                   <Trash2 size={18} />
                                 </button>
@@ -647,12 +650,12 @@ export default function ProfilePage() {
 
               {activeSection === 'settings' && (
                 <div className="p-6 md:p-8">
-                  <h1 className="text-xl font-black text-slate-900 mb-1">הגדרות</h1>
-                  <p className="text-slate-500 text-sm mb-8">כותרת הצעת המחיר ומספר הצעה – נשמר אוטומטית</p>
+                  <h1 className="text-xl font-black text-slate-900 mb-1">{t('profile.settingsTitle')}</h1>
+                  <p className="text-slate-500 text-sm mb-8">{t('profile.settingsSubtitle')}</p>
                   <form onSubmit={(e) => e.preventDefault()} className="space-y-5 max-w-md">
                     <div>
                       <label htmlFor="defaultQuoteTitle" className="block text-sm font-bold text-slate-700 mb-2">
-                        כותרת ברירת מחדל להצעת המחיר
+                        {t('profile.defaultQuoteTitleLabel')}
                       </label>
                       <input
                         id="defaultQuoteTitle"
@@ -660,13 +663,13 @@ export default function ProfilePage() {
                         value={defaultQuoteTitle}
                         onChange={(e) => setDefaultQuoteTitle(e.target.value)}
                         onBlur={showSaveToast}
-                        placeholder="הצעת מחיר"
+                        placeholder={t('profile.defaultQuoteTitlePlaceholder')}
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
                     <div>
                       <label htmlFor="nextQuoteNumber" className="block text-sm font-bold text-slate-700 mb-2">
-                        מספר הצעה הבא (להצגה בראש ההצעה)
+                        {t('profile.nextQuoteNumberLabel')}
                       </label>
                       <input
                         id="nextQuoteNumber"
@@ -684,7 +687,7 @@ export default function ProfilePage() {
                     </div>
                     <div>
                       <label htmlFor="validityDays" className="block text-sm font-bold text-slate-700 mb-2">
-                        תוקף הצעה (ימים)
+                        {t('profile.validityDaysLabel')}
                       </label>
                       <input
                         id="validityDays"
@@ -699,11 +702,11 @@ export default function ProfilePage() {
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         dir="ltr"
                       />
-                      <p className="text-slate-500 text-xs mt-1">יופיע ב-PDF: &quot;הצעת מחיר זו תקפה ל-X יום&quot;</p>
+                      <p className="text-slate-500 text-xs mt-1">{t('profile.validityDaysHint')}</p>
                     </div>
                     <div>
                       <label htmlFor="vatRate" className="block text-sm font-bold text-slate-700 mb-2">
-                        מע&quot;מ
+                        {t('profile.vatLabel')}
                       </label>
                       <select
                         id="vatRate"
@@ -715,30 +718,30 @@ export default function ProfilePage() {
                         onBlur={showSaveToast}
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
-                        <option value={0}>עוסק פטור – ללא מע&quot;מ</option>
-                        <option value={0.17}>מחייב מע&quot;מ 17%</option>
-                        <option value={0.18}>מחייב מע&quot;מ 18%</option>
+                        <option value={0}>{t('profile.vatOptionExempt')}</option>
+                        <option value={0.17}>{t('profile.vatOption17')}</option>
+                        <option value={0.18}>{t('profile.vatOption18')}</option>
                       </select>
-                      <p className="text-slate-500 text-xs mt-1">בחר אם אתה עוסק פטור או מחייב מע&quot;מ</p>
+                      <p className="text-slate-500 text-xs mt-1">{t('profile.vatHint')}</p>
                     </div>
-                    <p className="text-slate-500 text-sm pt-2">ההגדרות נשמרות אוטומטית ומשמשות בעת יצירת הצעות חדשות.</p>
+                    <p className="text-slate-500 text-sm pt-2">{t('profile.settingsAutoSave')}</p>
                   </form>
 
                   <div className="mt-10 pt-8 border-t border-slate-200">
                     <h2 className="text-lg font-black text-slate-900 mb-1 flex items-center gap-2">
-                      <Smartphone size={22} /> הוסף אייקון למסך הבית
+                      <Smartphone size={22} /> {t('profile.addToHomeScreenTitle')}
                     </h2>
                     <p className="text-slate-500 text-sm mb-4">
-                      אפשר להוסיף את האתר כמעט כאפליקציה – גישה מהירה מהמסך הראשי של הטלפון, בלי סרגל דפדפן.
+                      {t('profile.addToHomeScreenDesc')}
                     </p>
                     <div className="mb-4 p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-600 space-y-1">
-                      <p className="font-bold text-slate-700">תאימות:</p>
-                      <p>• <strong>אנדרואיד (Chrome):</strong> כפתור ההתקנה כאן עובד אחרי גלילה קצרה באתר. אם נכנסת מוואטסאפ – פתח את האתר ב-Chrome ואז נסה.</p>
-                      <p>• <strong>איפון (Safari):</strong> אין כפתור אוטומטי – תמיד דרך שתף → &quot;הוסף למסך הבית&quot;.</p>
+                      <p className="font-bold text-slate-700">{t('profile.compatibility')}:</p>
+                      <p>• <strong>{t('profile.compatibilityAndroid')}</strong></p>
+                      <p>• <strong>{t('profile.compatibilityIos')}</strong></p>
                     </div>
                     {installSuccess ? (
                       <div className="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-green-50 border border-green-200 text-green-700 font-medium">
-                        <Check size={20} /> נוסף למסך הבית
+                        <Check size={20} /> {t('profile.addedToHomeScreen')}
                       </div>
                     ) : installPrompt ? (
                       <button
@@ -748,28 +751,28 @@ export default function ProfilePage() {
                         className="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 transition-colors shadow-sm"
                       >
                         <Plus size={20} />
-                        {installLoading ? 'מתקין...' : 'הוסף למסך הבית'}
+                        {installLoading ? t('profile.installing') : t('profile.addToHomeScreen')}
                       </button>
                     ) : (
                       <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 space-y-3 max-w-md">
-                        <p className="font-bold text-slate-700 text-sm">איך מוסיפים למסך הבית?</p>
+                        <p className="font-bold text-slate-700 text-sm">{t('profile.howToAddTitle')}</p>
                         <p className="text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-sm">
-                          חשוב: פתח את האתר <strong>בדפדפן Chrome או Safari</strong> (לא מתוך וואטסאפ או לינק ישיר). בדפדפן מובנה ההתקנה לא עובדת.
+                          {t('profile.howToAddImportant')}
                         </p>
                         <ul className="text-sm text-slate-600 space-y-1.5">
-                          <li><strong>אנדרואיד (Chrome):</strong> תפריט (⋮ שלוש נקודות) → &quot;הוסף למסך הבית&quot; או &quot;התקן אפליקציה&quot;</li>
-                          <li><strong>איפון (Safari):</strong> כפתור שתף (הריבוע עם החץ) → &quot;הוסף למסך הבית&quot;</li>
+                          <li><strong>{t('profile.howToAddAndroid')}</strong></li>
+                          <li><strong>{t('profile.howToAddIos')}</strong></li>
                         </ul>
-                        <p className="text-slate-500 text-xs">אם הופיעה הודעה &quot;לא ניתן להתקין&quot; – נסה לפתוח את הכתובת ישירות ב-Chrome מהשורת הכתובת.</p>
+                        <p className="text-slate-500 text-xs">{t('profile.installFailedHint')}</p>
                       </div>
                     )}
                   </div>
 
                   <div className="mt-10 pt-8 border-t border-slate-200">
                     <h2 className="text-lg font-black text-slate-900 mb-1 flex items-center gap-2">
-                      <KeyRound size={22} /> שינוי סיסמה
+                      <KeyRound size={22} /> {t('profile.changePasswordTitle')}
                     </h2>
-                    <p className="text-slate-500 text-sm mb-4">הזן סיסמה נוכחית ובחר סיסמה חדשה</p>
+                    <p className="text-slate-500 text-sm mb-4">{t('profile.changePasswordDesc')}</p>
                     <form onSubmit={handleChangePassword} className="space-y-4 max-w-md">
                       {passwordError && (
                         <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm" role="alert">
@@ -778,11 +781,11 @@ export default function ProfilePage() {
                       )}
                       {passwordSuccess && (
                         <div className="p-3 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm" role="status">
-                          הסיסמה עודכנה בהצלחה
+                          {t('profile.passwordUpdated')}
                         </div>
                       )}
                       <div>
-                        <label htmlFor="current-password" className="block text-sm font-bold text-slate-700 mb-2">סיסמה נוכחית</label>
+                        <label htmlFor="current-password" className="block text-sm font-bold text-slate-700 mb-2">{t('profile.currentPassword')}</label>
                         <input
                           id="current-password"
                           type="password"
@@ -794,26 +797,26 @@ export default function ProfilePage() {
                         />
                       </div>
                       <div>
-                        <label htmlFor="new-password" className="block text-sm font-bold text-slate-700 mb-2">סיסמה חדשה</label>
+                        <label htmlFor="new-password" className="block text-sm font-bold text-slate-700 mb-2">{t('profile.newPassword')}</label>
                         <input
                           id="new-password"
                           type="password"
                           value={newPassword}
                           onChange={(e) => setNewPassword(e.target.value)}
-                          placeholder="לפחות 4 תווים"
+                          placeholder={t('profile.newPasswordPlaceholder')}
                           className="w-full px-4 py-3 min-h-[48px] rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                           dir="ltr"
                           required
                         />
                       </div>
                       <div>
-                        <label htmlFor="confirm-new-password" className="block text-sm font-bold text-slate-700 mb-2">אימות סיסמה חדשה</label>
+                        <label htmlFor="confirm-new-password" className="block text-sm font-bold text-slate-700 mb-2">{t('profile.confirmNewPassword')}</label>
                         <input
                           id="confirm-new-password"
                           type="password"
                           value={confirmNewPassword}
                           onChange={(e) => setConfirmNewPassword(e.target.value)}
-                          placeholder="הזן שוב את הסיסמה החדשה"
+                          placeholder={t('profile.confirmNewPasswordPlaceholder')}
                           className="w-full px-4 py-3 min-h-[48px] rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                           dir="ltr"
                           required
@@ -824,16 +827,16 @@ export default function ProfilePage() {
                         disabled={passwordLoading}
                         className="py-3 px-6 rounded-xl font-bold bg-slate-800 text-white hover:bg-slate-900 disabled:opacity-60"
                       >
-                        {passwordLoading ? 'מעדכן...' : 'עדכן סיסמה'}
+                        {passwordLoading ? t('profile.updatingPassword') : t('profile.updatePassword')}
                       </button>
                     </form>
                   </div>
 
                   <div className="mt-10 pt-8 border-t border-slate-200">
                     <h2 className="text-lg font-black text-slate-900 mb-1 flex items-center gap-2">
-                      <DollarSign size={22} /> מחירי בסיס מותאמים
+                      <DollarSign size={22} /> {t('profile.basePricesTitle')}
                     </h2>
-                    <p className="text-slate-500 text-sm mb-4">הגדר מחיר בסיס משלך לכל שירות. השאר ריק כדי להשתמש במחיר ברירת המחדל.</p>
+                    <p className="text-slate-500 text-sm mb-4">{t('profile.basePricesDesc')}</p>
                     <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
                       {categories.map((cat) => (
                         <div key={cat.id} className="bg-slate-50 rounded-xl p-4 border border-slate-100">
@@ -847,7 +850,7 @@ export default function ProfilePage() {
                               return (
                                 <li key={svc.id} className="flex flex-wrap items-center gap-2 sm:gap-4 py-2 border-b border-slate-100 last:border-0">
                                   <span className="flex-1 min-w-0 text-sm text-slate-800">{svc.name}</span>
-                                  <span className="text-xs text-slate-500 shrink-0">ברירת מחדל: ₪{svc.basePrice.toLocaleString('he-IL')}</span>
+                                  <span className="text-xs text-slate-500 shrink-0">{t('profile.defaultPrice')}: ₪{svc.basePrice.toLocaleString('he-IL')}</span>
                                   <input
                                     type="number"
                                     min={0}
@@ -884,15 +887,14 @@ export default function ProfilePage() {
       {downloadingId && (
         <div
           className="fixed inset-0 z-[150] flex items-center justify-center bg-black/60"
-          dir="rtl"
+          dir={dir}
           role="status"
           aria-live="polite"
-          aria-label="מוריד את ההצעה"
+          aria-label={t('profile.downloadingQuote')}
         >
           <div className="bg-white rounded-2xl shadow-2xl px-8 py-6 flex flex-col items-center gap-4">
             <Loader2 size={40} className="animate-spin text-blue-600" />
-            <p className="font-bold text-slate-800 text-lg">מוריד את ההצעה...</p>
-            <p className="text-slate-500 text-sm">זה יכול לקחת כמה שניות</p>
+            <p className="font-bold text-slate-800 text-lg">{t('profile.downloadingQuote')}</p>
           </div>
         </div>
       )}
@@ -904,7 +906,7 @@ export default function ProfilePage() {
           className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-xl bg-slate-900 text-white font-medium shadow-xl border border-slate-700 flex items-center gap-2"
         >
           <Check size={20} className="shrink-0 text-green-400" />
-          נשמר בהצלחה
+          {t('profile.savedToast')}
         </div>
       )}
 
@@ -980,18 +982,18 @@ export default function ProfilePage() {
         return (
           <div
             className="fixed inset-0 z-[200] bg-black/50 flex items-center justify-center p-4"
-            dir="rtl"
+            dir={dir}
             onClick={(e) => e.target === e.currentTarget && setPreviewQuoteId(null)}
           >
             <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
               <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-slate-50 shrink-0">
-                <h3 className="font-bold text-slate-900">תצוגה מקדימה – {q.customerName || 'הצעה'}</h3>
+                <h3 className="font-bold text-slate-900">{t('profile.previewTitle').replace('{name}', q.customerName || t('profile.quoteLabel'))}</h3>
                 <button
                   type="button"
                   onClick={() => setPreviewQuoteId(null)}
                   className="px-4 py-2 rounded-xl font-bold text-slate-600 hover:bg-slate-200 transition-colors"
                 >
-                  סגור
+                  {t('profile.closePreview')}
                 </button>
               </div>
               <div className="quote-preview-container p-4 bg-slate-100 min-h-0 flex-1 [&_.quote-preview-body]:shadow-lg [&_.quote-preview-body]:bg-white [&_.quote-preview-body]:my-0">
@@ -1003,10 +1005,10 @@ export default function ProfilePage() {
       })()}
       <ConfirmDialog
         open={!!deleteDraftId}
-        title="מחיקת טיוטה"
-        message="למחוק את הטיוטה? לא ניתן לשחזר."
-        confirmLabel="מחק"
-        cancelLabel="ביטול"
+        title={t('profile.deleteDraftConfirmTitle')}
+        message={t('profile.deleteDraftConfirmMessage')}
+        confirmLabel={t('profile.confirmDelete')}
+        cancelLabel={t('profile.cancel')}
         danger
         onConfirm={() => {
           if (deleteDraftId) handleDeleteDraft(deleteDraftId);
@@ -1015,10 +1017,10 @@ export default function ProfilePage() {
       />
       <ConfirmDialog
         open={!!deleteQuoteId}
-        title="מחיקת הצעה מההיסטוריה"
-        message="למחוק הצעה זו מההיסטוריה? לא ניתן לשחזר."
-        confirmLabel="מחק"
-        cancelLabel="ביטול"
+        title={t('profile.deleteQuoteConfirmTitle')}
+        message={t('profile.deleteQuoteConfirmMessage')}
+        confirmLabel={t('profile.confirmDelete')}
+        cancelLabel={t('profile.cancel')}
         danger
         onConfirm={() => {
           if (deleteQuoteId) handleDeleteQuote(deleteQuoteId);
