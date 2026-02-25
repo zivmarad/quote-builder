@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { FileText, MessageCircle, LayoutGrid, CheckCircle2, Smartphone, Zap, Cloud, Building2, Ruler } from 'lucide-react';
+import { LandingImage } from './LandingImage';
 
 export const metadata: Metadata = {
   title: 'בונה הצעות מחיר לקבלנים ושיפוצניקים | הפקת PDF מהירה',
@@ -169,7 +170,7 @@ export default function LandingPage() {
                 </div>
                 <div className="flex justify-center">
                   <div className="w-[240px] sm:w-[260px] aspect-[9/19] rounded-[2rem] border-8 border-slate-700 shadow-xl bg-white overflow-hidden">
-                    <img
+                    <LandingImage
                       src={step.img}
                       alt={step.imgAlt}
                       className="w-full h-full object-cover object-top"
