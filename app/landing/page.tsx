@@ -12,6 +12,8 @@ export const metadata: Metadata = {
   },
 };
 
+/** 4 מקומות לתמונות: הירו + 3 שלבים. כל תמונה שונה. */
+const HERO_IMAGE = '/landing/service-list.png'; // תצוגה מקדימה: רשימת שירותים עם מחירים (צביעה וכו')
 const steps = [
   {
     title: 'בחר תחום עבודה',
@@ -112,9 +114,9 @@ export default function LandingPage() {
             <div className="order-1 lg:order-2 flex justify-center">
               <div className="relative w-[280px] sm:w-[320px] aspect-[9/19] rounded-[2.5rem] border-[10px] border-slate-800 shadow-2xl bg-white overflow-hidden">
                 <div className="absolute top-0 left-0 right-0 h-6 bg-slate-800 rounded-b-xl z-10" />
-                <img
-                  src="/landing/customize-quote.png"
-                  alt="אפליקציה לבניית הצעת מחיר – מסך התאמת הצעה לצביעת דירה 5 חדרים"
+                <LandingImage
+                  src={HERO_IMAGE}
+                  alt="אפליקציה לבניית הצעת מחיר – רשימת שירותים עם מחירים (תצוגה מקדימה)"
                   className="w-full h-full object-cover object-top"
                 />
               </div>
