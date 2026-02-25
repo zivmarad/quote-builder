@@ -27,6 +27,10 @@ const heebo = Heebo({
 export const metadata: Metadata = {
   title: 'בונה הצעות מחיר | תמחור והצעות מחיר מקצועיות',
   description: 'בנה הצעות מחיר בעברית במהירות – שירותים, תוספות, PDF branded, שליחה בוואטסאפ והיסטוריה. מתאים לבעלי מקצוע וקבלנים.',
+  icons: {
+    icon: '/icon.png',
+    apple: '/icon.png',
+  },
   openGraph: {
     title: 'בונה הצעות מחיר',
     description: 'בנה הצעות מחיר מקצועיות בעברית – PDF, וואטסאפ והיסטוריה.',
