@@ -129,18 +129,20 @@ export default function LandingPage() {
             למה בונה הצעות מחיר
           </h2>
           <div className="grid sm:grid-cols-3 gap-6 lg:gap-8">
-            {painSolutionCards.map((card) => (
-              <div
-                key={card.title}
-                className="bg-[#F8FAFC] rounded-2xl p-6 lg:p-8 border border-slate-100 hover:shadow-md hover:border-slate-200 transition-all text-center"
-              >
-                <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mx-auto mb-4 text-[#2563eb]">
-                  <card.icon size={28} />
+            {painSolutionCards.map((card) => {
+              const Icon = card.icon;
+              return (
+                <div
+                  key={card.title}
+                  className="bg-[#F8FAFC] rounded-2xl p-6 lg:p-8 border border-slate-100 hover:shadow-md hover:border-slate-200 transition-all text-center"
+                >
+                  <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mx-auto mb-4 text-[#2563eb]">
+                    <Icon size={28} />
+                  </div>
+                  <h3 className="font-bold text-[#0F172A] text-lg mb-2">{card.title}</h3>
+                  <p className="text-slate-600 text-sm leading-relaxed">{card.text}</p>
                 </div>
-                <h3 className="font-bold text-[#0F172A] text-lg mb-2">{card.title}</h3>
-                <p className="text-slate-600 text-sm leading-relaxed">{card.text}</p>
-              </div>
-            );
+              );
             })}
           </div>
         </div>
@@ -190,18 +192,20 @@ export default function LandingPage() {
             כל מה שצריך כדי להציע ללקוח במהירות ובמקצועיות.
           </p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((f) => (
-              <div
-                key={f.title}
-                className="bg-[#F8FAFC] rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md hover:border-slate-200 transition-all"
-              >
-                <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center mb-4 text-[#2563eb]">
-                  <f.icon size={24} />
+            {features.map((f) => {
+              const Icon = f.icon;
+              return (
+                <div
+                  key={f.title}
+                  className="bg-[#F8FAFC] rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md hover:border-slate-200 transition-all"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center mb-4 text-[#2563eb]">
+                    <Icon size={24} />
+                  </div>
+                  <h3 className="font-bold text-[#0F172A] mb-2">{f.title}</h3>
+                  <p className="text-slate-600 text-sm leading-relaxed">{f.text}</p>
                 </div>
-                <h3 className="font-bold text-[#0F172A] mb-2">{f.title}</h3>
-                <p className="text-slate-600 text-sm leading-relaxed">{f.text}</p>
-              </div>
-            );
+              );
             })}
           </div>
         </div>
