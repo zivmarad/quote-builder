@@ -214,1151 +214,1158 @@
     "aluminium": "Алюминий",
     "gardening": "Садоводство",
     "handyman": "Ремонт",
+    "welder": "Сварка/металл",
     "drywall": "Гипсокартон",
     "doors": "Двери",
     "communications": "Связь",
     "misc": "Разное"
   },
   "service": {
-    "paint-wall-touchup": "צביעת קיר בודד (תיקונים/רענון)",
-    "paint-room-standard": "צביעת חדר סטנדרטי",
-    "paint-apt-general": "צביעת דירה כללית (תיקונים והכל)",
-    "paint-apt-3": "צביעת דירה 3 חדרים",
-    "paint-apt-4": "צביעת דירה 4 חדרים",
-    "paint-apt-5": "צביעת דירה 5 חדרים",
-    "paint-multi-floor-house": "צביעת בית קומות",
-    "paint-private-house-villa": "צביעת בית פרטי / וילה",
-    "paint-doors-frames": "צביעת דלתות ומשקופים (עץ/מתכת)",
-    "paint-schlicht": "שליכט צבעוני (חיצוני/פנימי)",
-    "paint-ceiling": "צביעת תקרה (בנפרד)",
-    "paint-decorative-walls": "קירות דקורטיביים (אפקטים)",
-    "paint-iron-elements": "צביעת אלמנטים מברזל (גדר/סורג)",
-    "paint-exterior": "צביעת חוץ (קירות חיצוניים)",
-    "paint-parking": "צביעת חניון / מקלט",
-    "paint-american-putty": "החלקת קירות שפכטל אמריקאי",
-    "paint-pergola-deck": "צביעת פרגולות ודקים (עץ)",
-    "sealing-roof-bitumen": "איטום גג ביריעות ביטומניות",
-    "sealing-roof-polyurethane": "איטום גג בחומרים פוליאוריטניים/אקריליים",
-    "sealing-exterior-walls": "איטום קירות חיצוניים (סנפלינג)",
-    "sealing-balcony": "איטום מרפסת מרוצפת (ללא פירוק)",
-    "sealing-shower": "איטום מקלחת (לפני ריצוף)",
-    "sealing-windows": "איטום חלונות (מניעת חדירת מים)",
-    "sealing-underground": "איטום תת-קרקעי (מרתפים/מקלטים)",
-    "sealing-mold": "טיפול בנזקי עובש ועיבוי (קירות פנים)",
-    "sealing-gutters": "תחזוקת גגות ומרזבים",
-    "sealing-roof-tiles": "איטום גגות רעפים",
-    "sealing-pool": "איטום בריכות שחייה / מאגרי מים",
-    "sealing-planter": "איטום אדניות בנויות",
-    "sealing-negative": "איטום \"שלילי\" (מתוך המבנה)",
-    "sealing-expansion-joint": "איטום תפר התפשטות (בבניינים)",
-    "sealing-light-roof": "איטום גגות קלים (איסכורית/פנל מבודד)",
-    "sealing-concrete-restore": "שיקום בטון ותשתיות (לפני איטום)",
-    "sealing-elevator-shaft": "איטום פיר מעלית (בור ספיגה)",
-    "sealing-wall-connection": "החלפת/תיקון יריעות בחיבור לקיר (רולקות)",
-    "concrete-floor": "רצפת בטון (יציקה)",
-    "concrete-sidewalk": "מדרכה / מרפסת בטון",
-    "concrete-foundation": "יסודות ועמודים",
-    "concrete-crack-repair": "תיקון סדקים בבטון",
-    "concrete-restore": "שיקום בטון (חשיפת אבן)",
-    "concrete-demolition": "פירוק/שבירת בטון",
-    "concrete-stairs": "מדרגות בטון",
-    "concrete-wall": "קיר בטון (יציקה במקום)",
-    "plumbing-leak-detect": "איתור ותיקון נזילה (פנים)",
-    "plumbing-sanitary": "התקנת כלים סניטריים",
-    "plumbing-toilet": "החלפת אסלה (רגילה/מונובלוק)",
-    "plumbing-hidden-cistern": "ניאגרה סמויה (תיקון והתקנה)",
-    "plumbing-cistern-replace": "החלפת ניאגרה (גלויה)",
-    "plumbing-water-point": "נקודת מים/דלוחין חדשה",
-    "plumbing-simple-clog": "פתיחת סתימה",
-    "plumbing-clog": "סתימות מורכבות",
-    "plumbing-heaters": "מערכות חימום מים (דודים)",
-    "plumbing-bathroom-renovation": "שיפוץ חדר רחצה (תשתית)",
-    "plumbing-bathroom-complete": "שיפוץ חדר רחצה קומפלט",
-    "plumbing-toilet-complete": "שיפוץ שירותים קומפלט",
-    "plumbing-manifold": "מרכזיות מים (חנוכיות)",
-    "plumbing-filtration": "טיפול במים וסינון",
-    "plumbing-outdoor-lines": "קווי חוץ וביוב",
-    "plumbing-saniflo": "טיפול במשאבות טוחנות (סניטופ)",
-    "plumbing-gas-heater": "התקנת מחמם מים בגז",
-    "plumbing-ac-drain": "ניקוז מזגנים (תשתית)",
-    "plumbing-accessibility": "התקנת אביזרי נגישות (לבעלי מוגבלויות)",
-    "plumbing-main-valve": "החלפת שיבר ראשי / מונה",
-    "tiling-sand": "ריצוף כללי (על חול/סומסום)",
-    "tiling-glue": "הדבקת ריצוף (על קיים)",
-    "tiling-wall-covering": "חיפוי קירות (מטבח / אמבטיה)",
-    "tiling-grout": "עבודות רובה ואיטום",
-    "tiling-stairs": "מדרגות וספי חלון",
-    "tiling-demolition": "פירוק והכנה",
-    "tiling-panels": "פנלים",
-    "electric-point": "נקודת חשמל חדשה (מאור/שקע)",
-    "electric-power-point": "נקודת כוח (ישירה מהלוח)",
-    "electric-panel": "לוח חשמל ובטיחות",
-    "electric-lighting": "גופי תאורה ומאווררים",
-    "electric-communication": "תקשורת, אינטרקום ומצלמות",
-    "electric-ev-charger": "עמדת טעינה לרכב חשמלי",
-    "electric-blinds-smart": "תריסים חשמליים ובית חכם",
-    "electric-garden-lighting": "תאורת גינה וחוץ",
-    "electric-repairs": "תיקונים ואביזרים",
-    "electric-floor-heating": "חימום תת-רצפתי (חשמלי)",
-    "ac-remove-only": "פירוק מזגן",
-    "ac-wall-small": "התקנת מזגן עילי (עד 2.5 כ\"ס)",
-    "ac-wall-large": "התקנת מזגן עילי גדול (3-4 כ\"ס)",
-    "ac-mini-central": "מזגן מיני מרכזי / אינוורטר",
-    "ac-vrf": "מערכת VRF (מולטי/מיני)",
-    "ac-diagnosis": "אבחון, גז ותיקונים",
-    "ac-drain": "טיפול בניקוז ומים",
-    "ac-remove-move": "פירוק והעתקת מזגנים",
-    "ac-deep-clean": "תחזוקה וניקוי עמוק (Deep Clean)",
-    "ac-special-access": "גישה, מנוף ועבודות מיוחדות",
-    "ac-accessories": "אביזרים ושיפורים",
-    "carpentry-deck": "בניית דקים (עץ/סינתטי)",
-    "carpentry-pergola": "פרגולות עץ",
-    "carpentry-kitchen-renew": "חידוש ותיקון מטבחים",
-    "carpentry-kitchen-kit": "קיט מטבח",
-    "carpentry-closet": "ארונות בגדים / קיר",
-    "carpentry-bathroom-cabinet": "ארונות אמבטיה (עמידים ללחות)",
-    "carpentry-wood-stairs": "מדרגות עץ (חיפוי)",
-    "carpentry-partitions": "מחיצות וחיפויי קיר (דקורטיבי)",
-    "carpentry-fixes": "תיקוני נגרות ופרזול",
-    "carpentry-wood-fence": "גדרות עץ",
-    "carpentry-shed": "בניית מחסן עץ (בהתאמה)",
-    "aluminium-fence": "גדרות אלומיניום",
-    "aluminium-gate": "שערים",
-    "aluminium-pergola": "פרגולות אלומיניום",
-    "aluminium-room-window": "חלון חדר (סטנדרטי)",
-    "aluminium-sliding": "חלונות הזזה / ציר (מרפסות ופתחים גדולים)",
-    "aluminium-rolling-shutters": "תריסי גלילה חשמליים",
-    "aluminium-vitrine": "ויטרינות ודלתות מרפסת",
-    "aluminium-nets": "רשתות לחלונות",
-    "aluminium-rails": "מעקות אלומיניום וזכוכית",
-    "aluminium-shower-cabin": "מקלחון אלומיניום",
-    "aluminium-laundry-box": "מסתורי כביסה ומזגנים",
-    "aluminium-repairs": "תיקונים ותחזוקת אלומיניום",
-    "aluminium-balcony-enclosure": "סגירת מרפסת / חדר שמש",
-    "garden-artificial-grass": "דשא סינתטי (כולל תשתית)",
-    "garden-live-grass": "דשא חי (מרבדים)",
-    "garden-irrigation": "מערכת השקיה ממוחשבת",
-    "garden-trees": "שתילת עצים בוגרים",
-    "garden-lighting": "תאורת גינה (מתח נמוך)",
-    "garden-rockery": "מסלעות וחיפויים",
-    "garden-planters": "אדניות ומיכלי שתילה",
-    "garden-drainage": "פיתוח, ניקוז ובורות",
-    "garden-water-features": "אלמנטים של מים",
-    "garden-pruning": "גיזום, כריתה ותחזוקה",
-    "garden-edging": "תיחום ערוגות (אדריכלות)",
-    "handyman-visit-fee": "דמי ביקור (מינימום)",
-    "handyman-shelves": "תליית אביזרים ומדפים",
-    "handyman-tv": "תליית טלוויזיות",
-    "handyman-ikea": "הרכבת ריהוט (IKEA וכד')",
-    "handyman-curtains": "וילונות ופתרונות הצללה",
-    "handyman-shower-install": "התקנת מקלחון",
-    "handyman-bathroom-maintenance": "תחזוקת אמבטיה ואיטום",
-    "handyman-safety": "בטיחות ונגישות",
-    "handyman-doors-windows-fix": "תיקוני דלתות וחלונות",
-    "handyman-blinds": "תריסים ורשתות (ידני)",
-    "handyman-pigeons": "פתרונות נגד יונים",
-    "handyman-wall-fix": "תיקוני קירות (קוסמטי)",
-    "handyman-appliances": "מוצרי חשמל לבנים",
-    "drywall-walls": "בניית קירות גבס",
-    "drywall-ceiling": "תקרות והנמכות",
-    "drywall-cornice": "קרניז גבס (מדרגה)",
-    "drywall-niche": "נישות וקירות כוח",
-    "drywall-acoustic": "בידוד ושיפור אקוסטי",
-    "drywall-panel-room": "בנייה קלה (פאנל מבודד)",
-    "drywall-repairs": "תיקוני גבס (אומנות)",
-    "drywall-wall-cover": "חיפוי קירות קיימים",
-    "drywall-finish": "עבודות גמר וצבע לגבס",
-    "doors-interior": "דלתות פנים (סטנדרט ויוקרה)",
-    "doors-zero-line": "דלתות \"קו אפס\" (נסתרות)",
-    "doors-entry": "דלתות כניסה (ביטחון)",
-    "doors-sliding": "דלתות הזזה (פנים)",
-    "doors-locks": "מנגנונים ונעילה חכמה",
-    "doors-repairs": "תיקונים ותחזוקה",
-    "doors-acoustic-fire": "דלתות אקוסטיות ואש",
-    "doors-hardware": "פרזול ואביזרי קצה",
-    "doors-demolition": "פירוק והכנה",
-    "comm-intercom": "אינטרקום (התקנה ותיקון)",
-    "comm-cctv": "מצלמות אבטחה (CCTV)",
-    "comm-data-cabling": "כבלי תקשורת (רשת/טלפון)",
-    "comm-antenna": "אנטנה וטלוויזיה",
-    "comm-smart-home": "בית חכם (בסיסי)",
-    "comm-door-phone": "דלת אינטרקום / פאנל כניסה",
-    "comm-wifi-extend": "הרחבת רשת WiFi",
-    "misc-dumpster": "מכולה לפינוי פסולת/זבל",
-    "misc-furniture-removal": "פינוי רהיטים ופסולת ידני",
-    "misc-post-renovation-clean": "ניקיון לאחר שיפוץ",
-    "misc-crane-rental": "הזמנת מנוף/סל (שירות חיצוני)",
-    "misc-scaffold-rental": "השכרת פיגום",
-    "misc-garden-waste": "פינוי גזם ופסולת גינה",
-    "misc-pest-control": "הדברה מקצועית"
+    "paint-wall-touchup": "Single wall painting (touch-ups/refresh)",
+    "paint-room-standard": "Standard room painting",
+    "paint-apt-general": "Full apartment painting (touch-ups and all)",
+    "paint-apt-3": "3-room apartment painting",
+    "paint-apt-4": "4-room apartment painting",
+    "paint-apt-5": "5-room apartment painting",
+    "paint-multi-floor-house": "Multi-floor house painting",
+    "paint-private-house-villa": "Private house / villa painting",
+    "paint-doors-frames": "Doors and frames painting (wood/metal)",
+    "paint-schlicht": "Colored render (exterior/interior)",
+    "paint-ceiling": "Ceiling painting (separate)",
+    "paint-decorative-walls": "Decorative walls (effects)",
+    "paint-iron-elements": "Iron elements painting (fence/grate)",
+    "paint-exterior": "Exterior painting (external walls)",
+    "paint-parking": "Parking / shelter painting",
+    "paint-american-putty": "American putty wall smoothing",
+    "paint-pergola-deck": "Pergolas and decks painting (wood)",
+    "sealing-roof-bitumen": "Roof sealing with bituminous membranes",
+    "sealing-roof-polyurethane": "Roof sealing with polyurethane/acrylic materials",
+    "sealing-exterior-walls": "Exterior wall sealing (rappelling)",
+    "sealing-balcony": "Tiled balcony sealing (without dismantling)",
+    "sealing-shower": "Shower/bathroom sealing (before tiling)",
+    "sealing-windows": "Window sealing (prevent water penetration)",
+    "sealing-underground": "Underground sealing (basements/shelters)",
+    "sealing-mold": "Mold and condensation damage treatment (interior walls)",
+    "sealing-gutters": "Roof and gutter maintenance",
+    "sealing-roof-tiles": "Tiled roof sealing",
+    "sealing-pool": "Swimming pool / water reservoir sealing",
+    "sealing-planter": "Built planter sealing",
+    "sealing-negative": "Negative-side sealing (from inside the structure)",
+    "sealing-expansion-joint": "Expansion joint sealing (in buildings)",
+    "sealing-light-roof": "Light roof sealing (insulation/insulated panel)",
+    "sealing-concrete-restore": "Concrete and substrate restoration (before sealing)",
+    "sealing-elevator-shaft": "Elevator shaft sealing (sump)",
+    "sealing-wall-connection": "Replacing/repairing membranes at wall connection (flashings)",
+    "concrete-floor": "Concrete floor (casting)",
+    "concrete-sidewalk": "Sidewalk / concrete patio",
+    "concrete-foundation": "Foundations and columns",
+    "concrete-crack-repair": "Concrete crack repair",
+    "concrete-restore": "Concrete restoration (exposed aggregate)",
+    "concrete-demolition": "Concrete demolition/breaking",
+    "concrete-stairs": "Concrete stairs",
+    "concrete-wall": "Concrete wall (cast in place)",
+    "plumbing-leak-detect": "Leak detection and repair (interior)",
+    "plumbing-sanitary": "Sanitary fixtures installation",
+    "plumbing-toilet": "Toilet replacement (standard/monoblock)",
+    "plumbing-hidden-cistern": "Concealed cistern (repair and installation)",
+    "plumbing-cistern-replace": "Cistern replacement (exposed)",
+    "plumbing-water-point": "New water/waste point",
+    "plumbing-simple-clog": "Simple clog clearing",
+    "plumbing-clog": "Complex blockages",
+    "plumbing-heaters": "Water heating systems (boilers)",
+    "plumbing-bathroom-renovation": "Bathroom renovation (rough-in)",
+    "plumbing-bathroom-complete": "Complete bathroom renovation",
+    "plumbing-toilet-complete": "Complete toilet renovation",
+    "plumbing-manifold": "Water manifolds",
+    "plumbing-filtration": "Water treatment and filtration",
+    "plumbing-outdoor-lines": "Outdoor and sewer lines",
+    "plumbing-saniflo": "Macerator pump service (Saniflo)",
+    "plumbing-gas-heater": "Gas water heater installation",
+    "plumbing-ac-drain": "AC drain (rough-in)",
+    "plumbing-accessibility": "Accessibility fixtures (for disabled)",
+    "plumbing-main-valve": "Main valve / meter replacement",
+    "tiling-sand": "General flooring (on sand/screed)",
+    "tiling-glue": "Tile adhesive (on existing)",
+    "tiling-wall-covering": "Wall tiling (kitchen / bathroom)",
+    "tiling-grout": "Grout and sealing work",
+    "tiling-stairs": "Stairs and window sills",
+    "tiling-demolition": "Demolition and preparation",
+    "tiling-panels": "Panels",
+    "electric-point": "New electrical point (light/outlet)",
+    "electric-power-point": "Power point (direct from panel)",
+    "electric-panel": "Electrical panel and safety",
+    "electric-lighting": "Light fixtures and fans",
+    "electric-communication": "Communication, intercom and cameras",
+    "electric-ev-charger": "EV charging station",
+    "electric-blinds-smart": "Motorized blinds and smart home",
+    "electric-garden-lighting": "Garden and outdoor lighting",
+    "electric-repairs": "Repairs and accessories",
+    "electric-floor-heating": "Underfloor heating (electric)",
+    "ac-remove-only": "AC removal only",
+    "ac-wall-small": "Wall-mounted AC (up to 2.5 HP)",
+    "ac-wall-large": "Large wall-mounted AC (3–4 HP)",
+    "ac-mini-central": "Mini central / inverter AC",
+    "ac-vrf": "VRF system (multi/mini)",
+    "ac-diagnosis": "Diagnosis, gas and repairs",
+    "ac-drain": "Drain and water treatment",
+    "ac-remove-move": "AC removal and relocation",
+    "ac-deep-clean": "Maintenance and deep clean",
+    "ac-special-access": "Access, crane and special works",
+    "ac-accessories": "Accessories and upgrades",
+    "carpentry-deck": "Deck building (wood/composite)",
+    "carpentry-pergola": "Wood pergolas",
+    "carpentry-kitchen-renew": "Kitchen renewal and repair",
+    "carpentry-kitchen-kit": "Kitchen kit",
+    "carpentry-closet": "Closets / wall units",
+    "carpentry-bathroom-cabinet": "Bathroom cabinets (moisture-resistant)",
+    "carpentry-wood-stairs": "Wood stairs (cladding)",
+    "carpentry-partitions": "Partitions and wall cladding (decorative)",
+    "carpentry-fixes": "Carpentry and hardware repairs",
+    "carpentry-wood-fence": "Wood fences",
+    "carpentry-shed": "Wood shed (custom)",
+    "aluminium-fence": "Aluminium fences",
+    "aluminium-gate": "Gates",
+    "aluminium-pergola": "Aluminium pergolas",
+    "aluminium-room-window": "Room window (standard)",
+    "aluminium-sliding": "Sliding / pivot windows (balconies and large openings)",
+    "aluminium-rolling-shutters": "Electric rolling shutters",
+    "aluminium-vitrine": "Display and balcony doors",
+    "aluminium-nets": "Window screens",
+    "aluminium-rails": "Aluminium and glass railings",
+    "aluminium-shower-cabin": "Aluminium shower cabin",
+    "aluminium-laundry-box": "Laundry and AC boxes",
+    "aluminium-repairs": "Aluminium repairs and maintenance",
+    "aluminium-balcony-enclosure": "Balcony / sunroom enclosure",
+    "garden-artificial-grass": "Artificial grass (including base)",
+    "garden-live-grass": "Live grass (sod)",
+    "garden-irrigation": "Automated irrigation system",
+    "garden-trees": "Mature tree planting",
+    "garden-lighting": "Garden lighting (low voltage)",
+    "garden-rockery": "Rockeries and paving",
+    "garden-planters": "Planters and planting containers",
+    "garden-drainage": "Landscaping, drainage and pits",
+    "garden-water-features": "Water features",
+    "garden-pruning": "Pruning, felling and maintenance",
+    "garden-edging": "Bed edging (landscaping)",
+    "handyman-visit-fee": "Visit fee (minimum)",
+    "handyman-shelves": "Mounting accessories and shelves",
+    "handyman-tv": "TV mounting",
+    "handyman-ikea": "Furniture assembly (IKEA, etc.)",
+    "handyman-curtains": "Curtains and shading solutions",
+    "handyman-shower-install": "Shower installation",
+    "handyman-bathroom-maintenance": "Bathroom maintenance and sealing",
+    "handyman-safety": "Safety and accessibility",
+    "handyman-doors-windows-fix": "Doors and windows repairs",
+    "handyman-blinds": "Blinds and screens (manual)",
+    "handyman-pigeons": "Pigeon deterrent solutions",
+    "handyman-wall-fix": "Wall repairs (cosmetic)",
+    "handyman-appliances": "White goods",
+    "welder-visit-fee": "Visit fee (minimum)",
+    "welder-gate": "Iron gate / installation or repair",
+    "welder-railing": "Railings and stair railings",
+    "welder-grill": "Window and opening grilles",
+    "welder-shutter": "Rolling shutter / metal shutter",
+    "welder-pergola": "Metal pergola / metal shed",
+    "drywall-walls": "Drywall wall construction",
+    "drywall-ceiling": "Ceilings and drop ceilings",
+    "drywall-cornice": "Drywall cornice (step)",
+    "drywall-niche": "Niches and utility walls",
+    "drywall-acoustic": "Insulation and acoustic improvement",
+    "drywall-panel-room": "Light construction (insulated panel)",
+    "drywall-repairs": "Drywall repairs (artisan)",
+    "drywall-wall-cover": "Existing wall covering",
+    "drywall-finish": "Finishing and paint for drywall",
+    "doors-interior": "Interior doors (standard and premium)",
+    "doors-zero-line": "Zero-line doors (concealed)",
+    "doors-entry": "Entry doors (security)",
+    "doors-sliding": "Sliding doors (interior)",
+    "doors-locks": "Mechanisms and smart locks",
+    "doors-repairs": "Repairs and maintenance",
+    "doors-acoustic-fire": "Acoustic and fire doors",
+    "doors-hardware": "Hardware and trim",
+    "doors-demolition": "Demolition and preparation",
+    "comm-intercom": "Intercom (installation and repair)",
+    "comm-cctv": "Security cameras (CCTV)",
+    "comm-data-cabling": "Data cabling (network/phone)",
+    "comm-antenna": "Antenna and TV",
+    "comm-smart-home": "Smart home (basic)",
+    "comm-door-phone": "Intercom door / entry panel",
+    "comm-wifi-extend": "WiFi network extension",
+    "misc-dumpster": "Waste/junk dumpster",
+    "misc-furniture-removal": "Manual furniture and waste removal",
+    "misc-post-renovation-clean": "Post-renovation cleaning",
+    "misc-crane-rental": "Crane/lift booking (external service)",
+    "misc-scaffold-rental": "Scaffolding rental",
+    "misc-garden-waste": "Garden waste and debris removal",
+    "misc-pest-control": "Professional pest control"
   },
   "question": {
     "paint": {
-      "q1": "תיקון רטיבות/עובש פעיל (כולל חומר מחטא)?",
-      "q2": "קיר גבוה (מעל 3 מטר)?",
-      "q3": "צבע כהה/עז (דורש 3 שכבות)?",
-      "q4": "קיר גבס (דורש פריימר)?"
+      "q1": "Active moisture/mold repair (including disinfectant)?",
+      "q2": "High wall (over 3 m)?",
+      "q3": "Dark/strong color (requires 3 coats)?",
+      "q4": "Drywall (requires primer)?"
     },
     "paint-room-standard": {
-      "q1": "החדר מאוכלס בריהוט?",
-      "q2": "כולל צביעת תקרה?",
-      "q3": "קילוף צבע ישן ומתקלף?",
-      "q4": "החלפת גוון מכהה מאוד לבהיר?"
+      "q1": "Room occupied with furniture?",
+      "q2": "Include ceiling painting?",
+      "q3": "Strip old peeling paint?",
+      "q4": "Change from very dark to light shade?"
     },
     "paint-apt-general": {
-      "q1": "הדירה מאוכלסת?",
-      "q2": "תיקון סדקים \"עובדים\" (כולל רשת)?",
-      "q3": "הגנה מלאה (קרטון על הרצפה + ניילון לרהיטים)?",
-      "q4": "צביעת ארונות חשמל/תקשורת בגוון הקיר?",
-      "q5": "קילוף צבע ישן ומתקלף?",
-      "q6": "החלפת גוון מכהה מאוד לבהיר?",
-      "q7": "כולל צביעת תקרות בכל החדרים?",
-      "q8": "כולל צביעת משקופים ודלתות פנים?",
-      "q9": "תיקון רטיבות/עובש פעיל (כולל חומר מחטא)?",
-      "q10": "קירות גבס (דורש פריימר)?",
-      "q11": "צבע כהה/עז (דורש 3 שכבות)?",
-      "q12": "קיר גבוה (מעל 3 מטר)?"
+      "q1": "Apartment occupied?",
+      "q2": "Active crack repair (including mesh)?",
+      "q3": "Full protection (cardboard on floor + plastic on furniture)?",
+      "q4": "Paint electrical/communication cabinets to match wall?",
+      "q5": "Strip old peeling paint?",
+      "q6": "Change from very dark to light shade?",
+      "q7": "Include ceiling painting in all rooms?",
+      "q8": "Include frames and interior doors?",
+      "q9": "Active moisture/mold repair (including disinfectant)?",
+      "q10": "Drywall (requires primer)?",
+      "q11": "Dark/strong color (requires 3 coats)?",
+      "q12": "High wall (over 3 m)?"
     },
     "paint-apt-3": {
-      "q1": "הדירה מאוכלסת?",
-      "q2": "תיקון סדקים \"עובדים\" (כולל רשת)?",
-      "q3": "הגנה מלאה (קרטון על הרצפה + ניילון לרהיטים)?",
-      "q4": "צביעת ארונות חשמל/תקשורת בגוון הקיר?"
+      "q1": "Apartment occupied?",
+      "q2": "Active crack repair (including mesh)?",
+      "q3": "Full protection (cardboard on floor + plastic on furniture)?",
+      "q4": "Paint electrical/communication cabinets to match wall?"
     },
     "paint-apt-4": {
-      "q1": "הדירה מאוכלסת?",
-      "q2": "כולל צביעת משקופים?",
-      "q3": "צביעת צבע כהה על גוון בהיר?",
-      "q4": "תיקון סדקים \"עובדים\" (כולל רשת)?"
+      "q1": "Apartment occupied?",
+      "q2": "Include frame painting?",
+      "q3": "Dark paint over light shade?",
+      "q4": "Active crack repair (including mesh)?"
     },
     "paint-apt-5": {
-      "q1": "הדירה מאוכלסת?",
-      "q2": "כולל צביעת תקרות בכל הבית?",
-      "q3": "כולל צביעת מרפסות שירות?",
-      "q4": "תיקון סדקים \"עובדים\" (כולל רשת)?"
+      "q1": "Apartment occupied?",
+      "q2": "Include ceiling painting throughout?",
+      "q3": "Include utility balcony painting?",
+      "q4": "Active crack repair (including mesh)?"
     },
     "paint-multi-floor-house": {
-      "q1": "חלל מדרגות גבוה הדורש פיגומים/סולם מיוחד?",
-      "q2": "כולל צביעה חיצונית חלקית?",
-      "q3": "הדירה מאוכלסת?",
-      "q4": "תיקון סדקים \"עובדים\" (כולל רשת)?"
+      "q1": "High stairwell requiring scaffolding/special ladder?",
+      "q2": "Include partial exterior painting?",
+      "q3": "Apartment occupied?",
+      "q4": "Active crack repair (including mesh)?"
     },
     "paint-private-house-villa": {
-      "q1": "הבית מאוכלס?",
-      "q2": "כולל צביעת חוץ (אסאדה)?",
-      "q3": "תיקון סדקים \"עובדים\" (כולל רשת)?",
-      "q4": "כולל צביעת תקרות בכל החדרים?",
-      "q5": "כולל צביעת משקופים ודלתות פנים?",
-      "q6": "חללים גבוהים (מעל 3.5 מ) או גרם מדרגות?"
+      "q1": "House occupied?",
+      "q2": "Include exterior painting (façade)?",
+      "q3": "Active crack repair (including mesh)?",
+      "q4": "Include ceiling painting in all rooms?",
+      "q5": "Include frames and interior doors?",
+      "q6": "High ceilings (over 3.5 m) or stairwell?"
     },
     "paint-doors-frames": {
-      "q1": "צביעת משקוף בלבד?",
-      "q2": "מעבר מצבע שמן לצבע מים (דורש יסוד)?",
-      "q3": "תיקון פגמים/חורים בעץ (שפכטל עץ)?",
-      "q4": "צביעה בתנור (במצבעה - כולל פירוק)?"
+      "q1": "Frame only?",
+      "q2": "Switch from oil to water-based (requires primer)?",
+      "q3": "Wood defect/hole repair (wood filler)?",
+      "q4": "Spray booth painting (including disassembly)?"
     },
     "paint-schlicht": {
-      "q1": "כולל פירוק שכבה ישנה?",
-      "q2": "עבודה בגובה (מעל קומה 1)?",
-      "q3": "יישום על קיר חדש (דורש פריימר X)?",
-      "q4": "מרקם גס (M300)?"
+      "q1": "Include stripping old layer?",
+      "q2": "Work at height (above 1st floor)?",
+      "q3": "Apply on new wall (requires primer)?",
+      "q4": "Coarse texture (M300)?"
     },
     "paint-ceiling": {
-      "q1": "תקרת חדר רטוב (צבע \"אקרינול\" נגד עובש)?",
-      "q2": "תקרה גבוהה (סולם גבוה/פיגום)?",
-      "q3": "קילוף טמבורטק/שפריץ ישן?"
+      "q1": "Wet room ceiling (anti-mold paint)?",
+      "q2": "High ceiling (tall ladder/scaffolding)?",
+      "q3": "Strip old popcorn/spray texture?"
     },
     "paint-decorative-walls": {
-      "q1": "אפקט בטון / סוויד / ספארי?",
-      "q2": "יישום \"סטוקו\" (מראה שיש מבריק)?",
-      "q3": "הדבקת קרניזים (למטר)?",
-      "q4": "צביעת קיר פסים (דורש סימון לייזר)?"
+      "q1": "Concrete / suede / safari effect?",
+      "q2": "Stucco finish (polished stone look)?",
+      "q3": "Cornice installation (per meter)?",
+      "q4": "Striped wall (requires laser marking)?"
     },
     "paint-iron-elements": {
-      "q1": "הסרת חלודה עמוקה (דיסק)?",
-      "q2": "צביעה בצבע ישיר על חלודה (המרטון)?",
-      "q3": "סורגים מורכבים (סלסולים)?"
+      "q1": "Deep rust removal (grinding)?",
+      "q2": "Direct paint on rust (rust-inhibiting)?",
+      "q3": "Complex grilles (ornamental)?"
     },
     "paint-exterior": {
-      "q1": "תיקוני טיח לפני צבע?",
-      "q2": "צבע גמיש (לאיטום סדקים)?",
-      "q3": "התזת איירלס (שטחים גדולים)?"
+      "q1": "Plaster repairs before painting?",
+      "q2": "Elastic paint (crack bridging)?",
+      "q3": "Airless spray (large areas)?"
     },
     "paint-parking": {
-      "q1": "סימון פסים/חניות (למטר)?",
-      "q2": "צבע מעכב בעירה (עם אישור)?",
-      "q3": "עבודה בשעות הלילה?"
+      "q1": "Line/parking marking (per meter)?",
+      "q2": "Fire-retardant paint (with approval)?",
+      "q3": "Night work?"
     },
     "paint-american-putty": {
-      "q1": "קירות עם סדקים/פגמים רבים (הכנה מקדימה)?",
-      "q2": "עבודה בתקרה (בנוסף לקירות)?",
-      "q3": "צביעה לאחר ההחלקה (2 שכבות)?"
+      "q1": "Walls with many cracks/defects (prep)?",
+      "q2": "Ceiling work (in addition to walls)?",
+      "q3": "Painting after smoothing (2 coats)?"
     },
     "paint-pergola-deck": {
-      "q1": "שיוף מכני של העץ (עד לבסיס)?",
-      "q2": "יישום שכבת הגנה UV?",
-      "q3": "טיפול נגד מזיקים (תולעי עץ)?"
+      "q1": "Mechanical wood sanding (to base)?",
+      "q2": "UV protection coat?",
+      "q3": "Pest treatment (woodworm)?"
     },
     "sealing": {
-      "q1": "קילוף שכבת איטום ישנה (זפת/יריעות)?",
-      "q2": "יריעות 5 מ\"מ (במקום 4)?",
-      "q3": "הרמת דודים/מזגנים על הגבהות תקניות?",
-      "q4": "בדיקת הצפה (כולל סתימת מרזבים ל-72 שעות)?"
+      "q1": "Strip old waterproofing layer (tar/membranes)?",
+      "q2": "5 mm membranes (instead of 4)?",
+      "q3": "Raising water heaters/AC units on standard stands?",
+      "q4": "Flood test (including blocking gutters for 72 hours)?"
     },
     "sealing-roof-polyurethane": {
-      "q1": "יישום רשת אינטרגלס לחיזוק?",
-      "q2": "שכבה כפולה (פריימר + 2 שכבות)?",
-      "q3": "צבע הלבנה להגנת UV?"
+      "q1": "Apply fiberglass mesh for reinforcement?",
+      "q2": "Double layer (primer + 2 coats)?",
+      "q3": "White coating for UV protection?"
     },
     "sealing-exterior-walls": {
-      "q1": "איטום סדקים מבניים (פתיחת סדק ומילוי)?",
-      "q2": "התזת סילר שקוף (למניעת ספיגה)?",
-      "q3": "שיקום בטון (ברזל חשוף)?"
+      "q1": "Seal structural cracks (crack opening and filling)?",
+      "q2": "Spray clear sealer (to prevent absorption)?",
+      "q3": "Concrete restoration (exposed rebar)?"
     },
     "sealing-balcony": {
-      "q1": "חריצת רובה קיימת ומילוי מחדש?",
-      "q2": "איטום בסיליקון שקוף/חומר פוליאוריטני מעל הריצוף?",
-      "q3": "איטום סף דלת (יציאה למרפסת)?"
+      "q1": "Groove existing grout and refill?",
+      "q2": "Seal with clear silicone/polyurethane over tiling?",
+      "q3": "Seal door threshold (exit to balcony)?"
     },
     "sealing-shower": {
-      "q1": "מריחת חומר איטום צמנטי (2 שכבות)?",
-      "q2": "איטום פינות עם סרט איטום ייעודי?",
-      "q3": "איטום \"נקז כפול\" (מערכת ניקוז)?"
+      "q1": "Apply cementitious waterproofing (2 coats)?",
+      "q2": "Seal corners with dedicated waterproofing tape?",
+      "q3": "Double-drain sealing (drainage system)?"
     },
     "sealing-windows": {
-      "q1": "הסרת סיליקון ישן ויבש?",
-      "q2": "איטום חיצוני בגובה (מנצ'ר/סולם גבוה)?",
-      "q3": "איטום מסילות וקדח ניקוז?"
+      "q1": "Remove old, dry silicone?",
+      "q2": "External sealing at height (scaffolding/ladder)?",
+      "q3": "Seal tracks and drain holes?"
     },
     "sealing-underground": {
-      "q1": "הזרקת פוליאוריטן לעצירת נזילות פעילות?",
-      "q2": "חפירה חיצונית לחשיפת היסודות?",
-      "q3": "התקנת יריעות ניקוז (שוקולדה)?"
+      "q1": "Polyurethane injection to stop active leaks?",
+      "q2": "External excavation to expose foundations?",
+      "q3": "Install drainage sheets (drainage mat)?"
     },
     "sealing-mold": {
-      "q1": "ניקוי עמוק בחומר קוטל פטריות (כלור מרוכז)?",
-      "q2": "צביעה בצבע תרמי מבודד (למניעת גשר קור)?",
-      "q3": "התקנת ונטה/מפוח ליציאת אדים?"
+      "q1": "Deep clean with fungicide (concentrated chlorine)?",
+      "q2": "Paint with thermal insulating paint (prevent cold bridge)?",
+      "q3": "Install vent/fan for moisture exhaust?"
     },
     "sealing-gutters": {
-      "q1": "פתיחת סתימה במרזב (כולל בדיקת זרימה)?",
-      "q2": "התקנת רשתות הגנה נגד יונים/עלים?",
-      "q3": "תיקון/החלפת מרזב חיצוני (למטר)?"
+      "q1": "Clear gutter blockage (including flow check)?",
+      "q2": "Install bird/leaf guard mesh?",
+      "q3": "Repair/replace external gutter (per meter)?"
     },
     "sealing-roof-tiles": {
-      "q1": "החלפת רעפים שבורים (עד 10 יחידות)?",
-      "q2": "איטום רוכבים (בטון/חומר גמיש)?",
-      "q3": "הדבקת יריעה נצמדת בחיבור לקיר?"
+      "q1": "Replace broken tiles (up to 10 units)?",
+      "q2": "Seal battens (concrete/flexible compound)?",
+      "q3": "Bond membrane at wall connection?"
     },
     "sealing-pool": {
-      "q1": "איטום צמנטי גמיש (3 שכבות)?",
-      "q2": "בדיקת נזירוּת (בדיקת מפלס מים)?",
-      "q3": "חיזוק פינות ברצועות בוטיליות?"
+      "q1": "Flexible cementitious sealing (3 coats)?",
+      "q2": "Watertightness test (water level check)?",
+      "q3": "Reinforce corners with butyl strips?"
     },
     "sealing-planter": {
-      "q1": "מריחת חומר מונע חדירת שורשים?",
-      "q2": "התקנת יריעת ניקוז והגנה?",
-      "q3": "חיבור לניקוז (מרזב ייעודי)?"
+      "q1": "Apply root-barrier compound?",
+      "q2": "Install drainage and protection sheet?",
+      "q3": "Connect to drainage (dedicated gutter)?"
     },
     "sealing-negative": {
-      "q1": "הסרת טיח קיים עד הבלוק?",
-      "q2": "הזרקות קריסטליות (חומר שחודר לבטון)?",
-      "q3": "יישום טיח איטום ייעודי?"
+      "q1": "Remove existing plaster down to block?",
+      "q2": "Crystalline injection (penetrating compound)?",
+      "q3": "Apply dedicated waterproofing plaster?"
     },
     "sealing-expansion-joint": {
-      "q1": "מילוי בספוג \"בקרוד\"?",
-      "q2": "איטום במסטיק פוליאוריטני כבד?",
-      "q3": "כיסוי בפח אלומיניום/גומי ייעודי?"
+      "q1": "Fill with backer rod?",
+      "q2": "Seal with heavy polyurethane mastic?",
+      "q3": "Cover with aluminum/rubber trim?"
     },
     "sealing-light-roof": {
-      "q1": "איטום ברגים (ראש בורג)?",
-      "q2": "הדבקת סרטי בוטילי במפגשי לוחות?",
-      "q3": "טיפול בחלודה מקומית?"
+      "q1": "Seal screw heads?",
+      "q2": "Bond butyl tape at panel joints?",
+      "q3": "Treat local rust?"
     },
     "sealing-concrete-restore": {
-      "q1": "ניקוי ברזל זיון וציפוי במגן חלודה?",
-      "q2": "שחזור בטון בחומר צמנטי ללא התכווצות?",
-      "q3": "עבודה בגובה?"
+      "q1": "Clean rebar and apply rust inhibitor?",
+      "q2": "Concrete restoration with non-shrink cement?",
+      "q3": "Work at height?"
     },
     "sealing-elevator-shaft": {
-      "q1": "שאיבת מים קיימים?",
-      "q2": "עצירת פריצות מים (דליפות לחץ)?",
-      "q3": "איטום קריסטלי מלא?"
+      "q1": "Pump out existing water?",
+      "q2": "Stop water breakthrough (pressure leaks)?",
+      "q3": "Full crystalline sealing?"
     },
     "sealing-wall-connection": {
-      "q1": "פירוק פח הגנה (פלאשונג)?",
-      "q2": "התקנת סרגל אלומיניום חדש?",
-      "q3": "איטום במסטיק עליון?"
+      "q1": "Remove protective flashing?",
+      "q2": "Install new aluminum trim?",
+      "q3": "Seal with top mastic?"
     },
     "concrete": {
-      "q1": "כולל פירוק ריצוף ישן?",
-      "q2": "כולל רשת ברזל (רשת תעשייתית)?",
-      "q3": "עובי מעל 15 ס\"מ?",
-      "q4": "גישה צרה (העברת חומר ידנית)?"
+      "q1": "Include old flooring removal?",
+      "q2": "Include steel mesh (industrial mesh)?",
+      "q3": "Thickness over 15 cm?",
+      "q4": "Narrow access (manual material handling)?"
     },
     "concrete-sidewalk": {
-      "q1": "כולל חפירה והכנת תשתית?",
-      "q2": "שיפוע לניקוז?",
-      "q3": "שטח קטן (מתחת ל־15 מ\"ר)?",
-      "q4": "גישה עם מעלית רק?"
+      "q1": "Include excavation and base prep?",
+      "q2": "Slope for drainage?",
+      "q3": "Small area (under 15 m²)?",
+      "q4": "Elevator access only?"
     },
     "concrete-foundation": {
-      "q1": "חפירה ידנית (גישה צרה)?",
-      "q2": "כולל רשת/זיון?",
-      "q3": "עמודים מוכנים (פר Precast)?",
-      "q4": "עבודה בשטח הררי?"
+      "q1": "Manual excavation (narrow access)?",
+      "q2": "Include mesh/rebar?",
+      "q3": "Precast columns?",
+      "q4": "Work on sloped/rough terrain?"
     },
     "concrete-crack-repair": {
-      "q1": "הזרקת אפוקסי/פוליאוריתן?",
-      "q2": "סדקים פעילים (דורש תפר התפשטות)?",
-      "q3": "גישה בגובה (פיגום)?",
-      "q4": "תיקון סדק ברצפה (כולל שיוף)?"
+      "q1": "Epoxy/polyurethane injection?",
+      "q2": "Active cracks (expansion joint required)?",
+      "q3": "Access at height (scaffolding)?",
+      "q4": "Floor crack repair (including grinding)?"
     },
     "concrete-restore": {
-      "q1": "כולל טיפול אנטי־גרפיטי?",
-      "q2": "עבודה בגובה?",
-      "q3": "שכבת צבע/טיח להסרה?"
+      "q1": "Include anti-graffiti treatment?",
+      "q2": "Work at height?",
+      "q3": "Paint/plaster layer to remove?"
     },
     "concrete-demolition": {
-      "q1": "בטון מזוין (רשת/מוטות)?",
-      "q2": "פינוי פסולת לאתר מורשה?",
-      "q3": "עבודה בשטח מגודר/סגור?",
-      "q4": "שבירת רצפה עם חימום תת־רצפתי?"
+      "q1": "Reinforced concrete (mesh/rebar)?",
+      "q2": "Waste removal to licensed site?",
+      "q3": "Work in fenced/closed area?",
+      "q4": "Breaking floor with underfloor heating?"
     },
     "concrete-stairs": {
-      "q1": "מדרגות מוכנות (פר Precast)?",
-      "q2": "מעקה מובנה?",
-      "q3": "גישה עם מעלית רק?"
+      "q1": "Precast stairs?",
+      "q2": "Built-in railing?",
+      "q3": "Elevator access only?"
     },
     "concrete-wall": {
-      "q1": "כולל תבניות (פרמנט)?",
-      "q2": "קיר תומך (סוללת עפר)?",
-      "q3": "זיון כפול?"
+      "q1": "Include formwork?",
+      "q2": "Retaining wall (embankment)?",
+      "q3": "Double rebar?"
     },
     "plumbing": {
-      "q1": "איתור במצלמה תרמית + דו\"ח למלווה ביטוח?",
-      "q2": "איתור באמצעות גז (לחצר/שטחים פתוחים)?",
-      "q3": "חציבה בבטון/ריצוף וסגירה ראשונית?",
-      "q4": "תיקון צנרת מים חמים (מבודדת)?"
+      "q1": "Thermal camera detection + insurance report?",
+      "q2": "Gas detection (yard/open areas)?",
+      "q3": "Concrete/tile chasing and initial closure?",
+      "q4": "Hot water pipe repair (insulated)?"
     },
     "plumbing-sanitary": {
-      "q1": "פירוק כלי ישן ופינוי?",
-      "q2": "התקנת ברז מהקיר (מערכת ישנה)?",
-      "q3": "התקנת אינטרפוץ (לפני חיפוי)?",
-      "q4": "התקנת אביזרי קצה (סבוניה/מחזיק נייר - סט מלא)?"
+      "q1": "Remove old fixture and disposal?",
+      "q2": "Wall-mounted faucet (old system)?",
+      "q3": "Install shutoff valves (before tiling)?",
+      "q4": "Install end fittings (soap dispenser/holder – full set)?"
     },
     "plumbing-toilet": {
-      "q1": "אסלת מונובלוק (יציאה לרצפה)?",
-      "q2": "הזזת נקודת ביוב (עד 50 ס\"מ)?",
-      "q3": "התקנת ברז שטיפה (בידה) לצד האסלה?"
+      "q1": "Monoblock toilet (floor outlet)?",
+      "q2": "Move sewer point (up to 50 cm)?",
+      "q3": "Install bidet faucet next to toilet?"
     },
     "plumbing-hidden-cistern": {
-      "q1": "התקנה בבנייה (לפני חיפוי וגבס)?",
-      "q2": "תיקון מנגנון (מצוף/פעמון) ללא פירוק קיר?",
-      "q3": "פתיחת חזית קרמיקה לתיקון עמוק?",
-      "q4": "החלפת לחצן דקורטיבי?"
+      "q1": "Rough-in installation (before tiling and drywall)?",
+      "q2": "Mechanism repair (float/bell) without wall opening?",
+      "q3": "Open ceramic panel for deep repair?",
+      "q4": "Replace decorative flush button?"
     },
     "plumbing-cistern-replace": {
-      "q1": "פירוק ניאגרה ישנה ופינוי?",
-      "q2": "החלפת מנגנון בלבד (ללא החלפת מיכל)?",
-      "q3": "ניאגרה דו־משולב (חיסכון במים)?",
-      "q4": "התאמה לאסלה ישנה (חיבורים לא סטנדרטיים)?"
+      "q1": "Remove old cistern and disposal?",
+      "q2": "Replace mechanism only (not tank)?",
+      "q3": "Dual-flush cistern (water saving)?",
+      "q4": "Adapt to old toilet (non-standard connections)?"
     },
     "plumbing-water-point": {
-      "q1": "צנרת PEX (בתוך מוביל)?",
-      "q2": "צנרת SP (רב שכבתית)?",
-      "q3": "הכנה למדיח/מכונת כביסה (כולל ניקוז)?",
-      "q4": "נקודת מים למקרר (כולל צנרת גמישה)?"
+      "q1": "PEX piping (in conduit)?",
+      "q2": "Multilayer (SP) piping?",
+      "q3": "Prep for dishwasher/washing machine (incl. drain)?",
+      "q4": "Water point for fridge (incl. flexible line)?"
     },
     "plumbing-simple-clog": {
-      "q1": "סתימה בכיור/אמבטיה (פתיחה ידנית)?",
-      "q2": "סתימה באסלה (פתיחת סיפון/משאבת יד)?",
-      "q3": "גישה קשה (מתחת לכיור/ארון)?"
+      "q1": "Sink/bathtub clog (manual clear)?",
+      "q2": "Toilet clog (trap/hand pump)?",
+      "q3": "Difficult access (under sink/cabinet)?"
     },
     "plumbing-clog": {
-      "q1": "סתימה בקו ביוב ראשי (דורש קפיץ חשמלי)?",
-      "q2": "שטיפה בלחץ מים גבוה (ביובית)?",
-      "q3": "ניקוי שורשים מקו ביוב?",
-      "q4": "צילום פנים צנרת (סיב אופטי)?"
+      "q1": "Main sewer clog (electric snake required)?",
+      "q2": "High-pressure water jet (sewer truck)?",
+      "q3": "Root cleaning from sewer line?",
+      "q4": "Internal pipe camera (fiber optic)?"
     },
     "plumbing-heaters": {
-      "q1": "החלפת פלאנג' (גוף חימום + טרמוסטט)?",
-      "q2": "התקנת דוד שמש חדש (150 ליטר)?",
-      "q3": "התקנת מאיץ חום?",
-      "q4": "התקנת דוד בתוך הבית (שכיבה)?"
+      "q1": "Replace heating element (element + thermostat)?",
+      "q2": "New solar water heater (150 L)?",
+      "q3": "Heat pump installation?",
+      "q4": "Indoor horizontal tank installation?"
     },
     "plumbing-bathroom-renovation": {
-      "q1": "החלפת צנרת דלוחין (דלויט) מלאה?",
-      "q2": "התקנת תעלת ניקוז (סטריפ) במקום נקז רגיל?",
-      "q3": "בניית ספסל/נישה למקלחון?",
-      "q4": "נקודת הכנה למחמם מגבות?"
+      "q1": "Full waste pipe (Dewalt) replacement?",
+      "q2": "Channel drain (strip) instead of point drain?",
+      "q3": "Shower bench/niche build?",
+      "q4": "Prep point for towel heater?"
     },
     "plumbing-bathroom-complete": {
-      "q1": "החלפת צנרת דלוחין מלאה (מעבר לתשתית)?",
-      "q2": "חדר רחצה גדול (מעל 6 מ\"ר)?",
-      "q3": "כולל בניית ספסל/נישה למקלחון?",
-      "q4": "כולל מחמם מגבות?",
-      "q5": "כולל ברזים וכלים פרימיום?"
+      "q1": "Full waste pipe replacement (to rough-in)?",
+      "q2": "Large bathroom (over 6 m²)?",
+      "q3": "Include shower bench/niche?",
+      "q4": "Include towel heater?",
+      "q5": "Include premium faucets and fixtures?"
     },
     "plumbing-toilet-complete": {
-      "q1": "החלפת צנרת ו/או אינטרפוץ?",
-      "q2": "כולל כיור (שירותים נפרדים)?",
-      "q3": "אסלה וניאגרה פרימיום?",
-      "q4": "חדר שירותים גדול (מעל 3 מ\"ר)?"
+      "q1": "Pipe and/or shutoff replacement?",
+      "q2": "Include sink (separate WC)?",
+      "q3": "Premium toilet and cistern?",
+      "q4": "Large toilet room (over 3 m²)?"
     },
     "plumbing-manifold": {
-      "q1": "החלפת חנוכייה קורוזיבית?",
-      "q2": "התקנת ארון חנוכייה חיצוני?",
-      "q3": "הוספת ברז ראשי לכל שלוחה?"
+      "q1": "Replace corroded manifold?",
+      "q2": "Install external manifold cabinet?",
+      "q3": "Add main shutoff per branch?"
     },
     "plumbing-filtration": {
-      "q1": "התקנת מסנן \"סנפיר\" (למניעת אבנית) בשיבר?",
-      "q2": "התקנת מערכת אוסמוזה הפוכה (מתחת לכיור)?",
-      "q3": "התקנת משאבת הגברת לחץ?"
+      "q1": "Install scale inhibitor at main valve?",
+      "q2": "Reverse osmosis under sink?",
+      "q3": "Pressure booster pump?"
     },
     "plumbing-outdoor-lines": {
-      "q1": "חפירה באדמה/גינה?",
-      "q2": "פירוק ושיקום ריצוף חוץ (אבנים משתלבות)?",
-      "q3": "חיבור לשוחת ביוב (מנהל)?",
-      "q4": "הנחת קו \"גבריט\" (ביוב שקט)?"
+      "q1": "Earth/garden excavation?",
+      "q2": "Remove and restore outdoor paving (interlock)?",
+      "q3": "Connection to municipal sewer?",
+      "q4": "Quiet sewer pipe (e.g. silent line)?"
     },
     "plumbing-saniflo": {
-      "q1": "פתיחת סתימה במשאבה קיימת?",
-      "q2": "החלפת משאבה לחדשה (לא כולל המכשיר)?",
-      "q3": "הנחת קו ניקוז ייעודי (קוטר קטן)?"
+      "q1": "Clear clog in existing pump?",
+      "q2": "Replace pump unit (excluding appliance)?",
+      "q3": "Dedicated small-diameter drain line?"
     },
     "plumbing-gas-heater": {
-      "q1": "חיבור למערכת סולארית (שסתום ערבוב)?",
-      "q2": "הכנת נקודת גז (באישור טכנאי)?",
-      "q3": "התקנת ארובה חיצונית?"
+      "q1": "Connect to solar system (mixing valve)?",
+      "q2": "Gas point prep (with technician approval)?",
+      "q3": "External flue installation?"
     },
     "plumbing-ac-drain": {
-      "q1": "חיבור לסיפון ייעודי בקיר?",
-      "q2": "חציבה בבלוק/בטון להסתרת הקו?",
-      "q3": "פתרון לניקוז במרפסת (קידוח בשיש/מעקה)?"
+      "q1": "Connect to wall drain?",
+      "q2": "Block/concrete chasing to hide line?",
+      "q3": "Balcony drain solution (tile/railing drill)?"
     },
     "plumbing-accessibility": {
-      "q1": "התקנת ידיות אחיזה במקלחת (כולל חיזוק)?",
-      "q2": "התקנת מושב מתקפל במקלחון?",
-      "q3": "הגבהת אסלה קיימת?"
+      "q1": "Shower grab bars (incl. reinforcement)?",
+      "q2": "Folding seat in shower?",
+      "q3": "Raise existing toilet?"
     },
     "plumbing-main-valve": {
-      "q1": "החלפת מקטין לחץ (למניעת רעשים ופיצוצים)?",
-      "q2": "התקנת שסתום אל-חזור (למניעת כניסת אוויר)?",
-      "q3": "החלפת קו המים הראשי מהמונה לבית?"
+      "q1": "Replace pressure reducer (noise/hammer)?",
+      "q2": "Install backflow preventer?",
+      "q3": "Replace main supply from meter to house?"
     },
     "tiling": {
-      "q1": "אריחי גרניט פורצלן (60/60 עד 100/100)?",
-      "q2": "אריחי ענק (120/120 ומעלה)?",
-      "q3": "ריצוף דמוי פרקט (אריחים ארוכים)?",
-      "q4": "פריסה באלכסון או בדוגמה מורכבת?"
+      "q1": "Porcelain granite tiles (60×60 to 100×100)?",
+      "q2": "Large-format tiles (120×120 and up)?",
+      "q3": "Wood-look plank tiles?",
+      "q4": "Diagonal or complex pattern?"
     },
     "tiling-glue": {
-      "q1": "מריחת חומר מקשר (פריימר/שפכטל שיניים)?",
-      "q2": "פירוק פנלים קיימים?",
-      "q3": "חיתוך דלתות פנים (כולל ממ\"ד)?",
-      "q4": "יישור תשתית קיימת (מדה מתפלסת)?"
+      "q1": "Bonding agent (primer/notched trowel)?",
+      "q2": "Remove existing panels?",
+      "q3": "Trim interior doors (incl. safe room)?",
+      "q4": "Level existing substrate?"
     },
     "tiling-wall-covering": {
-      "q1": "אריחי סאב-ווי / בריקים קטנים?",
-      "q2": "פינות 45 מעלות (גרונג - עבודה ידנית)?",
-      "q3": "חיתוך חורים לשקעים/אינסטלציה (בכוס יהלום)?",
-      "q4": "פסי קישוט/פרופילי אלומיניום?"
+      "q1": "Subway / small format tiles?",
+      "q2": "45° corners (trim – manual work)?",
+      "q3": "Cut holes for outlets/plumbing (diamond core)?",
+      "q4": "Decorative strips / aluminum profiles?"
     },
     "tiling-grout": {
-      "q1": "חריצת רובה ישנה וניקוי פוגות?",
-      "q2": "רובה אפוקסית (עמידה בכימיקלים)?",
-      "q3": "איטום סיליקון (מסטיק) בחיבורי קיר-רצפה?"
+      "q1": "Rake old grout and clean joints?",
+      "q2": "Epoxy grout (chemical resistant)?",
+      "q3": "Silicone seal at wall-floor joints?"
     },
     "tiling-stairs": {
-      "q1": "מדרגת שיש כולל \"קאנט\" מעוגל?",
-      "q2": "התקנת סף מונע החלקה (פס מחוספס)?",
-      "q3": "סף חלון (שיש/אבן) כולל אף מים?"
+      "q1": "Stone step with rounded nosing?",
+      "q2": "Non-slip threshold (textured strip)?",
+      "q3": "Window sill (stone) with drip?"
     },
     "tiling-demolition": {
-      "q1": "פירוק ריצוף קיים ופינוי פסולת?",
-      "q2": "הוצאת חול רטוב/ישן ומילוי סומסום?",
-      "q3": "איטום הרצפה מתחת לריצוף (חדר רטוב)?"
+      "q1": "Remove existing flooring and disposal?",
+      "q2": "Remove wet/old sand and fill screed?",
+      "q3": "Floor sealing under tile (wet room)?"
     },
     "tiling-panels": {
-      "q1": "פנל שקוע (בקו הקיר - דורש חציבה)?",
-      "q2": "פנל פולימר (בהדבקה)?",
-      "q3": "פנל פינתי (קרמיקה חתוכה)?"
+      "q1": "Recessed panel (at wall – chasing)?",
+      "q2": "Polymer panel (adhesive)?",
+      "q3": "Corner panel (cut tile)?"
     },
     "electricity": {
-      "q1": "חציבה בבטון (ממ\"ד/עמוד)?",
-      "q2": "חציבה בתקרה (לגוף תאורה)?",
-      "q3": "חציבה ברצפה?",
-      "q4": "נקודה כפולה (באותה קופסה)?",
-      "q5": "חיווט חיצוני (תעלת PVC)?",
-      "q6": "סגירת חציבה (טיח ראשוני)?"
+      "q1": "Concrete chasing (safe room/column)?",
+      "q2": "Ceiling chasing (for fixture)?",
+      "q3": "Floor chasing?",
+      "q4": "Double point (same box)?",
+      "q5": "Surface wiring (PVC channel)?",
+      "q6": "Close chasing (first coat)?"
     },
     "electric-power-point": {
-      "q1": "למכשיר תלת-פאזי (אינדוקציה/מזגן)?",
-      "q2": "מרחק מהלוח מעל 10 מ' (למטר)?",
-      "q3": "חציבה בבטון לאורך המסלול?",
-      "q4": "התקנת מפסק דו-פול (לדוד/תנור)?"
+      "q1": "For three-phase appliance (induction/AC)?",
+      "q2": "Over 10 m from panel (per meter)?",
+      "q3": "Concrete chasing along run?",
+      "q4": "Double-pole switch (water heater)?"
     },
     "electric-panel": {
-      "q1": "שדרוג לתלת-פאזי (חיווט מחדש)?",
-      "q2": "החלפת מפסק פחת (בטיחות)?",
-      "q3": "התקנת מגן נחשולי מתח (ברקים)?",
-      "q4": "בדיקת הארקה ראשית (כולל אלקטרודה)?",
-      "q5": "אישור תקינות לכיבוי אש?"
+      "q1": "Upgrade to three-phase (rewire)?",
+      "q2": "Replace RCD (safety)?",
+      "q3": "Surge protector (lightning)?",
+      "q4": "Main earth check (incl. electrode)?",
+      "q5": "Fire safety compliance?"
     },
     "electric-lighting": {
-      "q1": "נברשת כבדה/יוקרה?",
-      "q2": "מאוורר תקרה (כולל איזון)?",
-      "q3": "התקנה בתקרת גבס (כולל חיזוק)?",
-      "q4": "עבודה בגובה (מעל 3 מטר)?"
+      "q1": "Heavy/premium chandelier?",
+      "q2": "Ceiling fan (incl. balance)?",
+      "q3": "Install in drywall ceiling (reinforcement)?",
+      "q4": "Work at height (over 3 m)?"
     },
     "electric-communication": {
-      "q1": "השחלת כבל רשת CAT7?",
-      "q2": "ארון תקשורת מרכזי (מוקד)?",
-      "q3": "אינטרקום עם מסך (כולל חיווט)?",
-      "q4": "התקנת מנעול חשמלי לדלת?",
-      "q5": "הכנה למצלמת IP (נקודת רשת)?"
+      "q1": "CAT7 network cable pull?",
+      "q2": "Central comms cabinet (hub)?",
+      "q3": "Intercom with screen (incl. wiring)?",
+      "q4": "Electric door lock?",
+      "q5": "Prep for IP camera (network point)?"
     },
     "electric-ev-charger": {
-      "q1": "חציבה באספלט/בטון בחניה?",
-      "q2": "התקנת מונה אנרגיה נפרד?",
-      "q3": "חיווט כבל עבה (5X6)?",
-      "q4": "מעבר דרך פירים משותפים?"
+      "q1": "Asphalt/concrete chasing in parking?",
+      "q2": "Separate energy meter?",
+      "q3": "Heavy cable (5×6) wiring?",
+      "q4": "Route through shared shafts?"
     },
     "electric-blinds-smart": {
-      "q1": "החלפת מנוע לתריס (עד 40 ק\"ג)?",
-      "q2": "מפסק חכם (Wi-Fi) לדוד/תריס/אור?",
-      "q3": "הגדרת אפליקציה וסנכרון מערכת?"
+      "q1": "Replace shutter motor (up to 40 kg)?",
+      "q2": "Smart switch (Wi‑Fi) for heater/shutter/light?",
+      "q3": "App setup and system sync?"
     },
     "electric-garden-lighting": {
-      "q1": "חפירה באדמה להטמנת צינור (למטר)?",
-      "q2": "התקנת עמוד תאורה (כולל בטון)?",
-      "q3": "התקנת חיישן אור (פוטו-צל) / טיימר?"
+      "q1": "Earth excavation for cable (per meter)?",
+      "q2": "Light pole install (incl. concrete)?",
+      "q3": "Photo sensor / timer?"
     },
     "electric-repairs": {
-      "q1": "איתור קצר/תקלה (שעת עבודה)?",
-      "q2": "החלפת כל המפסקים בבית (מעל 20)?",
-      "q3": "אביזרי קצה יוקרתיים (זכוכית/מתכת)?",
-      "q4": "החלפת שקע שרוף?"
+      "q1": "Short/fault finding (per hour)?",
+      "q2": "Replace all switches in house (20+)?",
+      "q3": "Premium fittings (glass/metal)?",
+      "q4": "Replace burnt outlet?"
     },
     "electric-floor-heating": {
-      "q1": "התקנת תרמוסטט דיגיטלי?",
-      "q2": "הכנה בלוח (מאמ\"ת ייעודי)?",
-      "q3": "פריסת רשתות חימום?"
+      "q1": "Digital thermostat?",
+      "q2": "Panel prep (dedicated RCBO)?",
+      "q3": "Heating mat layout?"
     },
     "ac": {
-      "q1": "כולל פינוי המזגן מהדירה?",
-      "q2": "סגירת חורים בקיר לאחר הפירוק?",
-      "q3": "פירוק מזגן מיני מרכזי?"
+      "q1": "Include AC removal from apartment?",
+      "q2": "Close wall holes after removal?",
+      "q3": "Mini central AC removal?"
     },
     "ac-wall-small": {
-      "q1": "התקנה \"גב אל גב\" (פשוטה)?",
-      "q2": "הארכת צנרת מעל 3 מ' (למטר)?",
-      "q3": "קידוח יהלום בבטון (ממ\"ד)?",
-      "q4": "התקנה בגובה (מעל 4 מ' / סולם)?",
-      "q5": "התקנת נקודת חשמל למזגן?"
+      "q1": "Back-to-back install (simple)?",
+      "q2": "Line set over 3 m (per meter)?",
+      "q3": "Diamond drill in concrete (safe room)?",
+      "q4": "Install at height (over 4 m / ladder)?",
+      "q5": "Electrical point for AC?"
     },
     "ac-wall-large": {
-      "q1": "הכנה לתלת-פאזי?",
-      "q2": "תושבת חיצונית (סורג/קיר חוץ)?",
-      "q3": "צנרת נחושת עבה (5/8)?",
-      "q4": "תוספת גז (לצנרת מעל 8 מטר)?"
+      "q1": "Three-phase prep?",
+      "q2": "External bracket (grille/exterior wall)?",
+      "q3": "Heavy copper line (5/8)?",
+      "q4": "Extra refrigerant (line over 8 m)?"
     },
     "ac-mini-central": {
-      "q1": "התקנת מערכת דמפרים (שליטה בחדרים)?",
-      "q2": "הנמכת גבס (כולל פתח שירות)?",
-      "q3": "שדרוג לגרילים מעוצבים (סלוט/דקור)?",
-      "q4": "הארכת קו ניקוז מעל 5 מטר?"
+      "q1": "Damper system (per-room control)?",
+      "q2": "Drywall drop (incl. service opening)?",
+      "q3": "Upgrade to designer grilles?",
+      "q4": "Drain line over 5 m?"
     },
     "ac-vrf": {
-      "q1": "תשתיות בשלב השלד (הכנה בלבד)?",
-      "q2": "יחידה פנימית נסתרת (מתעל)?",
-      "q3": "פיקוד חכם ושליטה מרחוק?",
-      "q4": "בדיקת לחץ חנקן (24 שעות)?"
+      "q1": "Rough-in at frame stage (prep only)?",
+      "q2": "Concealed indoor unit (ducted)?",
+      "q3": "Smart control and remote?",
+      "q4": "Nitrogen pressure test (24 h)?"
     },
     "ac-diagnosis": {
-      "q1": "מילוי גז (חוסר רגיל)?",
-      "q2": "איתור דליפה בחנקן + הלחמה?",
-      "q3": "החלפת קבל (מנוע/מדחס)?",
-      "q4": "החלפת עינית/כרטיס פיקוד?"
+      "q1": "Refrigerant top-up (normal low)?",
+      "q2": "Nitrogen leak detection + braze?",
+      "q3": "Replace capacitor (fan/compressor)?",
+      "q4": "Replace sight glass / control board?"
     },
     "ac-drain": {
-      "q1": "התקנת משאבת ניקוז (לבעיית שיפוע)?",
-      "q2": "חיבור לסיפון ניקוז ייעודי בקיר?",
-      "q3": "החלפת צינור ניקוז יבש/בלוי?",
-      "q4": "פתיחת סתימה בקו ניקוז?"
+      "q1": "Drain pump (slope issue)?",
+      "q2": "Connect to wall drain?",
+      "q3": "Replace dry/worn drain tube?",
+      "q4": "Clear drain line blockage?"
     },
     "ac-remove-move": {
-      "q1": "פירוק ופינוי מזגן ישן?",
-      "q2": "העתקת מזגן (כולל צנרת חדשה עד 3 מטר)?",
-      "q3": "סגירת חורי קידוח בטיח וצבע?",
-      "q4": "פירוק מזגן מיני מרכזי?"
+      "q1": "Remove and dispose old AC?",
+      "q2": "Move AC (incl. new line up to 3 m)?",
+      "q3": "Close drill holes (plaster and paint)?",
+      "q4": "Mini central AC removal?"
     },
     "ac-deep-clean": {
-      "q1": "פירוק מאייר וניקוי אנטי-בקטריאלי?",
-      "q2": "ניקוי מעבה חיצוני (לחץ מים)?",
-      "q3": "הדברת ריחות רעים מהמערכת?"
+      "q1": "Evaporator removal and antibacterial clean?",
+      "q2": "Outdoor coil clean (water pressure)?",
+      "q3": "Odor treatment for system?"
     },
     "ac-special-access": {
-      "q1": "הזמנת מנוף סל (לקומות גבוהות)?",
-      "q2": "עבודה על גג רעפים?",
-      "q3": "התקנת \"כלוב\" הגנה למעבה?",
-      "q4": "פירוק והרכבת סורגים להתקנה?"
+      "q1": "Basket crane (high floors)?",
+      "q2": "Work on tiled roof?",
+      "q3": "Condenser guard cage?",
+      "q4": "Remove/refit grille for install?"
     },
     "ac-accessories": {
-      "q1": "התקנת מגן נחשולי מתח והשהייה?",
-      "q2": "תעלת PVC להסתרת צנרת (למטר)?",
-      "q3": "צביעת גרילים בתנור (לפי RAL)?",
-      "q4": "משככי זעזועים למניעת רעש?"
+      "q1": "Surge protector and delay?",
+      "q2": "PVC channel to hide line (per meter)?",
+      "q3": "Grille spray paint (RAL)?",
+      "q4": "Anti-vibration mounts?"
     },
     "carpentry": {
-      "q1": "סוג העץ: אורן (בסיס), איפאה (+₪400), סינתטי איכותי (+₪250)?",
-      "q2": "תשתית מוגבהת (קונסטרוקציה כפולה)?",
-      "q3": "בניית מדרגות דק?",
-      "q4": "שימון דק (2 שכבות)?"
+      "q1": "Wood type: pine (base), ipe (+₪400), quality composite (+₪250)?",
+      "q2": "Raised base (double structure)?",
+      "q3": "Deck stair build?",
+      "q4": "Deck oil (2 coats)?"
     },
     "carpentry-pergola": {
-      "q1": "עץ גושני (מראה כפרי כבד)?",
-      "q2": "קירוי במבמבוק / סנטף (נגד גשם)?",
-      "q3": "צביעה אטומה (במקום לכה שקופה)?",
-      "q4": "חיווט חשמל סמוי בתוך הקורות?"
+      "q1": "Heavy timber (rustic look)?",
+      "q2": "Bamboo/suntuf roof (rain)?",
+      "q3": "Opaque paint (instead of clear)?",
+      "q4": "Hidden electrical in beams?"
     },
     "carpentry-kitchen-renew": {
-      "q1": "החלפת חזיתות (פורמייקה/פולימר/צבע)?",
-      "q2": "החלפת מגירות לטריקה שקטה (Blum וכד')?",
-      "q3": "התקנת יחידת \"מזווה\" נשלפת?",
-      "q4": "תיקון גוף ארון (נזקי מים)?"
+      "q1": "Replace fronts (laminate/polymer/paint)?",
+      "q2": "Quiet-close drawers (Blum, etc.)?",
+      "q3": "Pull-out pantry unit?",
+      "q4": "Cabinet body repair (water damage)?"
     },
     "carpentry-kitchen-kit": {
-      "q1": "חזיתות פרימיום (לכה/מלמין איכותי)?",
-      "q2": "מגירות טריקה שקטה (Blum)?",
-      "q3": "שיש/קוריאן על משטחי עבודה?",
-      "q4": "תאורת לד מובנית מתחת לארונות?"
+      "q1": "Premium fronts (lacquer/melamine)?",
+      "q2": "Quiet-close drawers (Blum)?",
+      "q3": "Stone/Corian worktops?",
+      "q4": "LED under-cabinet lighting?"
     },
     "carpentry-closet": {
-      "q1": "דלתות הזזה (במקום פתיחה)?",
-      "q2": "פנים הארון מעץ סנדוויץ' (במקום סיבית/MDF)?",
-      "q3": "שילוב מגירות פנימיות?",
-      "q4": "תאורת לד פנימית עם חיישן?"
+      "q1": "Sliding doors (instead of swing)?",
+      "q2": "Plywood interior (instead of chipboard/MDF)?",
+      "q3": "Internal drawers?",
+      "q4": "LED interior with sensor?"
     },
     "carpentry-bathroom-cabinet": {
-      "q1": "עץ סנדוויץ' אוקומה (עמיד במיוחד)?",
-      "q2": "ארון מרחף (תלוי)?",
-      "q3": "משטח עליון בוצ'ר (עץ מלא)?"
+      "q1": "Okoume plywood (extra durable)?",
+      "q2": "Floating (wall-hung) cabinet?",
+      "q3": "Butcher block top (solid wood)?"
     },
     "carpentry-wood-stairs": {
-      "q1": "סוג העץ: אלון מלא?",
-      "q2": "התקנת מעקה עץ תואם (למטר)?",
-      "q3": "תאורת לד מובנית בכל מדרגה?"
+      "q1": "Wood type: solid oak?",
+      "q2": "Matching wood railing (per meter)?",
+      "q3": "LED on each step?"
     },
     "carpentry-partitions": {
-      "q1": "חיפוי \"לייסטים\" (עץ אנכי)?",
-      "q2": "שילוב מראות או אלמנטים ממתכת?",
-      "q3": "חיתוכי לייזר בלוחות עץ?"
+      "q1": "Slat cladding (vertical wood)?",
+      "q2": "Mirrors or metal elements?",
+      "q3": "Laser-cut wood panels?"
     },
     "carpentry-fixes": {
-      "q1": "החלפת צירים לדלת ארון (זוג)?",
-      "q2": "החלפת בוכנות לקלפה?",
-      "q3": "קיצור דלת פנים (לאחר ריצוף)?",
-      "q4": "החלפת ידיות (כל הבית)?"
+      "q1": "Replace cabinet door hinges (pair)?",
+      "q2": "Replace piston for lift-up?",
+      "q3": "Shorten interior door (after flooring)?",
+      "q4": "Replace handles (whole house)?"
     },
     "carpentry-wood-fence": {
-      "q1": "עץ אורן מושחל בתוך ברזל?",
-      "q2": "התקנת שער כניסה תואם?",
-      "q3": "הגבהת גדר קיימת?"
+      "q1": "Pine wood slotted into metal?",
+      "q2": "Matching entry gate?",
+      "q3": "Raise existing fence?"
     },
     "carpentry-shed": {
-      "q1": "רצפת עץ מוגבהת?",
-      "q2": "בידוד תרמי בקירות המחסן?",
-      "q3": "הכנת מדפים פנימיים (סט מלא)?"
+      "q1": "Raised wood floor?",
+      "q2": "Thermal insulation in shed walls?",
+      "q3": "Internal shelves (full set)?"
     },
     "aluminium": {
-      "q1": "דגם הייטק (שלבים ללא ריתוך)?",
-      "q2": "יציקת בטון לעמודים (באדמה)?",
-      "q3": "גדר דו-צדדית (מראה זהה משני הצדדים)?",
-      "q4": "צבע מגורען/מיוחד?"
+      "q1": "Premium design (welded sections)?",
+      "q2": "Concrete cast for posts (in ground)?",
+      "q3": "Double-sided fence (same look both sides)?",
+      "q4": "Textured/special paint?"
     },
     "aluminium-gate": {
-      "q1": "מנוע חשמלי פרימיום?",
-      "q2": "שער כניסה להולכי רגל (מעוצב)?",
-      "q3": "פתיחה מהטלפון / טביעת אצבע?",
-      "q4": "שילוב אינטרקום ומצלמה בשער?"
+      "q1": "Premium electric motor?",
+      "q2": "Pedestrian gate (designed)?",
+      "q3": "Phone / fingerprint opening?",
+      "q4": "Intercom and camera in gate?"
     },
     "aluminium-pergola": {
-      "q1": "פרגולה חשמלית מתכווננת (רפרפות)?",
-      "q2": "תאורת לד מובנית בפרופיל?",
-      "q3": "חיישן גשם לסגירה אוטומטית?",
-      "q4": "מרזבים סמויים בתוך העמודים?"
+      "q1": "Motorized louver pergola?",
+      "q2": "Built-in LED in profile?",
+      "q3": "Rain sensor for auto-close?",
+      "q4": "Concealed gutters in columns?"
     },
     "aluminium-room-window": {
-      "q1": "פתיחה על ציר (במקום הזזה)?",
-      "q2": "פרופיל בלגי (דמוי ברזל)?",
-      "q3": "זכוכית בידודית (בידוד רעש)?",
-      "q4": "זכוכית טריפלקס (בטיחות)?"
+      "q1": "Casement (instead of sliding)?",
+      "q2": "Belgian profile (iron look)?",
+      "q3": "Insulating glass (sound)?",
+      "q4": "Triple-layer safety glass?"
     },
     "aluminium-sliding": {
-      "q1": "פרופיל בלגי (דמוי ברזל)?",
-      "q2": "מנגנון דריי-קיפ (פתיחה כפולה)?",
-      "q3": "זכוכית בידודית (בידוד רעש)?",
-      "q4": "זכוכית טריפלקס (בטיחות)?"
+      "q1": "Belgian profile (iron look)?",
+      "q2": "Tilt-and-turn mechanism?",
+      "q3": "Insulating glass (sound)?",
+      "q4": "Triple-layer safety glass?"
     },
     "aluminium-rolling-shutters": {
-      "q1": "שלבי אור (כניסת אור במצב סגור)?",
-      "q2": "מנוע מותג (Somfy וכד')?",
-      "q3": "מנגנון הגנה נגד הרמה (פריצה)?",
-      "q4": "שליטה חכמה (Wi-Fi)?"
+      "q1": "Slats with light gap (closed)?",
+      "q2": "Brand motor (Somfy, etc.)?",
+      "q3": "Anti-lift mechanism (security)?",
+      "q4": "Smart control (Wi‑Fi)?"
     },
     "aluminium-vitrine": {
-      "q1": "פרופיל אופיס כבד (לוויטרינות ענק)?",
-      "q2": "מנגנון \"הרם-הזז\" (Lift&Slide)?",
-      "q3": "זכוכית מסננת קרינה (Low-E)?",
-      "q4": "סף דלת שטוח (נגישות)?"
+      "q1": "Heavy office profile (large display)?",
+      "q2": "Lift & slide mechanism?",
+      "q3": "Low-E glass?",
+      "q4": "Flush threshold (accessibility)?"
     },
     "aluminium-nets": {
-      "q1": "רשת שקופה (בלתי נראית)?",
-      "q2": "רשת נגד חיות מחמד (חזקה)?",
-      "q3": "רשת גלילה (קפיץ)?",
-      "q4": "רשת הזזה על מסילה?"
+      "q1": "Invisible / transparent mesh?",
+      "q2": "Pet-resistant mesh (strong)?",
+      "q3": "Roll-up mesh (spring)?",
+      "q4": "Sliding mesh on track?"
     },
     "aluminium-rails": {
-      "q1": "זכוכית טריפלקס 10 מ\"מ?",
-      "q2": "שתילת פרופיל סמוי בריצוף?",
-      "q3": "מאחז יד מאלומיניום מעוצב?"
+      "q1": "10 mm triple-layer glass?",
+      "q2": "Recessed profile in floor?",
+      "q3": "Design aluminium handrail?"
     },
     "aluminium-shower-cabin": {
-      "q1": "זכוכית מעובה (8 מ\"מ)?",
-      "q2": "דלת הזזה (במקום פתיחה)?",
-      "q3": "מקלחון גדול (מעל 90x90)?",
-      "q4": "ציפוי שחור מט/זהב?"
+      "q1": "Tempered glass (8 mm)?",
+      "q2": "Sliding door (instead of swing)?",
+      "q3": "Large cabin (over 90×90)?",
+      "q4": "Matte black / gold finish?"
     },
     "aluminium-laundry-box": {
-      "q1": "דגם רפפה (אוורור מקסימלי)?",
-      "q2": "פתיחה על ציר (לגישה לטכנאי)?",
-      "q3": "התקנה בסנפלינג/בגובה?"
+      "q1": "Louver model (max ventilation)?",
+      "q2": "Casement opening (technician access)?",
+      "q3": "Rappelling/height install?"
     },
     "aluminium-repairs": {
-      "q1": "החלפת גלגלים בחלון הזזה (זוג)?",
-      "q2": "תיקון/החלפת שלבים בתריס?",
-      "q3": "איטום חלון (סיליקון וגומיות)?",
-      "q4": "החלפת ידית או מנעול?"
+      "q1": "Replace sliding window rollers (pair)?",
+      "q2": "Repair/replace shutter slat?",
+      "q3": "Window seal (silicone and gaskets)?",
+      "q4": "Replace handle or lock?"
     },
     "aluminium-balcony-enclosure": {
-      "q1": "זכוכית מתקפלת (פתיחה מלאה)?",
-      "q2": "גג אלומיניום מבודד (פנל)?",
-      "q3": "הוספת דלת כניסה מאלומיניום?"
+      "q1": "Folding glass (full opening)?",
+      "q2": "Insulated aluminium roof (panel)?",
+      "q3": "Add aluminium entry door?"
     },
     "gardening": {
-      "q1": "סוג דשא: צפוף וגבוה (45-50 מ\"מ)?",
-      "q2": "פינוי אדמה קיימת (עד 10 ס\"מ עומק)?",
-      "q3": "מילוי והידוק מצע סומסום?",
-      "q4": "פריסת יריעה גאוטכנית (נגד עשבייה)?",
-      "q5": "הדבקה עם פס דבק ודבק דו-רכיבי?"
+      "q1": "Grass type: dense and tall (45–50 mm)?",
+      "q2": "Remove existing soil (up to 10 cm)?",
+      "q3": "Fill and compact screed base?",
+      "q4": "Geotextile layer (weed barrier)?",
+      "q5": "Bond with tape and two-part adhesive?"
     },
     "garden-live-grass": {
-      "q1": "סוג דשא: אל-טורו/דרבן/קיקויה?",
-      "q2": "הכנת שטח (הפיכת אדמה וזיבול)?",
-      "q3": "פריסת צנרת השקיה מתחת לדשא?",
-      "q4": "יישור שטח (לייזר/מכני)?"
+      "q1": "Grass type: El Toro/Durban/Kikuyu?",
+      "q2": "Site prep (tilling and fertilizing)?",
+      "q3": "Irrigation pipe under sod?",
+      "q4": "Leveling (laser/mechanical)?"
     },
     "garden-irrigation": {
-      "q1": "מחשב השקיה חכם (Wi-Fi/Bluetooth)?",
-      "q2": "משאבת דשן אוטומטית (פרופורציונלית)?",
-      "q3": "התקנת ווסת לחץ ומז\"ח?",
-      "q4": "פריסת טפטפות (לכל 10 מטר)?"
+      "q1": "Smart controller (Wi‑Fi/Bluetooth)?",
+      "q2": "Automatic fertilizer pump (proportional)?",
+      "q3": "Pressure regulator and backflow?",
+      "q4": "Dripper layout (per 10 m)?"
     },
     "garden-trees": {
-      "q1": "עץ זית עתיק (פיסולי)?",
-      "q2": "עצי הדר/פרי בוגרים (שק 50-100 ליטר)?",
-      "q3": "הובלה במנוף (לפי שעת מנוף)?",
-      "q4": "בור שתילה גדול (באדמה קשה/סלעית)?"
+      "q1": "Ancient olive (sculptural)?",
+      "q2": "Mature citrus/fruit (50–100 L bag)?",
+      "q3": "Crane delivery (per crane hour)?",
+      "q4": "Large planting pit (hard/rocky soil)?"
     },
     "garden-lighting": {
-      "q1": "שנאי מוגן מים (עד 150W)?",
-      "q2": "גוף תאורה מעוצב (ספוט/דוקרן/שקוע)?",
-      "q3": "חיישן אור (פוטו-צל) או טיימר?",
-      "q4": "חפירת תעלת כבלים מוגנת (למטר)?"
+      "q1": "Waterproof transformer (up to 150 W)?",
+      "q2": "Design fixture (spot/spike/recessed)?",
+      "q3": "Photo sensor or timer?",
+      "q4": "Protected cable trench (per meter)?"
     },
     "garden-rockery": {
-      "q1": "חיפוי טוף / חלוקי נחל / שבבי עץ (מ\"ר)?",
-      "q2": "אבני מדרך (בזלת/כורכר/גרניט)?",
-      "q3": "מסלעת אבני לקט (טון)?",
-      "q4": "יריעת הפרדה מתחת לחיפוי?"
+      "q1": "Tufa / pebbles / wood chips (per m²)?",
+      "q2": "Stepping stones (basalt/sandstone/granite)?",
+      "q3": "Dry-stack rockery (per ton)?",
+      "q4": "Separation fabric under mulch?"
     },
     "garden-planters": {
-      "q1": "אדנית בטון / אלומיניום / עץ בהתאמה?",
-      "q2": "מערכת ניקוז והשקיה מובנית לאדנית?",
-      "q3": "איטום אדנית בנויה (מסטיק גומי)?",
-      "q4": "מילוי תערובת שתילה ודישון?"
+      "q1": "Concrete / aluminium / wood planter (custom)?",
+      "q2": "Built-in drainage and irrigation?",
+      "q3": "Built planter seal (rubber mastic)?",
+      "q4": "Planting mix fill and fertilizing?"
     },
     "garden-drainage": {
-      "q1": "בור חלחול תקני (כולל חצץ)?",
-      "q2": "צינור ניקוז שרשורי עטוף?",
-      "q3": "משאבת טבילה לניקוז (כולל חשמל)?",
-      "q4": "יצירת שיפועים עם אדמה גננית?"
+      "q1": "Standard soakaway (incl. gravel)?",
+      "q2": "Perforated drain pipe wrapped?",
+      "q3": "Submersible pump (incl. power)?",
+      "q4": "Grading with garden soil?"
     },
     "garden-water-features": {
-      "q1": "בריכת נוי (כולל יריעת EPDM ופילטר)?",
-      "q2": "מפל זורם / קיר מים?",
-      "q3": "תאורה תת-מימית (סטוקו)?"
+      "q1": "Ornamental pond (EPDM liner + filter)?",
+      "q2": "Waterfall / water wall?",
+      "q3": "Underwater lighting?"
     },
     "garden-pruning": {
-      "q1": "כריתת עץ מורכבת (מעל מבנה/חוטים)?",
-      "q2": "גיזום גובה (כולל סולם/מנוף)?",
-      "q3": "פינוי גזם לאתר מורשה?",
-      "q4": "טיפול במזיקים (חדקונית הדקל וכד')?"
+      "q1": "Complex tree felling (over structure/wires)?",
+      "q2": "Height pruning (ladder/crane)?",
+      "q3": "Green waste to licensed site?",
+      "q4": "Pest treatment (palm weevil, etc.)?"
     },
     "garden-edging": {
-      "q1": "תיחום \"דקו-אדג'\" (אלומיניום/פלסטיק)?",
-      "q2": "חומה נמוכה מאבן טבעית?",
-      "q3": "תיחום עץ (אדני רכבת)?"
+      "q1": "Deco-edge (aluminium/plastic)?",
+      "q2": "Low natural stone wall?",
+      "q3": "Wood edging (railroad ties)?"
     },
     "handyman": {},
     "handyman-shelves": {
-      "q1": "קיר גבס (דורש דיבל רוח/פרפר)?",
-      "q2": "קיר בטון/ממ\"ד?",
-      "q3": "מראה כבדה/גדולה (מעל 1.20 מטר)?",
-      "q4": "התקנת סט אביזרי אמבטיה (6 חלקים)?"
+      "q1": "Drywall (butterfly anchor)?",
+      "q2": "Concrete/safe room wall?",
+      "q3": "Heavy/large mirror (over 1.20 m)?",
+      "q4": "Bathroom accessory set (6 pcs)?"
     },
     "handyman-tv": {
-      "q1": "התקנה על זרוע מפרקית (2-3 מפרקים)?",
-      "q2": "חיזוק קונסטרוקציה לקיר גבס?",
-      "q3": "התקנת מקרן קול (Soundbar) מתחת למסך?",
-      "q4": "העברת כבלים בתוך הקיר?"
+      "q1": "Articulating arm mount (2–3 joints)?",
+      "q2": "Reinforce drywall structure?",
+      "q3": "Soundbar under screen?",
+      "q4": "In-wall cable run?"
     },
     "handyman-ikea": {
-      "q1": "ארון בגדים גדול (כל דלת נוספת)?",
-      "q2": "מיטת קומתיים / מיטה עם ארגז?",
-      "q3": "פירוק רהיט קיים לפני הרכבה?",
-      "q4": "קיבוע רהיטים לקיר למניעת התהפכות?"
+      "q1": "Large wardrobe (per extra door)?",
+      "q2": "Bunk bed / bed with drawer?",
+      "q3": "Disassemble existing before assembly?",
+      "q4": "Anchor furniture to wall (tip-over)?"
     },
     "handyman-curtains": {
-      "q1": "וילון בד על מוט ארוך (מעל 3 מטר)?",
-      "q2": "וילון ונציאני/גלילה (קדיחה לתקרה)?",
-      "q3": "קיצור ידני של וילון (במקום)?"
+      "q1": "Fabric curtain on long rod (over 3 m)?",
+      "q2": "Venetian/roll (ceiling mount)?",
+      "q3": "On-site curtain shortening?"
     },
     "handyman-shower-install": {
-      "q1": "פירוק מקלחון ישן ופינוי?",
-      "q2": "התאמת אינסטלציה/הזזת נקז?",
-      "q3": "הדבקת סיליקון מלא (איטום)?",
-      "q4": "מקלחון גדול או מורכב?"
+      "q1": "Remove old cabin and disposal?",
+      "q2": "Plumbing adjust / move drain?",
+      "q3": "Full silicone bead (seal)?",
+      "q4": "Large or complex cabin?"
     },
     "handyman-bathroom-maintenance": {
-      "q1": "החלפת סיליקון (כולל קילוף יסודי וחיטוי)?",
-      "q2": "החלפת מושב אסלה (כולל פירוק ישן)?",
-      "q3": "החלפת ראש מקלחון/צינור/שפורפרת?",
-      "q4": "חידוש רובה בתוך המקלחון (תיקון מקומי)?"
+      "q1": "Silicone replacement (strip and disinfect)?",
+      "q2": "Toilet seat replacement (incl. remove old)?",
+      "q3": "Shower head/hose/arm replacement?",
+      "q4": "Regrout inside cabin (spot repair)?"
     },
     "handyman-safety": {
-      "q1": "התקנת ידית אחיזה לנכים (בקרמיקה)?",
-      "q2": "התקנת שער בטיחות לילדים (עם קידוח)?",
-      "q3": "התקנת גלאי עשן/מצלמת אבטחה קטנה?"
+      "q1": "Grab bar for disabled (on tile)?",
+      "q2": "Child safety gate (with drilling)?",
+      "q3": "Smoke detector / small security camera?"
     },
     "handyman-doors-windows-fix": {
-      "q1": "החלפת צילינדר (מנגנון נעילה)?",
-      "q2": "כיוון דלתות ארון מטבח/בגדים (צירים)?",
-      "q3": "קיצור דלת פנים (ניסור תחתית)?",
-      "q4": "החלפת ידית לדלת פנים?"
+      "q1": "Replace cylinder (lock)?",
+      "q2": "Kitchen/wardrobe door adjustment (hinges)?",
+      "q3": "Shorten interior door (bottom cut)?",
+      "q4": "Replace interior door handle?"
     },
     "handyman-blinds": {
-      "q1": "החלפת רצועה לתריס גלילה ידני?",
-      "q2": "החלפת שלב פלסטיק שבור?",
-      "q3": "החלפת ידית נעילה לחלון הזזה?",
-      "q4": "תיקון רשת קרועה (החלפת רשת בלבד)?"
+      "q1": "Replace manual roller blind strap?",
+      "q2": "Replace broken plastic slat?",
+      "q3": "Replace sliding window lock handle?",
+      "q4": "Repair torn screen (screen only)?"
     },
     "handyman-pigeons": {
-      "q1": "התקנת דוקרני נירוסטה (למטר)?",
-      "q2": "רשת יונים למסתור כביסה (שקופה)?",
-      "q3": "סגירת חריצים בגג רעפים?"
+      "q1": "Stainless spikes (per meter)?",
+      "q2": "Pigeon net for laundry niche (clear)?",
+      "q3": "Close gaps in tiled roof?"
     },
     "handyman-wall-fix": {
-      "q1": "סתימת חורים + שפכטל + צבע (עד 5 חורים)?",
-      "q2": "תיקון פינת קיר שבורה (פס זווית)?",
-      "q3": "צביעת קיר אחד (קיר כוח)?"
+      "q1": "Fill holes + filler + paint (up to 5)?",
+      "q2": "Broken corner repair (angle bead)?",
+      "q3": "Paint one wall (utility wall)?"
     },
     "handyman-appliances": {
-      "q1": "התקנת מייבש כביסה על הקיר (כולל תושבת)?",
-      "q2": "חיבור ראשוני של מכונת כביסה/מדיח?",
-      "q3": "החלפת גוף תאורה פשוט?"
+      "q1": "Wall-mount dryer (incl. bracket)?",
+      "q2": "Initial washer/dishwasher connection?",
+      "q3": "Replace simple light fixture?"
     },
     "drywall": {
-      "q1": "סוג לוח: ירוק (נגד מים)?",
-      "q2": "סוג לוח: ורוד (חסין אש)?",
-      "q3": "בידוד צמר סלעים (אקוסטי)?",
-      "q4": "קיר גבס כפול (שתי פלטות מכל צד)?"
+      "q1": "Board type: green (water resistant)?",
+      "q2": "Board type: pink (fire rated)?",
+      "q3": "Rock wool insulation (acoustic)?",
+      "q4": "Double drywall (two boards each side)?"
     },
     "drywall-ceiling": {
-      "q1": "תקרה צפה (עם רווח לתאורת לד)?",
-      "q2": "התקנת ספוטים מובנים?",
-      "q3": "פתח שירות סמוי למזגן (אלומיניום)?",
-      "q4": "הנמכת גבס מעוגלת (קשתות)?"
+      "q1": "Floating ceiling (LED gap)?",
+      "q2": "Recessed spots?",
+      "q3": "Concealed AC service opening (aluminium)?",
+      "q4": "Curved drop (arches)?"
     },
     "drywall-cornice": {
-      "q1": "קרניז עם תאורה נסתרת (LED)?",
-      "q2": "קרניז בחדר רטוב (גבס ירוק)?",
-      "q3": "צביעה כלולה?"
+      "q1": "Cornice with hidden LED?",
+      "q2": "Cornice in wet room (green board)?",
+      "q3": "Painting included?"
     },
     "drywall-niche": {
-      "q1": "נישה לטלוויזיה (כולל הכנה לחיווט)?",
-      "q2": "מדפי גבס (כולל פינות מתכת)?",
-      "q3": "שילוב קרניז תאורה נסתרת?",
-      "q4": "חיפוי בריקים/אבן על הגבס?"
+      "q1": "TV niche (incl. wiring prep)?",
+      "q2": "Drywall shelves (metal corners)?",
+      "q3": "Hidden light cornice?",
+      "q4": "Tile/stone on drywall?"
     },
     "drywall-acoustic": {
-      "q1": "לוח גבס כחול (אקוסטי כבד)?",
-      "q2": "שכבת בידוד כפולה (7.5 ס\"מ)?",
-      "q3": "איטום אקוסטי בהיקף הקונסטרוקציה?"
+      "q1": "Blue acoustic board (heavy)?",
+      "q2": "Double insulation layer (7.5 cm)?",
+      "q3": "Acoustic seal around frame?"
     },
     "drywall-panel-room": {
-      "q1": "עובי פאנל 10 ס\"מ (מבודד יותר)?",
-      "q2": "פאנל דמוי רעפים (לגג)?",
-      "q3": "בניית חדר חוץ כולל רצפת עץ?",
-      "q4": "שילוב חלונות אלומיניום בבנייה?"
+      "q1": "10 cm panel (better insulation)?",
+      "q2": "Tile-look panel (roof)?",
+      "q3": "Outbuilding with wood floor?",
+      "q4": "Aluminium windows in build?"
     },
     "drywall-repairs": {
-      "q1": "תיקון חור גדול (מעל 20 ס\"מ)?",
-      "q2": "תיקון נזקי מים (כולל החלפת חלק מהלוח)?",
-      "q3": "החלפת פינות משתפשפות?"
+      "q1": "Large hole repair (over 20 cm)?",
+      "q2": "Water damage (incl. partial board replace)?",
+      "q3": "Replace worn corners?"
     },
     "drywall-wall-cover": {
-      "q1": "הדבקת גבס ישירות על קיר בטון (ללא שלד)?",
-      "q2": "יצירת \"קיר רטוב\" (לצנרת אינסטלציה)?",
-      "q3": "חיפוי קיר בלוח סילברבוני (חוזק קיצוני)?"
+      "q1": "Direct bond to concrete (no frame)?",
+      "q2": "Wet wall (for plumbing)?",
+      "q3": "Silver board (extra strength)?"
     },
     "drywall-finish": {
-      "q1": "שפכטל אמריקאי מלא (מראה חלק)?",
-      "q2": "פינות נירוסטה/פלסטיק (למניעת שברים)?",
-      "q3": "צביעה בסופרקריל (2 שכבות)?"
+      "q1": "Full American putty (smooth)?",
+      "q2": "Stainless/plastic corners (chip resistant)?",
+      "q3": "Supercryl paint (2 coats)?"
     },
     "doors": {
-      "q1": "דלת פולימר (100% נגד מים)?",
-      "q2": "מילוי פלקסבורד (בידוד רעש)?",
-      "q3": "צירים נסתרים (מראה נקי)?",
-      "q4": "דלת בגובה חריג (מעל 2.10 מטר)?",
-      "q5": "מנעול מגנטי שקט?"
+      "q1": "Polymer door (100% water resistant)?",
+      "q2": "Flexboard fill (sound insulation)?",
+      "q3": "Concealed hinges (clean look)?",
+      "q4": "Non-standard height (over 2.10 m)?",
+      "q5": "Quiet magnetic lock?"
     },
     "doors-zero-line": {
-      "q1": "הכנה מוקדמת בשלב השלד/טיח?",
-      "q2": "צביעה בתנור (RAL) לפי גוון הקיר?",
-      "q3": "חיפוי נגרות/אלומיניום על הכנף?"
+      "q1": "Early prep at frame/plaster stage?",
+      "q2": "Spray paint (RAL) to match wall?",
+      "q3": "Timber/aluminium cladding on leaf?"
     },
     "doors-entry": {
-      "q1": "עיצוב אישי (חיפוי אלומיניום/עץ)?",
-      "q2": "דלת \"רוחב וחצי\" (כנף וחצי)?",
-      "q3": "דלת כפולה (שתי כנפיים)?",
-      "q4": "ידית משיכה ארוכה (מעוצבת)?"
+      "q1": "Custom design (aluminium/wood cladding)?",
+      "q2": "One-and-a-half width door?",
+      "q3": "Double door (two leaves)?",
+      "q4": "Long pull handle (designed)?"
     },
     "doors-sliding": {
-      "q1": "דלת הזזה \"בתוך הקיר\" (כיס סקריניו)?",
-      "q2": "דלת אסם (Barn Door) עם מסילה גלויה?",
-      "q3": "מנגנון טריקה שקטה (Soft Close)?"
+      "q1": "In-wall pocket (scrinio)?",
+      "q2": "Barn door with exposed track?",
+      "q3": "Soft-close mechanism?"
     },
     "doors-locks": {
-      "q1": "מנעול ביומטרי (טביעת אצבע + קודן)?",
-      "q2": "מנעול שבת?",
-      "q3": "עינית דיגיטלית עם מסך והקלטה?",
-      "q4": "צילינדר פרימיום (נגד פריצה שקטה)?"
+      "q1": "Biometric lock (fingerprint + code)?",
+      "q2": "Sabbath lock?",
+      "q3": "Digital peephole with screen and record?",
+      "q4": "Premium cylinder (anti-bump)?"
     },
     "doors-repairs": {
-      "q1": "החלפת טפט (וינוריט) לדלת כניסה?",
-      "q2": "קיצור דלת (לאחר התקנת פרקט/ריצוף)?",
-      "q3": "החלפת משקוף רקוב (עקב מים)?",
-      "q4": "כיוון דלת חורקת/לא נסגרת?"
+      "q1": "Replace entry door skin (vinyl)?",
+      "q2": "Shorten door (after parquet/tile)?",
+      "q3": "Replace rotten frame (water)?",
+      "q4": "Adjust squeaking/not closing?"
     },
     "doors-acoustic-fire": {
-      "q1": "דלת אש (עמידות 30/90 דקות)?",
-      "q2": "סף אקוסטי \"נופל\" (אטימת רצפה)?",
-      "q3": "ידית בהלה (למוסדות/מחסנים)?"
+      "q1": "Fire door (30/90 min)?",
+      "q2": "Acoustic drop seal (floor)?",
+      "q3": "Panic hardware (institutions)?"
     },
     "doors-hardware": {
-      "q1": "ידיות מעוצבות (שחור מט/זהב)?",
-      "q2": "מעצור דלת מגנטי (נסתר)?",
-      "q3": "סוגר הידראולי (מחזיר דלת)?",
-      "q4": "דלת חתול/כלב מובנית בדלת?"
+      "q1": "Design handles (matte black/gold)?",
+      "q2": "Hidden magnetic door stop?",
+      "q3": "Hydraulic closer?",
+      "q4": "Built-in pet door?"
     },
     "doors-demolition": {
-      "q1": "פירוק דלת ומשקוף ישנים?",
-      "q2": "חציבה בבטון להרחבת פתח?",
-      "q3": "ביטון משקוף (חובה בדלת כניסה)?"
+      "q1": "Remove old door and frame?",
+      "q2": "Concrete chasing to widen opening?",
+      "q3": "Frame concrete fill (entry door)?"
     },
     "communications": {
-      "q1": "אינטרקום וידאו (מסך צבע)?",
-      "q2": "החלפת לוח חוץ קיים (ללא כבלים)?",
-      "q3": "הנחת כבלים חדשים (מדירה ללוח)?",
-      "q4": "חיבור למנעול חשמלי (פתיחת דלת)?",
-      "q5": "בניין עם מספר דירות (לוח משותף)?"
+      "q1": "Video intercom (color screen)?",
+      "q2": "Replace existing outdoor panel (no cables)?",
+      "q3": "New cable run (apartment to panel)?",
+      "q4": "Connect to electric lock (door release)?",
+      "q5": "Multi-unit building (shared panel)?"
     },
     "comm-cctv": {
-      "q1": "מצלמת IP (רשת)?",
-      "q2": "הקלטה ל־NVR/מחשב (כולל כבל)?",
-      "q3": "מצלמה עם ראיית לילה (IR)?",
-      "q4": "התקנה בגובה (סולם/פיגום)?",
-      "q5": "כולל אפליקציה וצפייה מהטלפון?"
+      "q1": "IP camera (network)?",
+      "q2": "Record to NVR/PC (incl. cable)?",
+      "q3": "Night vision (IR)?",
+      "q4": "Install at height (ladder/scaffold)?",
+      "q5": "App and phone viewing?"
     },
     "comm-data-cabling": {
-      "q1": "כבל Cat6/Cat6a?",
-      "q2": "העברת כבל בתעלות קיימות?",
-      "q3": "קידוח וחציבה (קיר/רצפה)?",
-      "q4": "חיבור לשקעי RJ45 (קצה כבל)?"
+      "q1": "Cat6/Cat6a cable?",
+      "q2": "Run in existing channels?",
+      "q3": "Drilling and chasing (wall/floor)?",
+      "q4": "RJ45 jack (cable end)?"
     },
     "comm-antenna": {
-      "q1": "אנטנה מרכזית (מבנה)?",
-      "q2": "חלוקה למספר נקודות צפייה?",
-      "q3": "כולל כבל coaxial חדש?",
-      "q4": "מגבר/מפצל?"
+      "q1": "Central antenna (building)?",
+      "q2": "Split to multiple outlets?",
+      "q3": "New coaxial included?",
+      "q4": "Amplifier/splitter?"
     },
     "comm-smart-home": {
-      "q1": "שליטה בתאורה (מתגים חכמים)?",
-      "q2": "תריסים/תריסים חשמליים (מנוע)?",
-      "q3": "מערכת מרכזית (גateway)?",
-      "q4": "שליטה מקומית + אפליקציה?"
+      "q1": "Light control (smart switches)?",
+      "q2": "Blinds/motorized (motor)?",
+      "q3": "Central system (gateway)?",
+      "q4": "Local + app control?"
     },
     "comm-door-phone": {
-      "q1": "פאנל וידאו צבע (מסך גדול)?",
-      "q2": "חיבור למנעול חשמלי?",
-      "q3": "הנחת כבלים בבניין קיים?",
-      "q4": "מספר דירות (מודול הרחבה)?"
+      "q1": "Color video panel (large screen)?",
+      "q2": "Connect to electric lock?",
+      "q3": "Cable run in existing building?",
+      "q4": "Multiple units (expansion module)?"
     },
     "comm-wifi-extend": {
-      "q1": "משוב (Mesh) אלחוטי?",
-      "q2": "משוב קווי (Ethernet backhaul)?",
-      "q3": "כולל הנחת כבל עד הנקודה?"
+      "q1": "Wireless mesh?",
+      "q2": "Wired backhaul (Ethernet)?",
+      "q3": "Cable run to unit included?"
     },
     "misc": {
-      "q1": "מכולה גדולה (10 מ\"ק)?",
-      "q2": "החזקה מעל 7 ימים?",
-      "q3": "פסולת הריסה/בניין (לא גושית)?",
-      "q4": "העמדה בחניה פרטית (גישה קלה)?"
+      "q1": "Large container (10 m³)?",
+      "q2": "Keep over 7 days?",
+      "q3": "Demolition/construction waste (non-inert)?",
+      "q4": "Place in private parking (easy access)?"
     },
     "misc-furniture-removal": {
-      "q1": "פינוי למרחק מעל 20 ק\"מ?",
-      "q2": "רהיטים כבדים (ספות/מזרנים)?",
-      "q3": "פינוי מגובה (ללא מעלית)?"
+      "q1": "Distance over 20 km?",
+      "q2": "Heavy items (sofas/mattresses)?",
+      "q3": "Removal from height (no elevator)?"
     },
     "misc-post-renovation-clean": {
-      "q1": "ניקיון חלונות (פנים + חוץ)?",
-      "q2": "שטיפת רצפות (מכונה)?",
-      "q3": "ניקוי שאריות מלט וצבע?"
+      "q1": "Window cleaning (inside + out)?",
+      "q2": "Floor scrub (machine)?",
+      "q3": "Remove cement and paint residue?"
     },
     "misc-crane-rental": {
-      "q1": "מנוף סל (עד 4 קומות)?",
-      "q2": "גובה מעל 4 קומות?",
-      "q3": "הזמנה מינימלית 2 שעות?"
+      "q1": "Basket crane (up to 4 floors)?",
+      "q2": "Over 4 floors?",
+      "q3": "Minimum 2-hour booking?"
     },
     "misc-scaffold-rental": {
-      "q1": "פיגום לגובה מעל 4 מטר?",
-      "q2": "הרכבה ופירוק על ידי ספק?",
-      "q3": "השכרה לחודש מלא?"
+      "q1": "Scaffolding over 4 m?",
+      "q2": "Erect and dismantle by supplier?",
+      "q3": "Full month rental?"
     },
     "misc-garden-waste": {
-      "q1": "כמות גדולה (מעל 3 מטר מעוקב)?",
-      "q2": "כולל עקירת שיחים/עצים קטנים?",
-      "q3": "פינוי לאתר מורשה?"
+      "q1": "Large volume (over 3 m³)?",
+      "q2": "Include shrub/small tree removal?",
+      "q3": "Removal to licensed site?"
     },
     "misc-pest-control": {
-      "q1": "הדברת תיקנים/נמלים (מרסס)?",
-      "q2": "הדברת מכרסמים (מלכודות)?",
-      "q3": "טיפול בג'וקים אמריקאיים?",
-      "q4": "חומרים ידידותיים לסביבה?"
+      "q1": "Cockroach/ant treatment (spray)?",
+      "q2": "Rodent treatment (traps)?",
+      "q3": "American cockroach treatment?",
+      "q4": "Eco-friendly materials?"
     }
   }
 }
