@@ -2,6 +2,30 @@
 export const DEFAULT_ADMIN_USERNAME = 'זיו';
 export const DEFAULT_ADMIN_SECRET = 'זיו4';
 
+/** Fetch דורש שערכי header יהיו ISO-8859-1; סיסמאות עם עברית/Unicode נשלחות בקידוד זה. */
+const ADMIN_KEY_HEADER_PREFIX = 'qb0.';
+
+function encodeAdminKeyForHeader(secret: string): string {
+  return ADMIN_KEY_HEADER_PREFIX + Buffer.from(secret, 'utf8').toString('base64url');
+}
+
+/** מפענח X-Admin-Key לסיסמת ניהול אם תקפה (מקודד או ASCII ישיר לתאימות לאחור). */
+export function parseAdminSecretFromHeader(provided: string | null): string | null {
+  const t = provided?.trim() ?? null;
+  if (!t) return null;
+  if (t.startsWith(ADMIN_KEY_HEADER_PREFIX)) {
+    try {
+      const decoded = Buffer.from(t.slice(ADMIN_KEY_HEADER_PREFIX.length), 'base64url').toString('utf8');
+      if (allValidAdminSecrets().includes(decoded)) return decoded;
+    } catch {
+      return null;
+    }
+    return null;
+  }
+  if (allValidAdminSecrets().includes(t)) return t;
+  return null;
+}
+
 function nfc(s: string): string {
   return s.normalize('NFC');
 }
@@ -19,21 +43,13 @@ export function allValidAdminSecrets(): string[] {
   return list;
 }
 
-/** מפתח ב־X-Admin-Key תקין אם הוא אחת מסיסמאות הניהול המוכרות */
-export function adminProvidedKeyValid(provided: string | null): boolean {
-  if (!provided) return false;
-  const t = provided.trim();
-  return allValidAdminSecrets().some((s) => s === t);
-}
-
 export function getAdminKeyFromRequest(request: Request): string | null {
   const provided = request.headers.get('x-admin-key')?.trim() ?? null;
-  if (!provided || !adminProvidedKeyValid(provided)) return null;
-  return provided;
+  return parseAdminSecretFromHeader(provided) ? provided : null;
 }
 
 /**
- * בודק כניסת אדמין. מחזיר את המפתח לשמירה ב־X-Admin-Key (הסיסמה שהוזנה, אם תקפה).
+ * בודק כניסת אדמין. מחזיר מפתח ASCII ל־X-Admin-Key (לא UTF-8 גולמי – מגבלת Fetch).
  */
 export function tryAdminLogin(rawUsername: string, rawPassword: string): { key: string } | null {
   const u = nfc(typeof rawUsername === 'string' ? rawUsername.trim() : '');
@@ -44,11 +60,13 @@ export function tryAdminLogin(rawUsername: string, rawPassword: string): { key: 
   const resolvedUser = nfc(resolvedAdminUsername());
   const defaultUser = nfc(DEFAULT_ADMIN_USERNAME);
 
-  if (u === '' && secrets.has(p)) return { key: p };
+  const wireKey = encodeAdminKeyForHeader(p);
 
-  if (u === defaultUser && p === DEFAULT_ADMIN_SECRET) return { key: p };
+  if (u === '' && secrets.has(p)) return { key: wireKey };
 
-  if (u === resolvedUser && secrets.has(p)) return { key: p };
+  if (u === defaultUser && p === DEFAULT_ADMIN_SECRET) return { key: wireKey };
+
+  if (u === resolvedUser && secrets.has(p)) return { key: wireKey };
 
   return null;
 }
