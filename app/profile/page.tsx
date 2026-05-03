@@ -375,7 +375,7 @@ export default function ProfilePage() {
         </Link>
 
         <div className="flex flex-col md:flex-row gap-4 sm:gap-6 md:gap-8">
-          <nav className="md:w-56 shrink-0 sticky top-14 z-30 self-start md:top-20">
+          <nav className="md:w-56 shrink-0">
             <div className="bg-white rounded-xl sm:rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
               <div className="px-3 sm:px-4 py-2.5 sm:py-3 border-b border-slate-100 bg-slate-50/80">
                 <h2 className="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wider">{t('profile.area')}</h2>
