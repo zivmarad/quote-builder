@@ -40,16 +40,17 @@ const messages: Record<Locale, Record<string, unknown>> = {
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>('he');
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY) as Locale | null;
-      if (saved && (saved === 'he' || saved === 'en' || saved === 'ru' || saved === 'ar')) {
-        setLocaleState(saved);
-      }
-    } catch { /* ignore */ }
-    setMounted(true);
+    const id = requestAnimationFrame(() => {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY) as Locale | null;
+        if (saved && (saved === 'he' || saved === 'en' || saved === 'ru' || saved === 'ar')) {
+          setLocaleState(saved);
+        }
+      } catch { /* ignore */ }
+    });
+    return () => cancelAnimationFrame(id);
   }, []);
 
   const setLocale = useCallback((l: Locale) => {

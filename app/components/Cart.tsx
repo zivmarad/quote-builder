@@ -25,7 +25,6 @@ export default function Cart() {
     updateItemPrice,
     clearItemPriceOverride,
     clearBasket,
-    loadBasket,
     totalBeforeVAT,
     VAT: contextVAT,
     totalWithVAT: contextTotalWithVAT,
@@ -527,7 +526,7 @@ export default function Cart() {
         <div className="bg-slate-900 px-4 sm:px-8 py-4 sm:py-5 flex justify-between items-center text-white gap-2">
           <div className="min-w-0">
             <h2 className="text-lg sm:text-xl font-black truncate">הצעת המחיר שלי</h2>
-            <p className="text-slate-400 text-xs font-medium italic">סה"כ {items.length} פריטים נבחרו</p>
+            <p className="text-slate-400 text-xs font-medium italic">{'סה"כ '}{items.length} פריטים נבחרו</p>
           </div>
           <button
             type="button"
@@ -641,7 +640,7 @@ export default function Cart() {
                         </div>
                       ))}
                       <div className="flex justify-between items-center pt-2 mt-2 border-t border-slate-200 font-bold text-slate-900">
-                        <span>סה"כ שורה</span>
+                        <span>{'סה"כ שורה'}</span>
                         <span>{formatPrice(currentPrice)}</span>
                       </div>
                     </div>
@@ -833,7 +832,7 @@ export default function Cart() {
               <span className="text-slate-900 font-bold">{formatPrice(VAT)}</span>
             </div>
             <div className="flex justify-between items-center pt-4 border-t border-slate-200">
-              <span className="text-lg font-black text-slate-900">סה"כ לתשלום</span>
+              <span className="text-lg font-black text-slate-900">{'סה"כ לתשלום'}</span>
               <span className="text-2xl font-black text-blue-600">{formatPrice(totalWithVAT)}</span>
             </div>
           </div>

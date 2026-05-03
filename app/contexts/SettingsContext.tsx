@@ -41,12 +41,6 @@ export function SettingsProvider({ children, userId }: { children: React.ReactNo
   const lastLoadedForUserIdRef = useRef<string | null | undefined>(undefined);
 
   useEffect(() => {
-    if (typeof window === 'undefined') {
-      setIsLoaded(true);
-      return;
-    }
-    setIsLoaded(false);
-    lastLoadedForUserIdRef.current = undefined;
     let cancelled = false;
     const key = getStorageKey(userId);
     const loadFromStorage = (): QuoteSettings => {
@@ -75,7 +69,11 @@ export function SettingsProvider({ children, userId }: { children: React.ReactNo
       }
     };
 
-    (async () => {
+    void (async () => {
+      await Promise.resolve();
+      if (cancelled) return;
+      setIsLoaded(false);
+      lastLoadedForUserIdRef.current = undefined;
       if (userId) {
         const data = await fetchSync<{ settings: Partial<QuoteSettings> }>('/settings', userId);
         if (!cancelled && data && data.settings && typeof data.settings === 'object') {
@@ -109,7 +107,7 @@ export function SettingsProvider({ children, userId }: { children: React.ReactNo
       const key = getStorageKey(userId);
       localStorage.setItem(key, JSON.stringify(settings));
       if (userId && lastLoadedForUserIdRef.current === userId) void postSync('/settings', userId, { settings });
-    } catch (_) {}
+    } catch { /* ignore quota / private mode */ }
   }, [settings, isLoaded, userId]);
 
   const setDefaultQuoteTitle = useCallback((v: string) => {

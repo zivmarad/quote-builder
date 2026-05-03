@@ -11,7 +11,6 @@ import {
   FileText,
   TrendingUp,
   LogOut,
-  BarChart3,
   Eye,
   Trash2,
   Smartphone,
@@ -441,7 +440,7 @@ export default function AdminPage() {
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="text-slate-500 text-xs md:text-sm font-medium truncate">סה"כ משתמשים</p>
+                      <p className="text-slate-500 text-xs md:text-sm font-medium truncate">{'סה"כ משתמשים'}</p>
                       <p className="text-2xl md:text-3xl font-black text-slate-900 tabular-nums mt-0.5 md:mt-1">{stats?.totalUsers ?? 0}</p>
                       <p className="text-[10px] md:text-xs text-slate-400 mt-1 hidden sm:block">לחץ לצפייה</p>
                     </div>
@@ -495,7 +494,7 @@ export default function AdminPage() {
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="text-slate-500 text-xs md:text-sm font-medium truncate">סה"כ הצעות</p>
+                      <p className="text-slate-500 text-xs md:text-sm font-medium truncate">{'סה"כ הצעות'}</p>
                       <p className="text-2xl md:text-3xl font-black text-slate-900 tabular-nums mt-0.5 md:mt-1">{stats?.totalQuotes ?? 0}</p>
                       <p className="text-[10px] md:text-xs text-slate-400 mt-1 hidden sm:block">לפי הצעות</p>
                     </div>
@@ -557,7 +556,7 @@ export default function AdminPage() {
                   <div>
                   {/* רשימת כרטיסים למובייל */}
                   <div className="flex flex-col gap-3 md:hidden pb-4">
-                    {paginatedUsers.map((u, i) => (
+                    {paginatedUsers.map((u) => (
                       <div
                         key={u.id}
                         role="button"

@@ -51,12 +51,6 @@ export function QuoteHistoryProvider({ children, userId }: { children: React.Rea
   const lastLoadedForUserIdRef = useRef<string | null | undefined>(undefined);
 
   useEffect(() => {
-    if (typeof window === 'undefined') {
-      setIsLoaded(true);
-      return;
-    }
-    setIsLoaded(false);
-    lastLoadedForUserIdRef.current = undefined; // עדיין לא טענו עבור userId הנוכחי
     let cancelled = false;
     const key = getStorageKey(userId);
     const loadFromStorage = (): SavedQuote[] => {
@@ -78,10 +72,14 @@ export function QuoteHistoryProvider({ children, userId }: { children: React.Rea
       }
     };
 
-    (async () => {
+    void (async () => {
+      await Promise.resolve();
+      if (cancelled) return;
+      setIsLoaded(false);
+      lastLoadedForUserIdRef.current = undefined; // עדיין לא טענו עבור userId הנוכחי
       if (userId) {
         const guestKey = getStorageKey(null);
-        const guestRaw = typeof window !== 'undefined' ? localStorage.getItem(guestKey) : null;
+        const guestRaw = localStorage.getItem(guestKey);
         const data = await fetchSync<{ quotes: SavedQuote[] }>('/history', userId);
         if (cancelled) return;
         const serverQuotes = data?.quotes != null && Array.isArray(data.quotes) ? data.quotes : [];

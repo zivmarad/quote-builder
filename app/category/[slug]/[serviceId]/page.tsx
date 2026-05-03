@@ -77,6 +77,17 @@ export default function ServiceWizardPage() {
 
   const total = baseTotal + extrasTotal;
 
+  /** מציב סמן בסוף השדה כדי שניתן יהיה להוסיף ספרות (10 ולא 01) ולמחוק עם Backspace */
+  const focusEnd = useCallback((el: HTMLInputElement | null) => {
+    if (!el) return;
+    const len = (el.value || '').length;
+    const setEnd = () => {
+      el.setSelectionRange(len, len);
+    };
+    setEnd();
+    requestAnimationFrame(setEnd);
+  }, []);
+
   if (!category || !service) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-slate-50" dir={dir}>
@@ -95,17 +106,6 @@ export default function ServiceWizardPage() {
     const digits = value.replace(/[^\d]/g, '');
     setQuantityInput(digits === '' ? '' : digits);
   };
-
-  /** מציב סמן בסוף השדה כדי שניתן יהיה להוסיף ספרות (10 ולא 01) ולמחוק עם Backspace */
-  const focusEnd = useCallback((el: HTMLInputElement | null) => {
-    if (!el) return;
-    const len = (el.value || '').length;
-    const setEnd = () => {
-      el.setSelectionRange(len, len);
-    };
-    setEnd();
-    requestAnimationFrame(setEnd);
-  }, []);
 
   const handleQuantityBlur = () => {
     const num = parseInt(quantityInput, 10);

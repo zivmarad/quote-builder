@@ -48,10 +48,6 @@ export function ProfileProvider({ children, userId }: { children: React.ReactNod
   const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (typeof window === 'undefined') {
-      setIsLoaded(true);
-      return;
-    }
     const key = getStorageKey(userId);
     const loadFromStorage = (): UserProfile => {
       let raw = localStorage.getItem(key);
@@ -114,16 +110,19 @@ export function ProfileProvider({ children, userId }: { children: React.ReactNod
       }
     };
 
-    // טעינה מיידית מ־localStorage כדי שהפרטים יופיעו מיד ולא יימחקו
-    const initial = loadFromStorage();
-    lastLoadedForUserIdRef.current = userId;
-    setProfileState(initial);
-    setIsLoaded(true);
-
-    if (!userId) return;
-
     let cancelled = false;
-    (async () => {
+    void (async () => {
+      await Promise.resolve();
+      if (cancelled) return;
+
+      // טעינה מיידית מ־localStorage כדי שהפרטים יופיעו מיד ולא יימחקו
+      const initial = loadFromStorage();
+      lastLoadedForUserIdRef.current = userId;
+      setProfileState(initial);
+      setIsLoaded(true);
+
+      if (!userId) return;
+
       const data = await fetchSync<{ profile: UserProfile }>('/profile', userId);
       if (cancelled) return;
 

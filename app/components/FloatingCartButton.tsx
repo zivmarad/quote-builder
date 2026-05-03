@@ -16,9 +16,13 @@ export default function FloatingCartButton() {
 
   useEffect(() => {
     if (itemCount > prevCountRef.current && itemCount > 0) {
-      setBounce(true);
+      const raf = requestAnimationFrame(() => setBounce(true));
       const t = setTimeout(() => setBounce(false), 600);
-      return () => clearTimeout(t);
+      prevCountRef.current = itemCount;
+      return () => {
+        cancelAnimationFrame(raf);
+        clearTimeout(t);
+      };
     }
     prevCountRef.current = itemCount;
   }, [itemCount]);

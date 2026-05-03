@@ -62,16 +62,14 @@ export const QuoteBasketProvider: React.FC<{ children: React.ReactNode; userId?:
 
   // טעינה: משתמש מחובר – קודם מ־Supabase, אחרת IndexedDB. אורח – IndexedDB בלבד
   useEffect(() => {
-    if (typeof window === 'undefined') {
-      setIsLoaded(true);
-      return;
-    }
-    setIsLoaded(false);
-    lastLoadedForUserIdRef.current = undefined;
     let cancelled = false;
     const key = getStorageKey(userId);
 
-    (async () => {
+    void (async () => {
+      await Promise.resolve();
+      if (cancelled) return;
+      setIsLoaded(false);
+      lastLoadedForUserIdRef.current = undefined;
       if (userId) {
         const guestKey = getStorageKey(null);
         const [serverData, guestSaved] = await Promise.all([
@@ -210,7 +208,7 @@ export const QuoteBasketProvider: React.FC<{ children: React.ReactNode; userId?:
       itemCount,
       isLoaded,
     }),
-    [items, totalBeforeVAT, VAT, totalWithVAT, itemCount, isLoaded, vatRate]
+    [items, totalBeforeVAT, VAT, totalWithVAT, itemCount, isLoaded]
   );
 
   return (

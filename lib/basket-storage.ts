@@ -82,7 +82,7 @@ export async function basketStorageRemove(key: string): Promise<void> {
 }
 
 /** מחזיר נתונים מ-localStorage אם יש (למעבר) – לא מוחק */
-function getLegacyFromLocalStorage(key: string, userId: string | null): string | null {
+function getLegacyFromLocalStorage(key: string): string | null {
   if (typeof window === 'undefined') return null;
   let v = localStorage.getItem(key);
   if (!v) v = localStorage.getItem('quoteBasket'); // מפתח ישן (לפני per-user)
@@ -92,11 +92,12 @@ function getLegacyFromLocalStorage(key: string, userId: string | null): string |
 /** מעבר מ-localStorage ל-IndexedDB – מריץ פעם אחת כשנמצא נתונים ישנים */
 export async function getBasketWithMigration(
   key: string,
-  _userId: string | null
+  userId: string | null
 ): Promise<string | null> {
-  let data = await basketStorageGet(key);
+  void userId;
+  const data = await basketStorageGet(key);
   if (data) return data;
-  const legacy = getLegacyFromLocalStorage(key, _userId);
+  const legacy = getLegacyFromLocalStorage(key);
   if (legacy) {
     await basketStorageSet(key, legacy);
     localStorage.removeItem(key);

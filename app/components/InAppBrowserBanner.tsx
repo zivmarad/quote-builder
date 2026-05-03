@@ -32,7 +32,8 @@ export default function InAppBrowserBanner() {
     if (typeof window === 'undefined') return;
     if (sessionStorage.getItem(DISMISS_KEY)) return;
     if (!isLikelyInAppBrowser()) return;
-    setShow(true);
+    const id = requestAnimationFrame(() => setShow(true));
+    return () => cancelAnimationFrame(id);
   }, []);
 
   const handleOpenInBrowser = () => {

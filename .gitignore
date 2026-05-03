@@ -44,5 +44,5 @@ next-env.d.ts
 /data/users.json
 /data/verification-codes.json
 
-# script with token - never commit
-push-to-github.ps1
+# local GitHub PAT for push-to-github.ps1 only — never commit
+.git-push-token

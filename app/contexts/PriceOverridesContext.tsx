@@ -30,12 +30,6 @@ export function PriceOverridesProvider({
   const lastLoadedForUserIdRef = useRef<string | null | undefined>(undefined);
 
   useEffect(() => {
-    if (typeof window === 'undefined') {
-      setIsLoaded(true);
-      return;
-    }
-    setIsLoaded(false);
-    lastLoadedForUserIdRef.current = undefined;
     let cancelled = false;
     const key = getStorageKey(userId);
     const loadFromStorage = (): PriceOverridesMap => {
@@ -54,7 +48,11 @@ export function PriceOverridesProvider({
       }
     };
 
-    (async () => {
+    void (async () => {
+      await Promise.resolve();
+      if (cancelled) return;
+      setIsLoaded(false);
+      lastLoadedForUserIdRef.current = undefined;
       if (userId) {
         const data = await fetchSync<{ overrides: Record<string, number> }>('/price-overrides', userId);
         if (!cancelled && data && data.overrides && typeof data.overrides === 'object') {
@@ -84,7 +82,7 @@ export function PriceOverridesProvider({
       const key = getStorageKey(userId);
       localStorage.setItem(key, JSON.stringify(overrides));
       if (userId && lastLoadedForUserIdRef.current === userId) void postSync('/price-overrides', userId, { overrides });
-    } catch (_) {}
+    } catch { /* ignore quota / private mode */ }
   }, [overrides, isLoaded, userId]);
 
   const getBasePrice = useCallback(

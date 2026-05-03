@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import Link from 'next/link';
 
 /** תפיסת שגיאות ברמת האפליקציה – מונע מסך לבן ומציג הודעה ידידותית */
 export default function Error({
@@ -27,12 +28,12 @@ export default function Error({
       >
         נסה שוב
       </button>
-      <a
+      <Link
         href="/"
         className="mt-4 text-slate-600 underline hover:text-slate-800"
       >
         חזרה לדף הבית
-      </a>
+      </Link>
     </div>
   );
 }
