@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getUserByLogin, verifyPassword, rehashToBcryptIfNeeded } from '../lib/users-store';
-import { createSessionToken, setSessionCookie } from '../../../../lib/auth-server';
+import { createSessionToken, setSessionCookie, clearImpersonationCookies } from '../../../../lib/auth-server';
 import { rateLimitResponse } from '../../../../lib/api-helpers';
 import { LIMITS } from '../../../../lib/rate-limit';
 
@@ -38,6 +38,7 @@ export async function POST(request: Request) {
       user: { id: found.id, username: found.username, email: found.email },
     });
     setSessionCookie(response, token);
+    clearImpersonationCookies(response);
     return response;
   } catch (e) {
     console.error('Login error:', e);

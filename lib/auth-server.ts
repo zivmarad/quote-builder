@@ -2,6 +2,10 @@ import { SignJWT, jwtVerify } from 'jose';
 import { NextResponse } from 'next/server';
 
 const COOKIE_NAME = 'quoteBuilder_session';
+/** סשן לפני "התחבר כמשתמש" (מנהל) – לשחזור */
+const SESSION_PREV_COOKIE = 'quoteBuilder_session_prev';
+/** מסמן שהסשן הנוכחי נוצר דרך התחזות מנהל */
+const IMPERSONATION_MARKER_COOKIE = 'quoteBuilder_impersonating';
 const JWT_EXPIRY_DAYS = 7;
 
 export interface SessionUser {
@@ -61,13 +65,30 @@ export async function verifySessionToken(token: string): Promise<SessionUser | n
   }
 }
 
-/** מוציא את הטוקן מה-cookie של הבקשה */
-export function getTokenFromRequest(request: Request): string | null {
+function getCookieRaw(request: Request, name: string): string | null {
   const cookieHeader = request.headers.get('cookie');
   if (!cookieHeader) return null;
-  const match = cookieHeader.match(new RegExp(`(?:^|;)\\s*${COOKIE_NAME}=([^;]*)`));
+  const safe = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const match = cookieHeader.match(new RegExp(`(?:^|;)\\s*${safe}=([^;]*)`));
   const value = match?.[1]?.trim();
-  return value || null;
+  try {
+    return value ? decodeURIComponent(value) : null;
+  } catch {
+    return value || null;
+  }
+}
+
+/** מוציא את הטוקן מה-cookie של הבקשה */
+export function getTokenFromRequest(request: Request): string | null {
+  return getCookieRaw(request, COOKIE_NAME);
+}
+
+export function getPrevSessionTokenFromRequest(request: Request): string | null {
+  return getCookieRaw(request, SESSION_PREV_COOKIE);
+}
+
+export function isImpersonationActive(request: Request): boolean {
+  return getCookieRaw(request, IMPERSONATION_MARKER_COOKIE) === '1';
 }
 
 /** מחזיר את המשתמש המחובר מהבקשה, או null */
@@ -77,14 +98,29 @@ export async function getCurrentUser(request: Request): Promise<SessionUser | nu
   return verifySessionToken(token);
 }
 
+function cookieBaseOptions() {
+  const isProd = process.env.NODE_ENV === 'production';
+  return {
+    httpOnly: true as const,
+    secure: isProd,
+    sameSite: 'lax' as const,
+    path: '/',
+    maxAge: JWT_EXPIRY_DAYS * 24 * 60 * 60,
+  };
+}
+
 /** מוסיף cookie סשן לתגובה */
 export function setSessionCookie(response: NextResponse, token: string): void {
-  const isProd = process.env.NODE_ENV === 'production';
-  response.cookies.set(COOKIE_NAME, token, {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: 'lax',
-    path: '/',
+  response.cookies.set(COOKIE_NAME, token, cookieBaseOptions());
+}
+
+export function setPrevSessionCookie(response: NextResponse, token: string): void {
+  response.cookies.set(SESSION_PREV_COOKIE, token, cookieBaseOptions());
+}
+
+export function setImpersonationMarkerCookie(response: NextResponse): void {
+  response.cookies.set(IMPERSONATION_MARKER_COOKIE, '1', {
+    ...cookieBaseOptions(),
     maxAge: JWT_EXPIRY_DAYS * 24 * 60 * 60,
   });
 }
@@ -94,4 +130,9 @@ export function clearSessionCookie(response: NextResponse): void {
   response.cookies.set(COOKIE_NAME, '', { path: '/', maxAge: 0 });
 }
 
-export { COOKIE_NAME };
+export function clearImpersonationCookies(response: NextResponse): void {
+  response.cookies.set(SESSION_PREV_COOKIE, '', { path: '/', maxAge: 0 });
+  response.cookies.set(IMPERSONATION_MARKER_COOKIE, '', { path: '/', maxAge: 0 });
+}
+
+export { COOKIE_NAME, SESSION_PREV_COOKIE, IMPERSONATION_MARKER_COOKIE };

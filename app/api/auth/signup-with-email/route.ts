@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { emailExists, usernameExists, hashPassword, generateId, createUser } from '../lib/users-store';
 import { consumeVerificationCode } from '../lib/verification-codes-store';
 import { sendNewUserNotificationEmail } from '../lib/send-email';
-import { createSessionToken, setSessionCookie } from '../../../../lib/auth-server';
+import { createSessionToken, setSessionCookie, clearImpersonationCookies } from '../../../../lib/auth-server';
 import { rateLimitResponse } from '../../../../lib/api-helpers';
 import { LIMITS } from '../../../../lib/rate-limit';
 
@@ -85,6 +85,7 @@ export async function POST(request: Request) {
       user: { id: newUser.id, username: newUser.username, email: newUser.email },
     });
     setSessionCookie(response, token);
+    clearImpersonationCookies(response);
     return response;
   } catch (e) {
     console.error('Signup with email error:', e);

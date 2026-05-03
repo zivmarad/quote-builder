@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useProfile } from '../contexts/ProfileContext';
-import { useQuoteHistory, type QuoteWorkflowStatus, type ExportMethod, type SavedQuote } from '../contexts/QuoteHistoryContext';
+import { useQuoteHistory, type QuoteWorkflowStatus, type ExportMethod } from '../contexts/QuoteHistoryContext';
 import { useQuoteBasket } from '../contexts/QuoteBasketContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { generateQuotePDFAsBlob, getQuotePreviewHtml } from '../components/utils/pdfExport';
@@ -25,11 +25,12 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
-type SectionId = 'details' | 'quotes-and-drafts' | 'settings';
+type SectionId = 'details' | 'quotes' | 'drafts' | 'settings';
 
 const sectionConfig: { id: SectionId; labelKey: string; labelShortKey?: string; icon: React.ReactNode }[] = [
   { id: 'details', labelKey: 'profile.details', icon: <UserCircle size={22} /> },
-  { id: 'quotes-and-drafts', labelKey: 'profile.quotesAndDrafts', labelShortKey: 'profile.quotesAndDrafts', icon: <FileText size={22} /> },
+  { id: 'quotes', labelKey: 'profile.navQuotes', labelShortKey: 'profile.navQuotes', icon: <FileText size={22} /> },
+  { id: 'drafts', labelKey: 'profile.navDrafts', labelShortKey: 'profile.navDrafts', icon: <FileEdit size={22} /> },
   { id: 'settings', labelKey: 'profile.settings', icon: <Settings size={22} /> },
 ];
 
@@ -69,6 +70,20 @@ export default function ProfilePage() {
   const exportLabels: Record<ExportMethod, string> = { download: t(exportLabelKeys.download), whatsapp: t(exportLabelKeys.whatsapp), email: t(exportLabelKeys.email) };
   const quoteStatusLabels: Record<QuoteWorkflowStatus, string> = { draft: t(quoteStatusKeys.draft), sent: t(quoteStatusKeys.sent), approved: t(quoteStatusKeys.approved), paid: t(quoteStatusKeys.paid) };
   const [activeSection, setActiveSection] = useState<SectionId>('details');
+  const sectionRefs = useRef<Partial<Record<SectionId, HTMLElement | null>>>({});
+  const ioSkipUntilRef = useRef(0);
+
+  const assignSectionRef = useCallback((id: SectionId) => (node: HTMLElement | null) => {
+    sectionRefs.current[id] = node;
+  }, []);
+
+  const scrollToSection = useCallback((id: SectionId) => {
+    ioSkipUntilRef.current = Date.now() + 700;
+    setActiveSection(id);
+    const el = sectionRefs.current[id] ?? (typeof document !== 'undefined' ? document.getElementById(`profile-section-${id}`) : null);
+    el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
+
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [currentPassword, setCurrentPassword] = useState('');
@@ -90,6 +105,15 @@ export default function ProfilePage() {
   const [deleteDraftId, setDeleteDraftId] = useState<string | null>(null);
   const [deleteQuoteId, setDeleteQuoteId] = useState<string | null>(null);
 
+  const sortedQuotes = useMemo(
+    () => [...quotes].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+    [quotes]
+  );
+  const sortedDrafts = useMemo(
+    () => [...drafts].sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime()),
+    [drafts]
+  );
+
   useEffect(() => () => { if (saveToastTimeoutRef.current) clearTimeout(saveToastTimeoutRef.current); }, []);
 
   useEffect(() => {
@@ -102,10 +126,34 @@ export default function ProfilePage() {
   }, []);
 
   useEffect(() => {
-    if (activeSection === 'quotes-and-drafts' && typeof window !== 'undefined') {
-      getDrafts(authUser?.id ?? null).then(setDrafts);
-    }
-  }, [activeSection, authUser?.id]);
+    if (typeof window === 'undefined') return;
+    getDrafts(authUser?.id ?? null).then(setDrafts);
+  }, [authUser?.id]);
+
+  useEffect(() => {
+    const ids: SectionId[] = ['details', 'quotes', 'drafts', 'settings'];
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (Date.now() < ioSkipUntilRef.current) return;
+        const visible = entries.filter((e) => e.isIntersecting && e.target instanceof HTMLElement);
+        if (!visible.length) return;
+        const best = visible.reduce((a, b) => (a.intersectionRatio >= b.intersectionRatio ? a : b));
+        const id = best.target.getAttribute('data-section-id') as SectionId | null;
+        if (id && ids.includes(id)) setActiveSection(id);
+      },
+      { root: null, rootMargin: '-10% 0px -42% 0px', threshold: [0, 0.08, 0.15, 0.25, 0.35, 0.5, 0.65, 0.8, 1] }
+    );
+    const t = window.setTimeout(() => {
+      ids.forEach((id) => {
+        const el = sectionRefs.current[id];
+        if (el) io.observe(el);
+      });
+    }, 0);
+    return () => {
+      window.clearTimeout(t);
+      io.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -327,17 +375,18 @@ export default function ProfilePage() {
         </Link>
 
         <div className="flex flex-col md:flex-row gap-4 sm:gap-6 md:gap-8">
-          <nav className="md:w-56 shrink-0">
+          <nav className="md:w-56 shrink-0 sticky top-14 z-30 self-start md:top-20">
             <div className="bg-white rounded-xl sm:rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
               <div className="px-3 sm:px-4 py-2.5 sm:py-3 border-b border-slate-100 bg-slate-50/80">
                 <h2 className="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wider">{t('profile.area')}</h2>
+                <p className="text-[11px] text-slate-400 mt-1 leading-snug">{t('profile.scrollFlowHint')}</p>
               </div>
-              <ul className="p-1.5 sm:p-2 grid grid-cols-2 sm:grid-cols-4 md:flex md:flex-col gap-1">
+              <ul className="p-1.5 sm:p-2 grid grid-cols-2 md:flex md:flex-col gap-1">
                 {sectionConfig.map((section) => (
                   <li key={section.id}>
                     <button
                       type="button"
-                      onClick={() => setActiveSection(section.id)}
+                      onClick={() => scrollToSection(section.id)}
                       className={`w-full flex items-center justify-center md:justify-start gap-1.5 sm:gap-3 px-2 sm:px-4 py-2.5 sm:py-3 rounded-xl text-right font-medium text-xs sm:text-sm transition-colors min-h-[44px] ${
                         activeSection === section.id
                           ? 'bg-blue-50 text-blue-700 border border-blue-100'
@@ -359,11 +408,14 @@ export default function ProfilePage() {
             </div>
           </nav>
 
-          {/* תוכן – גלילה לפי צורך */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 min-h-0">
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-              {activeSection === 'details' && (
-                <div className="p-6 md:p-8">
+              <section
+                id="profile-section-details"
+                ref={assignSectionRef('details')}
+                data-section-id="details"
+                className="scroll-mt-28 md:scroll-mt-24 p-6 md:p-8 border-b border-slate-100"
+              >
                   <h1 className="text-xl font-black text-slate-900 mb-1">{t('profile.details')}</h1>
                   <p className="text-slate-500 text-sm mb-6">{t('profile.detailsSubtitle')}</p>
                   {authUser?.email && (
@@ -496,200 +548,209 @@ export default function ProfilePage() {
                       {t('profile.detailsNote')}
                     </p>
                   </form>
-                </div>
-              )}
+              </section>
 
-              {activeSection === 'quotes-and-drafts' && (
-                <div className="p-6 md:p-8">
-                  <h1 className="text-xl font-black text-slate-900 mb-1">{t('profile.quotesTitle')}</h1>
-                  <p className="text-slate-500 text-sm mb-8">{t('profile.quotesSubtitle')}</p>
-                  {(() => {
-                    type QuoteItem = { type: 'quote'; id: string; date: string; data: SavedQuote };
-                    type DraftItem = { type: 'draft'; id: string; date: string; data: QuoteDraft };
-                    const quoteItems: QuoteItem[] = quotes.map((q) => ({ type: 'quote', id: q.id, date: q.createdAt, data: q }));
-                    const draftItems: DraftItem[] = drafts.map((d) => ({ type: 'draft', id: d.id, date: d.savedAt, data: d }));
-                    const combined: (QuoteItem | DraftItem)[] = [...quoteItems, ...draftItems].sort(
-                      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-                    );
-                    if (combined.length === 0) {
-                      return (
-                        <div className="flex flex-col items-center justify-center py-16 text-center bg-slate-50/50 rounded-2xl border border-slate-100">
-                          <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-4 text-slate-400">
-                            <FileText size={32} />
-                          </div>
-                          <p className="text-slate-500 text-sm max-w-xs">
-                            {t('profile.noQuotesYet')}
-                          </p>
-                        </div>
-                      );
-                    }
-                    return (
-                      <ul className="space-y-4">
-                        {combined.map((entry) => {
-                          if (entry.type === 'quote') {
-                            const q = entry.data;
-                            const dateStr = new Date(q.createdAt).toLocaleDateString('he-IL', {
-                              day: '2-digit',
-                              month: '2-digit',
-                              year: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            });
-                            return (
-                              <li
-                                key={`q-${q.id}`}
-                                className="flex flex-col gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-colors"
-                              >
-                                <div className="flex items-center gap-2 text-slate-500 text-xs font-medium">
-                                  <FileText size={14} /> {t('profile.quoteLabel')}
-                                </div>
-                                <div className="min-w-0">
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    <span className="font-bold text-slate-900">
-                                      {q.customerName?.trim() || t('profile.noCustomerName')}
-                                    </span>
-                                    {q.quoteNumber != null && (
-                                      <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
-                                        #{q.quoteNumber}
-                                      </span>
-                                    )}
-                                  </div>
-                                  <div className="text-sm text-slate-500">{dateStr}</div>
-                                  <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                    <span className="text-sm font-semibold text-blue-600">
-                                      {formatPrice(q.totalWithVAT)} {t('profile.total')}
-                                    </span>
-                                    <div className="relative">
-                                      <button
-                                        type="button"
-                                        onClick={() => setStatusDropdownId(statusDropdownId === q.id ? null : q.id)}
-                                        className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full transition-colors ${quoteStatusColors[q.quoteStatus ?? 'draft']} hover:opacity-90`}
-                                      >
-                                        {quoteStatusLabels[q.quoteStatus ?? 'draft']}
-                                        <ChevronDown size={14} className="opacity-70" />
-                                      </button>
-                                      {statusDropdownId === q.id && (
-                                        <>
-                                          <div className="fixed inset-0 z-40" onClick={() => setStatusDropdownId(null)} aria-hidden />
-                                          <div className="absolute top-full right-0 mt-1 z-50 py-1 bg-white rounded-lg shadow-lg border border-slate-200 min-w-[100px]">
-                                            {(['draft', 'sent', 'approved', 'paid'] as const).map((st) => (
-                                              <button
-                                                key={st}
-                                                type="button"
-                                                onClick={() => {
-                                                  updateQuoteStatus(q.id, st);
-                                                  setStatusDropdownId(null);
-                                                }}
-                                                className={`block w-full text-right px-3 py-2 text-sm hover:bg-slate-50 ${q.quoteStatus === st ? 'font-bold text-blue-600' : 'text-slate-700'}`}
-                                              >
-                                                {quoteStatusLabels[st]}
-                                              </button>
-                                            ))}
-                                          </div>
-                                        </>
-                                      )}
-                                    </div>
-                                    {q.status && (
-                                      <span className="text-xs text-slate-500">
-                                        {exportLabels[q.status as ExportMethod]}
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                                <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-200/80">
-                                  <button
-                                    type="button"
-                                    onClick={() => setPreviewQuoteId(q.id)}
-                                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-sm border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors shrink-0"
-                                    title={t('profile.preview')}
-                                  >
-                                    <Eye size={16} />
-                                    {t('profile.preview')}
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleDuplicateQuote(q.id)}
-                                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-sm border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors shrink-0"
-                                    title={t('profile.duplicate')}
-                                  >
-                                    <Copy size={16} />
-                                    {t('profile.duplicate')}
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleDownloadQuote(q.id)}
-                                    disabled={downloadingId === q.id}
-                                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-bold text-sm bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 transition-colors shrink-0"
-                                  >
-                                    <Download size={16} />
-                                    {downloadingId === q.id ? t('profile.downloading') : t('profile.downloadPdf')}
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => setDeleteQuoteId(q.id)}
-                                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors shrink-0"
-                                    title={t('profile.deleteFromHistory')}
-                                  >
-                                    <Trash2 size={18} />
-                                  </button>
-                                </div>
-                              </li>
-                            );
-                          }
-                          const d = entry.data;
-                          return (
-                            <li
-                              key={`d-${d.id}`}
-                              className="flex flex-col gap-3 p-4 rounded-xl border border-amber-200 bg-amber-50/40 hover:bg-amber-50/60 transition-colors"
-                            >
-                              <div className="flex items-center gap-2 text-amber-700 text-xs font-medium">
-                                <FileEdit size={14} /> {t('profile.draftLabel')}
+              <section
+                id="profile-section-quotes"
+                ref={assignSectionRef('quotes')}
+                data-section-id="quotes"
+                className="scroll-mt-28 md:scroll-mt-24 p-6 md:p-8 border-b border-slate-100"
+              >
+                  <h1 className="text-xl font-black text-slate-900 mb-1">{t('profile.savedQuotesTitle')}</h1>
+                  <p className="text-slate-500 text-sm mb-8">{t('profile.savedQuotesSubtitle')}</p>
+                  {sortedQuotes.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-14 text-center bg-slate-50/50 rounded-2xl border border-slate-100">
+                      <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mb-3 text-slate-400">
+                        <FileText size={28} />
+                      </div>
+                      <p className="text-slate-500 text-sm max-w-xs">{t('profile.noSavedQuotes')}</p>
+                    </div>
+                  ) : (
+                    <ul className="space-y-4">
+                      {sortedQuotes.map((q) => {
+                        const dateStr = new Date(q.createdAt).toLocaleDateString('he-IL', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        });
+                        return (
+                          <li
+                            key={q.id}
+                            className="flex flex-col gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-colors"
+                          >
+                            <div className="flex items-center gap-2 text-slate-500 text-xs font-medium">
+                              <FileText size={14} /> {t('profile.quoteLabel')}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-bold text-slate-900">
+                                  {q.customerName?.trim() || t('profile.noCustomerName')}
+                                </span>
+                                {q.quoteNumber != null && (
+                                  <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                                    #{q.quoteNumber}
+                                  </span>
+                                )}
                               </div>
-                              <div className="min-w-0">
-                                <div className="font-bold text-slate-900 text-lg">{d.name}</div>
-                                <div className="text-sm text-slate-600 mt-1">{getDraftSummary(d)}</div>
-                                <div className="flex items-center gap-2 mt-2 flex-wrap text-xs text-slate-500">
-                                  <span>{d.items.length} {t('profile.itemsCount')}</span>
-                                  <span>·</span>
-                                  <span>{formatPrice(getDraftTotal(d))} {t('profile.total')}</span>
-                                  <span>·</span>
-                                  <span>{formatDraftDate(d.savedAt)}</span>
-                                  {d.customerName?.trim() && (
+                              <div className="text-sm text-slate-500">{dateStr}</div>
+                              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                <span className="text-sm font-semibold text-blue-600">
+                                  {formatPrice(q.totalWithVAT)} {t('profile.total')}
+                                </span>
+                                <div className="relative">
+                                  <button
+                                    type="button"
+                                    onClick={() => setStatusDropdownId(statusDropdownId === q.id ? null : q.id)}
+                                    className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full transition-colors ${quoteStatusColors[q.quoteStatus ?? 'draft']} hover:opacity-90`}
+                                  >
+                                    {quoteStatusLabels[q.quoteStatus ?? 'draft']}
+                                    <ChevronDown size={14} className="opacity-70" />
+                                  </button>
+                                  {statusDropdownId === q.id && (
                                     <>
-                                      <span>·</span>
-                                      <span>{t('profile.customer')}: {d.customerName}</span>
+                                      <div className="fixed inset-0 z-40" onClick={() => setStatusDropdownId(null)} aria-hidden />
+                                      <div className="absolute top-full right-0 mt-1 z-50 py-1 bg-white rounded-lg shadow-lg border border-slate-200 min-w-[100px]">
+                                        {(['draft', 'sent', 'approved', 'paid'] as const).map((st) => (
+                                          <button
+                                            key={st}
+                                            type="button"
+                                            onClick={() => {
+                                              updateQuoteStatus(q.id, st);
+                                              setStatusDropdownId(null);
+                                            }}
+                                            className={`block w-full text-right px-3 py-2 text-sm hover:bg-slate-50 ${q.quoteStatus === st ? 'font-bold text-blue-600' : 'text-slate-700'}`}
+                                          >
+                                            {quoteStatusLabels[st]}
+                                          </button>
+                                        ))}
+                                      </div>
                                     </>
                                   )}
                                 </div>
+                                {q.status && (
+                                  <span className="text-xs text-slate-500">
+                                    {exportLabels[q.status as ExportMethod]}
+                                  </span>
+                                )}
                               </div>
-                              <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-amber-200/80">
-                                <button
-                                  type="button"
-                                  onClick={() => handleLoadDraft(d)}
-                                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm bg-blue-600 text-white hover:bg-blue-700 transition-colors shrink-0"
-                                >
-                                  {t('profile.loadToCart')}
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setDeleteDraftId(d.id)}
-                                  className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors shrink-0"
-                                  title={t('profile.deleteDraft')}
-                                >
-                                  <Trash2 size={18} />
-                                </button>
-                              </div>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    );
-                  })()}
-                </div>
-              )}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-200/80">
+                              <button
+                                type="button"
+                                onClick={() => setPreviewQuoteId(q.id)}
+                                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-sm border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors shrink-0"
+                                title={t('profile.preview')}
+                              >
+                                <Eye size={16} />
+                                {t('profile.preview')}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDuplicateQuote(q.id)}
+                                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-sm border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors shrink-0"
+                                title={t('profile.duplicate')}
+                              >
+                                <Copy size={16} />
+                                {t('profile.duplicate')}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDownloadQuote(q.id)}
+                                disabled={downloadingId === q.id}
+                                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-bold text-sm bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 transition-colors shrink-0"
+                              >
+                                <Download size={16} />
+                                {downloadingId === q.id ? t('profile.downloading') : t('profile.downloadPdf')}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setDeleteQuoteId(q.id)}
+                                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors shrink-0"
+                                title={t('profile.deleteFromHistory')}
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+              </section>
 
-              {activeSection === 'settings' && (
-                <div className="p-6 md:p-8">
+              <section
+                id="profile-section-drafts"
+                ref={assignSectionRef('drafts')}
+                data-section-id="drafts"
+                className="scroll-mt-28 md:scroll-mt-24 p-6 md:p-8 border-b border-slate-100"
+              >
+                  <h1 className="text-xl font-black text-slate-900 mb-1">{t('profile.draftsSectionTitle')}</h1>
+                  <p className="text-slate-500 text-sm mb-8">{t('profile.draftsSectionSubtitle')}</p>
+                  {sortedDrafts.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-14 text-center bg-amber-50/30 rounded-2xl border border-amber-100">
+                      <div className="w-14 h-14 rounded-2xl bg-amber-100/80 flex items-center justify-center mb-3 text-amber-600">
+                        <FileEdit size={28} />
+                      </div>
+                      <p className="text-slate-600 text-sm max-w-xs">{t('profile.noDraftsYet')}</p>
+                    </div>
+                  ) : (
+                    <ul className="space-y-4">
+                      {sortedDrafts.map((d) => (
+                        <li
+                          key={d.id}
+                          className="flex flex-col gap-3 p-4 rounded-xl border border-amber-200 bg-amber-50/40 hover:bg-amber-50/60 transition-colors"
+                        >
+                          <div className="flex items-center gap-2 text-amber-700 text-xs font-medium">
+                            <FileEdit size={14} /> {t('profile.draftLabel')}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="font-bold text-slate-900 text-lg">{d.name}</div>
+                            <div className="text-sm text-slate-600 mt-1">{getDraftSummary(d)}</div>
+                            <div className="flex items-center gap-2 mt-2 flex-wrap text-xs text-slate-500">
+                              <span>{d.items.length} {t('profile.itemsCount')}</span>
+                              <span>·</span>
+                              <span>{formatPrice(getDraftTotal(d))} {t('profile.total')}</span>
+                              <span>·</span>
+                              <span>{formatDraftDate(d.savedAt)}</span>
+                              {d.customerName?.trim() && (
+                                <>
+                                  <span>·</span>
+                                  <span>{t('profile.customer')}: {d.customerName}</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-amber-200/80">
+                            <button
+                              type="button"
+                              onClick={() => handleLoadDraft(d)}
+                              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm bg-blue-600 text-white hover:bg-blue-700 transition-colors shrink-0"
+                            >
+                              {t('profile.loadToCart')}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setDeleteDraftId(d.id)}
+                              className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors shrink-0"
+                              title={t('profile.deleteDraft')}
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+              </section>
+
+              <section
+                id="profile-section-settings"
+                ref={assignSectionRef('settings')}
+                data-section-id="settings"
+                className="scroll-mt-28 md:scroll-mt-24 p-6 md:p-8 pb-10 md:pb-12"
+              >
                   <h1 className="text-xl font-black text-slate-900 mb-1">{t('profile.settingsTitle')}</h1>
                   <p className="text-slate-500 text-sm mb-8">{t('profile.settingsSubtitle')}</p>
                   <form onSubmit={(e) => e.preventDefault()} className="space-y-5 max-w-md">
@@ -917,8 +978,7 @@ export default function ProfilePage() {
                       ))}
                     </div>
                   </div>
-                </div>
-              )}
+              </section>
             </div>
           </div>
         </div>
@@ -976,8 +1036,8 @@ export default function ProfilePage() {
                 onClick={() => {
                   try { sessionStorage.removeItem(PROFILE_PROMPT_KEY); } catch { /* ignore */ }
                   setShowNewUserPrompt(false);
-                  setActiveSection('details');
                   if (typeof window !== 'undefined') window.history.replaceState({}, '', '/profile');
+                  window.setTimeout(() => scrollToSection('details'), 0);
                 }}
                 className="flex-1 py-3 px-4 rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 transition-colors"
               >

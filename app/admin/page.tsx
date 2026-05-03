@@ -10,6 +10,10 @@ import {
   UserPlus,
   FileText,
   TrendingUp,
+  DollarSign,
+  BarChart3,
+  ShoppingCart,
+  Percent,
   LogOut,
   Eye,
   Trash2,
@@ -37,6 +41,14 @@ type Stats = {
   newUsers7d: number;
   newUsers30d: number;
   totalQuotes: number;
+  quotesLast7d: number;
+  quotesLast30d: number;
+  totalRevenue: number;
+  usersWithQuotes: number;
+  usersWithBasket: number;
+  totalBasketLineItems: number;
+  avgQuotesPerActiveUser: number;
+  avgRevenuePerQuote: number;
 } | null;
 
 type UserRow = {
@@ -514,6 +526,104 @@ export default function AdminPage() {
                     </div>
                   </div>
                 </button>
+              </section>
+
+              <section
+                className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8"
+                aria-label="סטטיסטיקות מורחבות"
+              >
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm text-right">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-slate-500 text-xs font-medium truncate">הצעות חדשות (7 ימים)</p>
+                      <p className="text-xl md:text-2xl font-black text-slate-900 tabular-nums mt-1">{stats?.quotesLast7d ?? 0}</p>
+                    </div>
+                    <div className="p-2 rounded-lg bg-teal-100 text-teal-700 shrink-0">
+                      <FileText size={18} />
+                    </div>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm text-right">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-slate-500 text-xs font-medium truncate">הצעות (30 יום)</p>
+                      <p className="text-xl md:text-2xl font-black text-slate-900 tabular-nums mt-1">{stats?.quotesLast30d ?? 0}</p>
+                    </div>
+                    <div className="p-2 rounded-lg bg-cyan-100 text-cyan-700 shrink-0">
+                      <BarChart3 size={18} />
+                    </div>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm text-right">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-slate-500 text-xs font-medium truncate">סה״כ סכומי הצעות (מע״מ)</p>
+                      <p className="text-lg md:text-xl font-black text-slate-900 tabular-nums mt-1 leading-tight">
+                        {new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS', maximumFractionDigits: 0 }).format(stats?.totalRevenue ?? 0)}
+                      </p>
+                    </div>
+                    <div className="p-2 rounded-lg bg-green-100 text-green-700 shrink-0">
+                      <DollarSign size={18} />
+                    </div>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm text-right">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-slate-500 text-xs font-medium truncate">משתמשים עם הצעות</p>
+                      <p className="text-xl md:text-2xl font-black text-slate-900 tabular-nums mt-1">{stats?.usersWithQuotes ?? 0}</p>
+                    </div>
+                    <div className="p-2 rounded-lg bg-indigo-100 text-indigo-700 shrink-0">
+                      <Users size={18} />
+                    </div>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm text-right">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-slate-500 text-xs font-medium truncate">סלים לא ריקים</p>
+                      <p className="text-xl md:text-2xl font-black text-slate-900 tabular-nums mt-1">{stats?.usersWithBasket ?? 0}</p>
+                    </div>
+                    <div className="p-2 rounded-lg bg-orange-100 text-orange-700 shrink-0">
+                      <ShoppingCart size={18} />
+                    </div>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm text-right">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-slate-500 text-xs font-medium truncate">שורות סל (סה״כ)</p>
+                      <p className="text-xl md:text-2xl font-black text-slate-900 tabular-nums mt-1">{stats?.totalBasketLineItems ?? 0}</p>
+                    </div>
+                    <div className="p-2 rounded-lg bg-slate-200 text-slate-700 shrink-0">
+                      <ShoppingCart size={18} />
+                    </div>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm text-right">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-slate-500 text-xs font-medium truncate">ממוצע הצעות / משתמש פעיל</p>
+                      <p className="text-xl md:text-2xl font-black text-slate-900 tabular-nums mt-1">{stats?.avgQuotesPerActiveUser ?? 0}</p>
+                    </div>
+                    <div className="p-2 rounded-lg bg-violet-100 text-violet-700 shrink-0">
+                      <Percent size={18} />
+                    </div>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm text-right">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-slate-500 text-xs font-medium truncate">ממוצע סכום / הצעה</p>
+                      <p className="text-lg md:text-xl font-black text-slate-900 tabular-nums mt-1 leading-tight">
+                        {new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS', maximumFractionDigits: 0 }).format(stats?.avgRevenuePerQuote ?? 0)}
+                      </p>
+                    </div>
+                    <div className="p-2 rounded-lg bg-emerald-100 text-emerald-800 shrink-0">
+                      <DollarSign size={18} />
+                    </div>
+                  </div>
+                </div>
               </section>
 
               {/* רשימת משתמשים + Breadcrumb */}

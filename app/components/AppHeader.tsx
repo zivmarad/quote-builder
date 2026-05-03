@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useAuth } from '../contexts/AuthContext';
 import { useProfile } from '../contexts/ProfileContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { User, LogIn, UserPlus, LogOut, Globe, Home } from 'lucide-react';
+import { User, LogIn, UserPlus, LogOut, Globe, Home, ShieldAlert, Undo2 } from 'lucide-react';
 
 const LOCALE_LABELS: Record<string, string> = {
   he: 'עב',
@@ -15,7 +15,8 @@ const LOCALE_LABELS: Record<string, string> = {
 };
 
 export default function AppHeader() {
-  const { user, isLoaded, logout } = useAuth();
+  const { user, isLoaded, logout, impersonating, stopImpersonating } = useAuth();
+  const [impersonateExitLoading, setImpersonateExitLoading] = useState(false);
   const { profile } = useProfile();
   const { t, locale, setLocale, dir } = useLanguage();
   const [langOpen, setLangOpen] = useState(false);
@@ -41,11 +42,46 @@ export default function AppHeader() {
 
   const locales = ['he', 'en', 'ru', 'ar'] as const;
 
+  const handleExitImpersonation = async () => {
+    setImpersonateExitLoading(true);
+    try {
+      const r = await stopImpersonating();
+      if (r.ok) {
+        window.location.href = '/admin';
+        return;
+      }
+      alert(r.error ?? 'שגיאה');
+    } finally {
+      setImpersonateExitLoading(false);
+    }
+  };
+
   return (
     <header
       className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100"
       style={{ paddingTop: 'var(--safe-area-inset-top)' }}
     >
+      {impersonating && (
+        <div
+          className="bg-amber-500 text-amber-950 text-sm font-bold px-3 py-2 flex flex-wrap items-center justify-center gap-3 border-b border-amber-600/30"
+          dir="rtl"
+          role="status"
+        >
+          <span className="inline-flex items-center gap-2">
+            <ShieldAlert size={18} className="shrink-0" />
+            מצב מנהל: אתה צופה באתר כמשתמש אחר. כל שמירה תשייך לחשבון הזה.
+          </span>
+          <button
+            type="button"
+            disabled={impersonateExitLoading}
+            onClick={() => void handleExitImpersonation()}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-950 text-amber-50 hover:bg-black disabled:opacity-60 text-xs sm:text-sm"
+          >
+            <Undo2 size={16} />
+            {impersonateExitLoading ? '…' : 'חזור ללוח הניהול'}
+          </button>
+        </div>
+      )}
       <div className="max-w-5xl mx-auto px-3 sm:px-4 md:px-8 py-2.5 sm:py-3 flex items-center justify-between gap-2 min-h-[52px] sm:min-h-0 min-w-0">
         <Link
           href="/"

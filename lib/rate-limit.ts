@@ -71,4 +71,6 @@ export const LIMITS = {
   SYNC: { max: 80, windowMs: 60 * 1000 },
   /** העלאת לוגו ל־Storage */
   LOGO_UPLOAD: { max: 20, windowMs: 60 * 1000 },
+  /** התחזות מנהל למשתמש */
+  ADMIN_IMPERSONATE: { max: 25, windowMs: 60 * 1000 },
 } as const;

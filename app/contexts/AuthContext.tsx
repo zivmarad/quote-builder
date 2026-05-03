@@ -21,7 +21,12 @@ export interface CurrentUser {
 
 interface AuthContextType {
   user: CurrentUser | null;
+  /** סשן נפתח דרך "התחבר כמשתמש" מלוח הניהול */
+  impersonating: boolean;
   isLoaded: boolean;
+  /** רענון מצב מחובר מהשרת (אחרי התחזות וכו') */
+  refreshSession: () => Promise<void>;
+  stopImpersonating: () => Promise<{ ok: boolean; error?: string }>;
   login: (usernameOrEmail: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<{ ok: boolean; error?: string }>;
   signup: (username: string, password: string) => Promise<{ ok: boolean; error?: string }>;
@@ -34,15 +39,20 @@ interface AuthContextType {
   logout: () => void;
 }
 
-async function fetchMe(): Promise<CurrentUser | null> {
+async function fetchMeFull(): Promise<{ user: CurrentUser | null; impersonating: boolean }> {
   try {
     const res = await fetch('/api/auth/me', { credentials: 'include' });
-    if (!res.ok) return null;
+    if (!res.ok) return { user: null, impersonating: false };
     const data = await res.json();
-    if (data?.ok && data?.user) return data.user as CurrentUser;
-    return null;
+    if (data?.ok && data?.user) {
+      return {
+        user: data.user as CurrentUser,
+        impersonating: !!data.impersonating,
+      };
+    }
+    return { user: null, impersonating: false };
   } catch {
-    return null;
+    return { user: null, impersonating: false };
   }
 }
 
@@ -50,16 +60,47 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<CurrentUser | null>(null);
+  const [impersonating, setImpersonating] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+
+  const refreshSession = useCallback(async () => {
+    const { user: u, impersonating: imp } = await fetchMeFull();
+    setUser(u);
+    setImpersonating(imp);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
-    fetchMe().then((u) => {
-      if (!cancelled) setUser(u);
-      if (!cancelled) setIsLoaded(true);
+    void fetchMeFull().then(({ user: u, impersonating: imp }) => {
+      if (cancelled) return;
+      setUser(u);
+      setImpersonating(imp);
+      setIsLoaded(true);
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
+
+  const stopImpersonating = useCallback(async () => {
+    try {
+      const res = await fetch('/api/auth/stop-impersonate', { method: 'POST', credentials: 'include' });
+      let data: { ok?: boolean; error?: string } = {};
+      try {
+        const text = await res.text();
+        if (text) data = JSON.parse(text);
+      } catch {
+        /* ignore */
+      }
+      if (!res.ok || !data.ok) {
+        return { ok: false, error: data.error ?? 'שגיאה' };
+      }
+      await refreshSession();
+      return { ok: true };
+    } catch {
+      return { ok: false, error: 'שגיאת רשת' };
+    }
+  }, [refreshSession]);
 
   const login = useCallback(async (usernameOrEmail: string, password: string) => {
     const trimmed = usernameOrEmail.trim();
@@ -80,6 +121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (data.ok && data.user) {
         const current: CurrentUser = { id: data.user.id, username: data.user.username, email: data.user.email };
         setUser(current);
+        setImpersonating(false);
         return { ok: true };
       }
       return { ok: false, error: 'שגיאה בהתחברות' };
@@ -133,6 +175,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (data.ok && data.user) {
         const current: CurrentUser = { id: data.user.id, username: data.user.username, email: data.user.email };
         setUser(current);
+        setImpersonating(false);
         return { ok: true };
       }
       return { ok: false, error: 'שגיאה בהרשמה' };
@@ -216,6 +259,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (data.ok && data.user) {
         const current: CurrentUser = { id: data.user.id, username: data.user.username, email: data.user.email };
         setUser(current);
+        setImpersonating(false);
         return { ok: true };
       }
       return { ok: false, error: data.error ?? 'שגיאה בהרשמה' };
@@ -302,10 +346,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = useCallback(() => {
     fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
     setUser(null);
+    setImpersonating(false);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isLoaded, login, changePassword, signup, sendVerificationCode, checkVerificationCode, signupWithEmail, sendResetCode, resetPassword, sendUsernameToEmail, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        impersonating,
+        isLoaded,
+        refreshSession,
+        stopImpersonating,
+        login,
+        changePassword,
+        signup,
+        sendVerificationCode,
+        checkVerificationCode,
+        signupWithEmail,
+        sendResetCode,
+        resetPassword,
+        sendUsernameToEmail,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
