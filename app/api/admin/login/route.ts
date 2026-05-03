@@ -15,7 +15,10 @@ export async function POST(request: Request) {
     const body = await request.json();
     const u = typeof body.username === 'string' ? body.username.trim() : '';
     const p = typeof body.password === 'string' ? body.password : '';
-    if (u !== username || p !== secret) {
+    // תאימות לגרסה הישנה: שדה יחיד = רק סיסמת הניהול (ADMIN_SECRET), בלי שם משתמש
+    const legacySingleSecret = u === '' && p === secret;
+    const fullCreds = u === username && p === secret;
+    if (!legacySingleSecret && !fullCreds) {
       return NextResponse.json({ ok: false, error: 'שם משתמש או סיסמה שגויים' }, { status: 401 });
     }
     return NextResponse.json({ ok: true, key: secret });

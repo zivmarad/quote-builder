@@ -121,8 +121,8 @@ export default function AdminPage() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError(null);
-    if (!username.trim() || !password) {
-      setLoginError('נא למלא שם משתמש וסיסמה');
+    if (!password) {
+      setLoginError('נא למלא סיסמה');
       return;
     }
     fetch('/api/admin/login', {
@@ -276,17 +276,22 @@ export default function AdminPage() {
             )}
             <form onSubmit={handleLogin} className="space-y-5">
               <div>
-                <label htmlFor="admin-username" className="block text-sm font-bold text-slate-300 mb-2">שם משתמש</label>
+                <label htmlFor="admin-username" className="block text-sm font-bold text-slate-300 mb-2">
+                  שם משתמש <span className="font-normal text-slate-500">(אופציונלי)</span>
+                </label>
                 <input
                   id="admin-username"
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="שם משתמש אדמין"
+                  placeholder="ריק = רק סיסמת ניהול, כמו בעבר"
                   className="w-full px-4 py-3 min-h-[48px] rounded-xl bg-slate-700/50 border border-slate-600 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   dir="ltr"
                   autoComplete="username"
                 />
+                <p className="text-slate-500 text-xs mt-2 leading-relaxed">
+                  אם הוגדר <span dir="ltr">ADMIN_USERNAME</span> בשרת – יש להזין אותו יחד עם הסיסמה. אחרת אפשר להשאיר ריק ולהזין רק את סיסמת הניהול.
+                </p>
               </div>
               <div>
                 <label htmlFor="admin-password" className="block text-sm font-bold text-slate-300 mb-2">סיסמה</label>
@@ -303,7 +308,7 @@ export default function AdminPage() {
               </div>
               <button
                 type="submit"
-                disabled={!username.trim() || !password}
+                disabled={!password}
                 className="w-full py-3 min-h-[52px] rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-50 transition-all"
               >
                 כניסה
