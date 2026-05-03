@@ -77,6 +77,7 @@
     "logo": "Логотип",
     "uploadLogo": "Загрузить логотип",
     "uploadLogoHint": "Нажмите для загрузки (PNG, JPG)",
+    "logoUploading": "Сохранение логотипа...",
     "businessName": "Название / ФИО",
     "businessNamePlaceholder": "напр. Иван Услуги",
     "contactName": "Контактное лицо (необяз.)",

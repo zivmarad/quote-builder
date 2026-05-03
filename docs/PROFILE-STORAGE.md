@@ -9,7 +9,8 @@
 
 ### 2. בשרת (Supabase)
 - **טבלה:** `user_profile`
-- **עמודות:** `user_id` (מזהה משתמש), `profile` (JSON – כל השדות: businessName, contactName, phone, logo וכו'), `updated_at`
+- **עמודות:** `user_id` (מזהה משתמש), `profile` (JSON – כל השדות: businessName, contactName, phone, `logo` וכו'), `updated_at`
+- **לוגו (מומלץ):** בשדה `logo` נשמר **קישור HTTPS** לקובץ ב־**Supabase Storage** (bucket `profile-logos`), אחרי העלאה דרך `POST /api/upload/profile-logo`. כך הלוגו לא תלוי במגבלת `localStorage`. משתמשים ישנים עם `logo` כ־data URL – עדיין נתמכים.
 - **API:**  
   - **טעינה:** `GET /api/sync/profile?userId=...` → `app/api/sync/profile/route.ts` (שורות 7–32)  
   - **שמירה:** `POST /api/sync/profile` עם body `{ userId, profile }` → אותו קובץ (שורות 35–65)

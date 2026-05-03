@@ -20,7 +20,7 @@ export interface QuoteProfile {
   phone?: string;
   email?: string;
   address?: string;
-  logo?: string; // base64 data URL
+  logo?: string; // https URL (Supabase Storage) or legacy base64 data URL
 }
 
 const formatPrice = (n: number) => '₪' + n.toLocaleString('he-IL');

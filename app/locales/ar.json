@@ -77,6 +77,7 @@
     "logo": "الشعار",
     "uploadLogo": "رفع شعار",
     "uploadLogoHint": "انقر لرفع الشعار (PNG, JPG)",
+    "logoUploading": "جاري حفظ الشعار...",
     "businessName": "اسم العمل / الاسم الكامل",
     "businessNamePlaceholder": "مثال: محمد خدمات",
     "contactName": "اسم جهة الاتصال (اختياري)",

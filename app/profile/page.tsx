@@ -77,6 +77,7 @@ export default function ProfilePage() {
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
+  const [logoUploading, setLogoUploading] = useState(false);
   const [previewQuoteId, setPreviewQuoteId] = useState<string | null>(null);
   const [statusDropdownId, setStatusDropdownId] = useState<string | null>(null);
   const [saveToast, setSaveToast] = useState(false);
@@ -221,12 +222,13 @@ export default function ProfilePage() {
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    const input = e.target;
     if (!file || !file.type.startsWith('image/')) return;
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = reader.result as string;
       const img = new Image();
-      img.onload = () => {
+      img.onload = async () => {
         const max = 220;
         let w = img.width;
         let h = img.height;
@@ -243,19 +245,45 @@ export default function ProfilePage() {
         canvas.width = w;
         canvas.height = h;
         const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          setProfile({ logo: dataUrl });
-          return;
+        let compressed = dataUrl;
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, w, h);
+          try {
+            compressed = canvas.toDataURL('image/jpeg', 0.78);
+          } catch {
+            compressed = dataUrl;
+          }
         }
-        ctx.drawImage(img, 0, 0, w, h);
-        try {
-          const compressed = canvas.toDataURL('image/jpeg', 0.78);
+
+        if (authUser?.id) {
+          setLogoUploading(true);
+          try {
+            const res = await fetch('/api/upload/profile-logo', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({ dataUrl: compressed }),
+            });
+            const j = (await res.json()) as { ok?: boolean; url?: string };
+            if (res.ok && j?.ok && typeof j.url === 'string' && j.url.startsWith('http')) {
+              setProfile({ logo: j.url });
+            } else {
+              setProfile({ logo: compressed });
+            }
+          } catch {
+            setProfile({ logo: compressed });
+          } finally {
+            setLogoUploading(false);
+          }
+        } else {
           setProfile({ logo: compressed });
-        } catch {
-          setProfile({ logo: dataUrl });
         }
+        input.value = '';
       };
-      img.onerror = () => setProfile({ logo: dataUrl });
+      img.onerror = () => {
+        setProfile({ logo: dataUrl });
+        input.value = '';
+      };
       img.src = dataUrl;
     };
     reader.readAsDataURL(file);
@@ -349,20 +377,32 @@ export default function ProfilePage() {
                       <label className="block text-sm font-bold text-slate-700 mb-2">{t('profile.logo')}</label>
                       <div className="flex items-start gap-4">
                         <div
-                          className="w-20 h-20 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0 cursor-pointer"
-                          onClick={() => fileInputRef.current?.click()}
+                          className={`w-20 h-20 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0 ${logoUploading ? 'opacity-60 cursor-wait' : 'cursor-pointer'}`}
+                          onClick={() => !logoUploading && fileInputRef.current?.click()}
                           role="button"
                           tabIndex={0}
-                          onKeyDown={(e) => e.key === 'Enter' && fileInputRef.current?.click()}
+                          onKeyDown={(e) => e.key === 'Enter' && !logoUploading && fileInputRef.current?.click()}
                         >
-                          {profile.logo ? (
-                            <img src={profile.logo} alt={t('profile.logo')} className="w-full h-full object-contain" />
+                          {logoUploading ? (
+                            <Loader2 className="w-8 h-8 text-blue-500 animate-spin" aria-hidden />
+                          ) : profile.logo ? (
+                            <img
+                              src={profile.logo}
+                              alt={t('profile.logo')}
+                              className="w-full h-full object-contain"
+                              {...(profile.logo.startsWith('http') ? { crossOrigin: 'anonymous' as const } : {})}
+                            />
                           ) : (
                             <span className="text-slate-400 text-xs px-2">{t('profile.uploadLogo')}</span>
                           )}
                         </div>
-                        <input ref={fileInputRef} type="file" accept="image/*" onChange={handleLogoChange} className="hidden" />
-                        <p className="text-slate-500 text-sm">{t('profile.uploadLogoHint')}</p>
+                        <input ref={fileInputRef} type="file" accept="image/*" onChange={handleLogoChange} disabled={logoUploading} className="hidden" />
+                        <div>
+                          <p className="text-slate-500 text-sm">{t('profile.uploadLogoHint')}</p>
+                          {logoUploading && (
+                            <p className="text-sm text-blue-600 mt-1 font-medium">{t('profile.logoUploading')}</p>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div>
