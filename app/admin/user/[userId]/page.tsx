@@ -16,6 +16,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import ConfirmDialog from '../../../components/ConfirmDialog';
+import { isAdminWireKeyHeaderSafe } from '../../../../lib/admin-header-key-safe';
 
 const ADMIN_KEY_STORAGE = 'quoteBuilder_adminKey';
 
@@ -49,6 +50,12 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
       setLoading(false);
       return;
     }
+    if (!isAdminWireKeyHeaderSafe(key)) {
+      sessionStorage.removeItem(ADMIN_KEY_STORAGE);
+      setError('נא להתחבר מחדש מדף הניהול');
+      setLoading(false);
+      return;
+    }
     fetch(`/api/admin/user/${userId}`, { headers: { 'X-Admin-Key': key } })
       .then((res) => {
         if (res.status === 401) {
@@ -68,7 +75,7 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
   const doDeleteUser = async () => {
     if (!userId || !data?.user) return;
     const key = typeof window !== 'undefined' ? sessionStorage.getItem(ADMIN_KEY_STORAGE) : null;
-    if (!key) return;
+    if (!key || !isAdminWireKeyHeaderSafe(key)) return;
     setDeleting(true);
     try {
       const res = await fetch(`/api/admin/user/${userId}`, {

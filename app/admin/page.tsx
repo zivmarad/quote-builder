@@ -23,6 +23,7 @@ import {
   X,
 } from 'lucide-react';
 import ConfirmDialog from '../components/ConfirmDialog';
+import { isAdminWireKeyHeaderSafe } from '../../lib/admin-header-key-safe';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -73,7 +74,12 @@ export default function AdminPage() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const stored = sessionStorage.getItem(ADMIN_KEY_STORAGE);
-    if (stored) setSavedKey(stored);
+    if (!stored) return;
+    if (!isAdminWireKeyHeaderSafe(stored)) {
+      sessionStorage.removeItem(ADMIN_KEY_STORAGE);
+      return;
+    }
+    setSavedKey(stored);
   }, []);
 
   useEffect(() => {
