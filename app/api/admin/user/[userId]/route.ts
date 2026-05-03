@@ -1,13 +1,10 @@
 import { NextResponse } from 'next/server';
 import { getUserById, deleteUserById } from '../../../auth/lib/users-store';
 import { supabaseAdmin } from '../../../../../lib/supabase-server';
-import { resolvedAdminSecret } from '../../../../../lib/admin-config';
+import { getAdminKeyFromRequest } from '../../../../../lib/admin-config';
 
 function getAdminKey(request: Request): string | null {
-  const secret = resolvedAdminSecret();
-  const authHeader = request.headers.get('x-admin-key');
-  const provided = authHeader;
-  return provided === secret ? secret : null;
+  return getAdminKeyFromRequest(request);
 }
 
 /** פרטי משתמש מלאים – פרופיל, היסטוריה, סל, הגדרות (צפייה בלבד) */

@@ -1,13 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getUsersList } from '../../auth/lib/users-store';
 import { supabaseAdmin } from '../../../../lib/supabase-server';
-import { resolvedAdminSecret } from '../../../../lib/admin-config';
+import { getAdminKeyFromRequest } from '../../../../lib/admin-config';
 
 /** מפתח אדמין – רק מ-header (לא מ-URL, למניעת דליפה ללוגים/היסטוריה) */
 function getAdminKey(request: Request): string | null {
-  const secret = resolvedAdminSecret();
-  const provided = request.headers.get('x-admin-key');
-  return provided === secret ? secret : null;
+  return getAdminKeyFromRequest(request);
 }
 
 /** רשימת נרשמים עם מספר הצעות – נגיש רק עם סיסמת ניהול */

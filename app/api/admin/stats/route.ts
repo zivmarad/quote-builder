@@ -1,13 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getUsersCount, getNewUsersCount } from '../../auth/lib/users-store';
 import { supabaseAdmin } from '../../../../lib/supabase-server';
-import { resolvedAdminSecret } from '../../../../lib/admin-config';
+import { getAdminKeyFromRequest } from '../../../../lib/admin-config';
 
 /** מפתח אדמין – רק מ-header (לא מ-URL) */
 function getAdminKey(request: Request): string | null {
-  const secret = resolvedAdminSecret();
-  const provided = request.headers.get('x-admin-key');
-  return provided === secret ? secret : null;
+  return getAdminKeyFromRequest(request);
 }
 
 /** סטטיסטיקות אדמין – משתמשים חדשים, סה"כ הצעות */
