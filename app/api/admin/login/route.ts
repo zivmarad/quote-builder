@@ -1,15 +1,10 @@
 import { NextResponse } from 'next/server';
+import { resolvedAdminSecret, resolvedAdminUsername } from '../../../../lib/admin-config';
 
 /** כניסת אדמין – שם משתמש וסיסמה. מחזיר מפתח לשימוש ב־X-Admin-Key. */
 export async function POST(request: Request) {
-  const username = process.env.ADMIN_USERNAME?.trim() ?? 'admin';
-  const secret = process.env.ADMIN_SECRET?.trim();
-  if (!secret) {
-    return NextResponse.json(
-      { ok: false, error: 'ניהול לא מוגדר. הגדר ADMIN_SECRET ו־ADMIN_USERNAME ב-.env' },
-      { status: 503 }
-    );
-  }
+  const username = resolvedAdminUsername();
+  const secret = resolvedAdminSecret();
 
   try {
     const body = await request.json();
