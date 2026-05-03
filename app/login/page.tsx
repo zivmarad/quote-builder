@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { SAVED_USERNAME_KEY, SAVED_PASSWORD_KEY } from '../contexts/AuthContext';
+import { resolvePostLoginRedirectPath } from '../../lib/post-login-redirect';
 import { LogIn, ArrowRight, UserPlus } from 'lucide-react';
 
 export default function LoginPage() {
@@ -53,7 +54,7 @@ export default function LoginPage() {
         if (typeof window !== 'undefined') {
           const params = new URLSearchParams(window.location.search);
           const fromParam = params.get('from');
-          const target = fromParam && fromParam.startsWith('/') ? fromParam : '/';
+          const target = resolvePostLoginRedirectPath(fromParam);
           window.location.href = window.location.origin + target;
         }
         return;

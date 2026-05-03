@@ -35,7 +35,7 @@ export default function SignupPage() {
     try {
       sessionStorage.setItem(PROFILE_PROMPT_KEY, '1');
     } catch { /* ignore */ }
-    window.location.href = `${window.location.origin}/`;
+    window.location.href = `${window.location.origin}/profile?newUser=1`;
   };
 
   const handleSendCode = async (e: React.FormEvent) => {
