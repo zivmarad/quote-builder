@@ -175,6 +175,7 @@ export default function Cart() {
   });
 
   const buildQuoteSnapshot = (): QuoteDataSnapshot => ({
+    ...(profile.logo && !profile.logo.startsWith('data:') ? { profileLogo: profile.logo } : {}),
     vatRate,
     validityDays,
     quoteTitle: defaultQuoteTitle,
@@ -184,7 +185,6 @@ export default function Cart() {
     profilePhone: profile.phone || undefined,
     profileEmail: profile.email || undefined,
     profileAddress: profile.address || undefined,
-    profileLogo: profile.logo || undefined,
     profile: {
       businessName: profile.businessName || undefined,
       contactName: profile.contactName || undefined,
@@ -192,7 +192,7 @@ export default function Cart() {
       phone: profile.phone || undefined,
       email: profile.email || undefined,
       address: profile.address || undefined,
-      logo: profile.logo || undefined,
+      logo: profile.logo && !profile.logo.startsWith('data:') ? profile.logo : undefined,
     },
     customer: {
       name: customerName.trim() || undefined,

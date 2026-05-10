@@ -117,6 +117,14 @@ export function QuoteHistoryProvider({ children, userId }: { children: React.Rea
   const [isLoaded, setIsLoaded] = useState(false);
   const lastLoadedForUserIdRef = useRef<string | null | undefined>(undefined);
   const deletedIdsRef = useRef<string[]>([]);
+  const pendingUpsertsRef = useRef<SavedQuote[]>([]);
+
+  const queueUpsert = useCallback((quote: SavedQuote) => {
+    const normalized = normalizeQuote(quote);
+    const idx = pendingUpsertsRef.current.findIndex((q) => q.id === normalized.id);
+    if (idx >= 0) pendingUpsertsRef.current[idx] = normalized;
+    else pendingUpsertsRef.current.push(normalized);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -182,7 +190,16 @@ export function QuoteHistoryProvider({ children, userId }: { children: React.Rea
         localStorage.setItem(key, JSON.stringify(filtered));
         if (guestRaw || filtered.length !== serverQuotes.length) {
           localStorage.removeItem(guestKey);
-          void postSync('/history', userId, { quotes: filtered, deletedQuoteIds: deletedIdsRef.current });
+          const serverById = new Map<string, SavedQuote>();
+          for (const q of serverQuotes) serverById.set(q.id, q);
+          const deltaUpserts = filtered.filter((q) => {
+            const s = serverById.get(q.id);
+            if (!s) return true;
+            return (Date.parse(q.createdAt || '') || 0) > (Date.parse(s.createdAt || '') || 0);
+          });
+          if (deltaUpserts.length || deletedIdsRef.current.length) {
+            void postSync('/history', userId, { quotes: deltaUpserts, deletedQuoteIds: deletedIdsRef.current });
+          }
         }
         setIsLoaded(true);
         return;
@@ -206,10 +223,16 @@ export function QuoteHistoryProvider({ children, userId }: { children: React.Rea
       // שולחים ל-Supabase רק אם טענו נתונים עבור userId הזה – מונע דריסה בעת רענון
       if (userId && lastLoadedForUserIdRef.current === userId) {
         const deletedQuoteIds = [...deletedIdsRef.current];
-        void postSync('/history', userId, { quotes, deletedQuoteIds }).then((ok) => {
+        const quoteUpserts = [...pendingUpsertsRef.current];
+        if (!quoteUpserts.length && !deletedQuoteIds.length) return;
+        void postSync('/history', userId, { quotes: quoteUpserts, deletedQuoteIds }).then((ok) => {
           if (ok && deletedQuoteIds.length) {
             deletedIdsRef.current = deletedIdsRef.current.filter((id) => !deletedQuoteIds.includes(id));
             localStorage.setItem(deletedKey, JSON.stringify(deletedIdsRef.current));
+          }
+          if (ok && quoteUpserts.length) {
+            const sent = new Set(quoteUpserts.map((q) => q.id));
+            pendingUpsertsRef.current = pendingUpsertsRef.current.filter((q) => !sent.has(q.id));
           }
         });
       }
@@ -225,19 +248,24 @@ export function QuoteHistoryProvider({ children, userId }: { children: React.Rea
       id: `q-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
       createdAt: new Date().toISOString(),
     };
+    queueUpsert(newQuote);
     setQuotes((prev) => mergeQuotes([newQuote], prev));
-  }, []);
+  }, [queueUpsert]);
 
   const deleteQuote = useCallback((id: string) => {
     if (!deletedIdsRef.current.includes(id)) deletedIdsRef.current.push(id);
+    pendingUpsertsRef.current = pendingUpsertsRef.current.filter((q) => q.id !== id);
     setQuotes((prev) => prev.filter((q) => q.id !== id));
   }, []);
 
   const updateQuoteStatus = useCallback((id: string, quoteStatus: QuoteWorkflowStatus) => {
-    setQuotes((prev) =>
-      prev.map((q) => (q.id === id ? { ...q, quoteStatus } : q))
-    );
-  }, []);
+    setQuotes((prev) => {
+      const next = prev.map((q) => (q.id === id ? { ...q, quoteStatus } : q));
+      const updated = next.find((q) => q.id === id);
+      if (updated) queueUpsert(updated);
+      return next;
+    });
+  }, [queueUpsert]);
 
   const getQuote = useCallback(
     (id: string) => quotes.find((q) => q.id === id),
