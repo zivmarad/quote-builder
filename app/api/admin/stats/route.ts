@@ -34,29 +34,26 @@ export async function GET(request: Request) {
     const t30 = now - 30 * 24 * 60 * 60 * 1000;
 
     if (supabaseAdmin) {
-      const [{ data: historyRows }, { data: basketRows }] = await Promise.all([
-        supabaseAdmin.from('quote_history').select('user_id, quotes'),
+      const [{ data: quoteRows }, { data: basketRows }] = await Promise.all([
+        supabaseAdmin.from('quotes').select('user_id, quote_data'),
         supabaseAdmin.from('quote_basket').select('user_id, items'),
       ]);
 
-      if (historyRows) {
-        for (const row of historyRows) {
+      if (quoteRows) {
+        for (const row of quoteRows) {
           const uid = typeof row?.user_id === 'string' ? row.user_id : '';
-          const arr = row?.quotes;
-          if (!Array.isArray(arr)) continue;
-          for (const q of arr) {
-            totalQuotes++;
-            if (uid) usersWithQuotes.add(uid);
-            const rec = q as Record<string, unknown>;
-            const tw = typeof rec.totalWithVAT === 'number' ? rec.totalWithVAT : 0;
-            totalRevenue += tw;
-            const ca = rec.createdAt;
-            if (typeof ca === 'string') {
-              const ts = new Date(ca).getTime();
-              if (!Number.isNaN(ts)) {
-                if (ts >= t7) quotesLast7d++;
-                if (ts >= t30) quotesLast30d++;
-              }
+          const q = row?.quote_data as Record<string, unknown> | null;
+          if (!q || typeof q !== 'object') continue;
+          totalQuotes++;
+          if (uid) usersWithQuotes.add(uid);
+          const tw = typeof q.totalWithVAT === 'number' ? q.totalWithVAT : 0;
+          totalRevenue += tw;
+          const ca = q.createdAt;
+          if (typeof ca === 'string') {
+            const ts = new Date(ca).getTime();
+            if (!Number.isNaN(ts)) {
+              if (ts >= t7) quotesLast7d++;
+              if (ts >= t30) quotesLast30d++;
             }
           }
         }

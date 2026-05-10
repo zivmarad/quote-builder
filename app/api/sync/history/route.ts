@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin, isSupabaseConfigured } from '../../../../lib/supabase-server';
 import { getCurrentUser } from '../../../../lib/auth-server';
-import { rateLimitResponse, checkHistoryBodySize } from '../../../../lib/api-helpers';
+import { rateLimitResponse, checkSingleQuoteBodySize } from '../../../../lib/api-helpers';
 import { LIMITS } from '../../../../lib/rate-limit';
 
+/** טעינת כל ההצעות של המשתמש — שורה אחת בטבלת quotes לכל הצעה */
 export async function GET(request: NextRequest) {
   const rateLimited = await rateLimitResponse(request, LIMITS.SYNC);
   if (rateLimited) return rateLimited;
@@ -17,26 +18,33 @@ export async function GET(request: NextRequest) {
   const userId = user.id;
   try {
     const { data, error } = await supabaseAdmin!
-      .from('quote_history')
-      .select('quotes')
+      .from('quotes')
+      .select('quote_data, created_at')
       .eq('user_id', userId)
-      .single();
-    if (error && error.code !== 'PGRST116') {
+      .order('created_at', { ascending: false });
+    if (error) {
       console.error('Sync history GET:', error);
       return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
     }
-    const quotes = data?.quotes ?? [];
-    return NextResponse.json({ ok: true, quotes: Array.isArray(quotes) ? quotes : [] });
+    const rows = data ?? [];
+    const quotes = rows
+      .map((r) => r.quote_data)
+      .filter((q): q is Record<string, unknown> => q != null && typeof q === 'object');
+    return NextResponse.json({ ok: true, quotes });
   } catch (e) {
     console.error('Sync history GET:', e);
     return NextResponse.json({ ok: false, error: 'שגיאה בטעינה' }, { status: 500 });
   }
 }
 
+/**
+ * פעולה אחת לבקשה: או upsert להצעה בודדת, או מחיקה לפי id.
+ * אין יותר שליחת מערך היסטוריה שלם.
+ */
 export async function POST(request: NextRequest) {
   const rateLimited = await rateLimitResponse(request, LIMITS.SYNC);
   if (rateLimited) return rateLimited;
-  const bodyTooBig = checkHistoryBodySize(request);
+  const bodyTooBig = checkSingleQuoteBodySize(request);
   if (bodyTooBig) return bodyTooBig;
   const user = await getCurrentUser(request);
   if (!user) {
@@ -45,58 +53,47 @@ export async function POST(request: NextRequest) {
   if (!isSupabaseConfigured) {
     return NextResponse.json({ ok: false, error: 'Supabase לא מוגדר' }, { status: 503 });
   }
+  const userId = user.id;
   try {
-    const body = await request.json();
-    const { quotes, deletedQuoteIds } = body as { quotes: unknown[]; deletedQuoteIds?: unknown[] };
-    if (!Array.isArray(quotes)) {
-      return NextResponse.json({ ok: false, error: 'חסר quotes' }, { status: 400 });
-    }
-    const userId = user.id;
-    const deletedIds = Array.isArray(deletedQuoteIds)
-      ? deletedQuoteIds.filter((x): x is string => typeof x === 'string')
-      : [];
-
-    const { data: existingRow, error: readError } = await supabaseAdmin!
-      .from('quote_history')
-      .select('quotes')
-      .eq('user_id', userId)
-      .maybeSingle();
-    if (readError) {
-      console.error('Sync history POST read:', readError);
-      return NextResponse.json({ ok: false, error: readError.message }, { status: 500 });
-    }
-    const existing = Array.isArray(existingRow?.quotes) ? (existingRow.quotes as unknown[]) : [];
-    const byId = new Map<string, Record<string, unknown>>();
-    const put = (raw: unknown) => {
-      if (!raw || typeof raw !== 'object') return;
-      const r = raw as Record<string, unknown>;
-      if (typeof r.id !== 'string') return;
-      const prev = byId.get(r.id);
-      if (!prev) {
-        byId.set(r.id, r);
-        return;
+    const body = (await request.json()) as { deleteQuoteId?: unknown; quote?: unknown };
+    const deleteId = typeof body.deleteQuoteId === 'string' ? body.deleteQuoteId.trim() : '';
+    if (deleteId) {
+      const { error } = await supabaseAdmin!.from('quotes').delete().eq('user_id', userId).eq('id', deleteId);
+      if (error) {
+        console.error('Sync history DELETE:', error);
+        return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
       }
-      const prevTs = typeof prev.createdAt === 'string' ? Date.parse(prev.createdAt) : 0;
-      const nextTs = typeof r.createdAt === 'string' ? Date.parse(r.createdAt as string) : 0;
-      byId.set(r.id, nextTs >= prevTs ? r : prev);
-    };
-    existing.forEach(put);
-    quotes.forEach(put);
-    for (const id of deletedIds) byId.delete(id);
-    const mergedQuotes = [...byId.values()].sort((a, b) => {
-      const at = typeof a.createdAt === 'string' ? Date.parse(a.createdAt) : 0;
-      const bt = typeof b.createdAt === 'string' ? Date.parse(b.createdAt) : 0;
-      return bt - at;
-    });
+      return NextResponse.json({ ok: true });
+    }
 
-    const { error } = await supabaseAdmin!
-      .from('quote_history')
-      .upsert({ user_id: userId, quotes: mergedQuotes, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+    const raw = body.quote;
+    if (!raw || typeof raw !== 'object') {
+      return NextResponse.json({ ok: false, error: 'חסר quote או deleteQuoteId' }, { status: 400 });
+    }
+    const q = raw as Record<string, unknown>;
+    const id = typeof q.id === 'string' ? q.id.trim() : '';
+    if (!id) {
+      return NextResponse.json({ ok: false, error: 'חסר מזהה הצעה' }, { status: 400 });
+    }
+    const createdAt =
+      typeof q.createdAt === 'string' && q.createdAt ? q.createdAt : new Date().toISOString();
+    const quoteData = { ...q, id, createdAt };
+    const now = new Date().toISOString();
+    const { error } = await supabaseAdmin!.from('quotes').upsert(
+      {
+        id,
+        user_id: userId,
+        quote_data: quoteData,
+        created_at: createdAt,
+        updated_at: now,
+      },
+      { onConflict: 'user_id,id' }
+    );
     if (error) {
-      console.error('Sync history POST:', error);
+      console.error('Sync history UPSERT:', error);
       return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
     }
-    return NextResponse.json({ ok: true, totalQuotes: mergedQuotes.length });
+    return NextResponse.json({ ok: true });
   } catch (e) {
     console.error('Sync history POST:', e);
     return NextResponse.json({ ok: false, error: 'שגיאה בשמירה' }, { status: 500 });

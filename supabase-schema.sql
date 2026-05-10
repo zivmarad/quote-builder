@@ -8,11 +8,21 @@ CREATE TABLE IF NOT EXISTS quote_basket (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- טבלת היסטוריית הצעות
+-- טבלת היסטוריית הצעות (legacy — מערך JSONB בשורה אחת; מומלץ quotes + מיגרציה)
 CREATE TABLE IF NOT EXISTS quote_history (
   user_id TEXT PRIMARY KEY,
   quotes JSONB NOT NULL DEFAULT '[]',
   updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- הצעות מחיר: שורה אחת לכל הצעה (מקור האמת לסנכרון בין מכשירים)
+CREATE TABLE IF NOT EXISTS quotes (
+  id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  quote_data JSONB NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (user_id, id)
 );
 
 -- טבלת פרופיל משתמש
@@ -46,6 +56,7 @@ CREATE TABLE IF NOT EXISTS quote_counters (
 -- אינדקסים (לא חובה אבל מאיצים חיפוש)
 CREATE INDEX IF NOT EXISTS idx_quote_basket_user_id ON quote_basket(user_id);
 CREATE INDEX IF NOT EXISTS idx_quote_history_user_id ON quote_history(user_id);
+CREATE INDEX IF NOT EXISTS idx_quotes_user_id_created_at ON quotes (user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_user_profile_user_id ON user_profile(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_settings_user_id ON user_settings(user_id);
 CREATE INDEX IF NOT EXISTS idx_price_overrides_user_id ON price_overrides(user_id);
@@ -54,6 +65,7 @@ CREATE INDEX IF NOT EXISTS idx_quote_counters_user_id ON quote_counters(user_id)
 -- RLS – הגבלת גישה (כרגע לא משתמשים ב־Supabase Auth, ה־API משתמש ב־service_role)
 ALTER TABLE quote_basket ENABLE ROW LEVEL SECURITY;
 ALTER TABLE quote_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE quotes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_profile ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE price_overrides ENABLE ROW LEVEL SECURITY;

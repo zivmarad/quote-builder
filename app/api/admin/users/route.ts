@@ -17,12 +17,11 @@ export async function GET(request: Request) {
   try {
     const quoteCountByUser: Record<string, number> = {};
     if (supabaseAdmin) {
-      const { data: historyRows } = await supabaseAdmin.from('quote_history').select('user_id, quotes');
-      if (historyRows) {
-        for (const row of historyRows) {
-          const uid = row?.user_id;
-          const q = row?.quotes;
-          if (uid) quoteCountByUser[uid] = Array.isArray(q) ? q.length : 0;
+      const { data: quoteRows } = await supabaseAdmin.from('quotes').select('user_id');
+      if (quoteRows) {
+        for (const row of quoteRows) {
+          const uid = typeof row?.user_id === 'string' ? row.user_id : '';
+          if (uid) quoteCountByUser[uid] = (quoteCountByUser[uid] ?? 0) + 1;
         }
       }
     }

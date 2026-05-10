@@ -264,7 +264,7 @@ export async function deleteUserById(userId: string): Promise<boolean> {
   const user = await getUserById(userId);
   if (!user) return false;
 
-  const tablesByUserId = ['quote_basket', 'quote_history', 'user_profile', 'user_settings', 'price_overrides'] as const;
+  const tablesByUserId = ['quotes', 'quote_basket', 'quote_history', 'user_profile', 'user_settings', 'price_overrides'] as const;
   for (const table of tablesByUserId) {
     const { error } = await supabaseAdmin.from(table).delete().eq('user_id', userId);
     if (error) console.error(`deleteUserById ${table} error:`, error);

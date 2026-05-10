@@ -53,3 +53,9 @@ export function checkProfileBodySize(request: Request): NextResponse | null {
 export function checkHistoryBodySize(request: Request): NextResponse | null {
   return checkBodySize(request, MAX_HISTORY_BODY_BYTES);
 }
+
+const MAX_SINGLE_QUOTE_BODY_BYTES = 4 * 1024 * 1024; // שורת הצעה בודדת (JSONB)
+
+export function checkSingleQuoteBodySize(request: Request): NextResponse | null {
+  return checkBodySize(request, MAX_SINGLE_QUOTE_BODY_BYTES);
+}
