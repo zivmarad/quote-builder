@@ -7,7 +7,8 @@ export type AdminAuditAction =
   | 'admin_login_failed'
   | 'admin_login_blocked_config'
   | 'impersonate_start'
-  | 'impersonate_stop';
+  | 'impersonate_stop'
+  | 'admin_user_deleted';
 
 export async function logAdminAudit(
   request: Request,

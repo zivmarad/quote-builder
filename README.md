@@ -34,10 +34,19 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 | `EMAIL_APP_PASSWORD` | לשליחת מייל | סיסמת אפליקציה של Gmail (לא סיסמת הכניסה). |
 | `ADMIN_USERNAME` | לאדמין | שם משתמש לכניסת אדמין. |
 | `ADMIN_SECRET` | לאדמין | סיסמה/מפתח לכניסת אדמין (נשלח כ־X-Admin-Key). |
+| `UPSTASH_REDIS_REST_URL` | מומלץ בפרודקשן | כתובת REST של Upstash – **rate limiting מבוזר** בין אינסטנסים. בלי זה נעשה שימוש במפה בזיכרון (מתאים ללוקאל). |
+| `UPSTASH_REDIS_REST_TOKEN` | מומלץ בפרודקשן | טוקן Upstash (אותו פרויקט Redis). |
+| `NEXT_PUBLIC_SENTRY_DSN` | אופציונלי | DSN של Sentry לדיווח שגיאות בצד לקוח (ומספיק גם לשרת אם לא מגדירים `SENTRY_DSN`). |
+| `SENTRY_DSN` | אופציונלי | אותו DSN רק לשרת (לא חובה אם כבר יש `NEXT_PUBLIC_SENTRY_DSN`). |
+| `SENTRY_AUTH_TOKEN` | אופציונלי | ב־build (למשל Vercel): העלאת source maps ל־Sentry. בלי טוקן – ה־build מדלג על ההעלאה. |
 
 **אופציונלי:** `NOTIFY_ADMIN_EMAIL`, `NOTIFY_SMS_EMAIL` – לקבלת מייל/SMS על הרשמה חדשה.
 
 **חשוב:** אל תעלה קבצי `.env` או `.env.local` ל-Git; הסודות רק במשתני הסביבה של הפלטפורמה.
+
+### CI (GitHub Actions)
+
+ב־`push` / `pull_request` ל־`main` או `master` רץ workflow שמבצע `npm ci`, `lint`, `typecheck` ו־`build` (עם משתני סביבה דמה ל־JWT ו־Supabase). אין צורך ב־Sentry ב־CI כדי שהבילד יעבור.
 
 ### התחברות וסנכרון
 

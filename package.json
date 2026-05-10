@@ -6,10 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.3.2",
+    "@sentry/nextjs": "^10.52.0",
     "@supabase/supabase-js": "^2.94.1",
     "@vercel/functions": "^3.5.1",
     "bcryptjs": "^3.0.3",

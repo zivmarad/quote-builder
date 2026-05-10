@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getUserById, deleteUserById } from '../../../auth/lib/users-store';
 import { supabaseAdmin } from '../../../../../lib/supabase-server';
 import { getAdminKeyFromRequest } from '../../../../../lib/admin-config';
+import { logAdminAudit } from '../../../../../lib/admin-audit';
 
 function getAdminKey(request: Request): string | null {
   return getAdminKeyFromRequest(request);
@@ -107,10 +108,19 @@ export async function DELETE(
   }
 
   try {
+    const user = await getUserById(userId);
+    if (!user) {
+      return NextResponse.json({ error: 'משתמש לא נמצא' }, { status: 404 });
+    }
     const deleted = await deleteUserById(userId);
     if (!deleted) {
       return NextResponse.json({ error: 'משתמש לא נמצא או לא ניתן למחוק' }, { status: 404 });
     }
+    await logAdminAudit(request, 'admin_user_deleted', {
+      targetUserId: user.id,
+      targetUsername: user.username,
+      targetEmail: user.email ?? null,
+    });
     return NextResponse.json({ ok: true, message: 'המשתמש הוסר' });
   } catch (e) {
     console.error('Admin delete user error:', e);
