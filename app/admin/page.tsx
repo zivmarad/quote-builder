@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -68,12 +68,15 @@ export default function AdminPage() {
   const [users, setUsers] = useState<UserRow[]>([]);
   const [stats, setStats] = useState<Stats>(null);
   const [loading, setLoading] = useState(false);
+  const [usersLoading, setUsersLoading] = useState(false);
   const [listError, setListError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteUserRow, setDeleteUserRow] = useState<UserRow | null>(null);
   const [search, setSearch] = useState('');
   const [listFilter, setListFilter] = useState<'all' | '7d' | '30d' | 'top_quotes'>('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalFiltered, setTotalFiltered] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [installSuccess, setInstallSuccess] = useState(false);
   const [installLoading, setInstallLoading] = useState(false);
@@ -108,12 +111,20 @@ export default function AdminPage() {
     };
   }, []);
 
-  const fetchData = (key: string) => {
-    setLoading(true);
+  const fetchData = (key: string, page: number, q: string, filter: 'all' | '7d' | '30d' | 'top_quotes') => {
+    const firstLoad = !stats;
+    if (firstLoad) setLoading(true);
+    else setUsersLoading(true);
     setListError(null);
+    const usersUrl = new URL('/api/admin/users', window.location.origin);
+    usersUrl.searchParams.set('page', String(page));
+    usersUrl.searchParams.set('pageSize', String(PAGE_SIZE));
+    if (q.trim()) usersUrl.searchParams.set('search', q.trim());
+    usersUrl.searchParams.set('filter', filter);
+    usersUrl.searchParams.set('sort', filter === 'top_quotes' ? 'top_quotes' : 'recent');
     Promise.all([
       fetch('/api/admin/stats', { headers: { 'X-Admin-Key': key } }),
-      fetch('/api/admin/users', { headers: { 'X-Admin-Key': key } }),
+      fetch(usersUrl.toString(), { headers: { 'X-Admin-Key': key } }),
     ])
       .then(async ([statsRes, usersRes]) => {
         if (statsRes.status === 401 || usersRes.status === 401) {
@@ -126,15 +137,20 @@ export default function AdminPage() {
         if (!usersRes.ok) throw new Error('שגיאה בטעינת משתמשים');
         const [statsData, usersData] = await Promise.all([statsRes.json(), usersRes.json()]);
         setStats(statsData);
-        if (usersData?.users) setUsers(usersData.users);
+        if (Array.isArray(usersData?.users)) setUsers(usersData.users);
+        setTotalFiltered(typeof usersData?.total === 'number' ? usersData.total : 0);
+        setTotalPages(typeof usersData?.totalPages === 'number' ? usersData.totalPages : 1);
       })
       .catch((e) => setListError(e.message ?? 'שגיאה'))
-      .finally(() => setLoading(false));
+      .finally(() => {
+        setLoading(false);
+        setUsersLoading(false);
+      });
   };
 
   useEffect(() => {
-    if (savedKey) fetchData(savedKey);
-  }, [savedKey]);
+    if (savedKey) fetchData(savedKey, currentPage, search, listFilter);
+  }, [savedKey, currentPage, search, listFilter]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -168,6 +184,8 @@ export default function AdminPage() {
     setUsers([]);
     setStats(null);
     setListError(null);
+    setTotalFiltered(0);
+    setTotalPages(1);
   };
 
   const doDeleteUser = async (u: UserRow) => {
@@ -181,6 +199,7 @@ export default function AdminPage() {
       const json = await res.json();
       if (res.ok && json.ok) {
         setUsers((prev) => prev.filter((x) => x.id !== u.id));
+        setTotalFiltered((prev) => Math.max(0, prev - 1));
         if (stats) {
           setStats({ ...stats, totalUsers: Math.max(0, stats.totalUsers - 1) });
         }
@@ -220,42 +239,16 @@ export default function AdminPage() {
     }
   };
 
-  const filteredUsers = useMemo(() => {
-    const now = Date.now();
-    const ms7d = 7 * 24 * 60 * 60 * 1000;
-    const ms30d = 30 * 24 * 60 * 60 * 1000;
-    let list: UserRow[];
-    if (listFilter === '7d') {
-      list = users.filter((u) => new Date(u.createdAt).getTime() >= now - ms7d);
-    } else if (listFilter === '30d') {
-      list = users.filter((u) => new Date(u.createdAt).getTime() >= now - ms30d);
-    } else if (listFilter === 'top_quotes') {
-      list = [...users].sort((a, b) => b.quoteCount - a.quoteCount);
-    } else {
-      list = [...users].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    }
-    if (search.trim()) {
-      const q = search.trim().toLowerCase();
-      list = list.filter(
-        (u) =>
-          u.username.toLowerCase().includes(q) ||
-          (u.email && u.email !== '—' && u.email.toLowerCase().includes(q))
-      );
-    }
-    return list;
-  }, [users, search, listFilter]);
-
-  const totalFiltered = filteredUsers.length;
-  const totalPages = Math.max(1, Math.ceil(totalFiltered / PAGE_SIZE));
   const pageStart = (currentPage - 1) * PAGE_SIZE;
-  const paginatedUsers = useMemo(
-    () => filteredUsers.slice(pageStart, pageStart + PAGE_SIZE),
-    [filteredUsers, pageStart]
-  );
+  const paginatedUsers = users;
 
   useEffect(() => {
     setCurrentPage(1);
   }, [listFilter, search]);
+
+  useEffect(() => {
+    setCurrentPage((prev) => Math.min(prev, Math.max(1, totalPages)));
+  }, [totalPages]);
 
   const listFilterLabel =
     listFilter === '7d'
@@ -671,10 +664,15 @@ export default function AdminPage() {
                     <Users size={48} className="mx-auto mb-4 text-slate-300" />
                     <p>אין נרשמים עדיין</p>
                   </div>
-                ) : filteredUsers.length === 0 ? (
+                ) : paginatedUsers.length === 0 ? (
                   <div className="p-12 text-center text-slate-500">אין תוצאות לחיפוש</div>
                 ) : (
-                  <div>
+                  <div className="relative">
+                  {usersLoading && (
+                    <div className="absolute inset-0 z-10 bg-white/70 backdrop-blur-[1px] flex items-center justify-center">
+                      <Loader2 size={28} className="animate-spin text-blue-600" />
+                    </div>
+                  )}
                   {/* רשימת כרטיסים למובייל */}
                   <div className="flex flex-col gap-3 md:hidden pb-4">
                     {paginatedUsers.map((u) => (

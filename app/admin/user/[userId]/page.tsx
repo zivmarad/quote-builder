@@ -30,6 +30,7 @@ type UserDetail = {
   user: { id: string; username: string; email: string | null; createdAt: string };
   profile: Record<string, unknown>;
   quotes: unknown[];
+  quotesPagination?: { total: number; page: number; pageSize: number; totalPages: number };
   basketItems: unknown[];
   settings: Record<string, unknown>;
   overrides: Record<string, number>;
@@ -66,10 +67,18 @@ function parseQuote(q: unknown): {
   customerEmail?: string;
   customerAddress?: string;
   customerCompanyId?: string;
+  quoteData?: {
+    vatRate?: number;
+    validityDays?: number;
+    quoteTitle?: string;
+    profile?: QuoteProfile;
+  };
 } | null {
   if (!q || typeof q !== 'object') return null;
   const r = q as Record<string, unknown>;
   const items = Array.isArray(r.items) ? (r.items as BasketItem[]) : [];
+  const snapRaw = (r.quote_data ?? r.quoteData) as Record<string, unknown> | undefined;
+  const snapProfile = (snapRaw?.profile ?? {}) as Record<string, unknown>;
   return {
     id: typeof r.id === 'string' ? r.id : String(Math.random()),
     createdAt: typeof r.createdAt === 'string' ? r.createdAt : '',
@@ -84,6 +93,57 @@ function parseQuote(q: unknown): {
     customerEmail: typeof r.customerEmail === 'string' ? r.customerEmail : undefined,
     customerAddress: typeof r.customerAddress === 'string' ? r.customerAddress : undefined,
     customerCompanyId: typeof r.customerCompanyId === 'string' ? r.customerCompanyId : undefined,
+    quoteData: snapRaw
+      ? {
+          vatRate: typeof snapRaw.vatRate === 'number' ? snapRaw.vatRate : undefined,
+          validityDays: typeof snapRaw.validityDays === 'number' ? snapRaw.validityDays : undefined,
+          quoteTitle: typeof snapRaw.quoteTitle === 'string' ? snapRaw.quoteTitle : undefined,
+          profile: {
+            businessName:
+              typeof snapProfile.businessName === 'string'
+                ? snapProfile.businessName
+                : typeof snapRaw.profileBusinessName === 'string'
+                  ? snapRaw.profileBusinessName
+                  : undefined,
+            contactName:
+              typeof snapProfile.contactName === 'string'
+                ? snapProfile.contactName
+                : typeof snapRaw.profileContactName === 'string'
+                  ? snapRaw.profileContactName
+                  : undefined,
+            companyId:
+              typeof snapProfile.companyId === 'string'
+                ? snapProfile.companyId
+                : typeof snapRaw.profileCompanyId === 'string'
+                  ? snapRaw.profileCompanyId
+                  : undefined,
+            phone:
+              typeof snapProfile.phone === 'string'
+                ? snapProfile.phone
+                : typeof snapRaw.profilePhone === 'string'
+                  ? snapRaw.profilePhone
+                  : undefined,
+            email:
+              typeof snapProfile.email === 'string'
+                ? snapProfile.email
+                : typeof snapRaw.profileEmail === 'string'
+                  ? snapRaw.profileEmail
+                  : undefined,
+            address:
+              typeof snapProfile.address === 'string'
+                ? snapProfile.address
+                : typeof snapRaw.profileAddress === 'string'
+                  ? snapRaw.profileAddress
+                  : undefined,
+            logo:
+              typeof snapProfile.logo === 'string'
+                ? snapProfile.logo
+                : typeof snapRaw.profileLogo === 'string'
+                  ? snapRaw.profileLogo
+                  : undefined,
+          },
+        }
+      : undefined,
   };
 }
 
@@ -92,6 +152,8 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
   const [userId, setUserId] = useState<string | null>(null);
   const [data, setData] = useState<UserDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [quotesLoading, setQuotesLoading] = useState(false);
+  const [quotesPage, setQuotesPage] = useState(1);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -117,7 +179,9 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
       setLoading(false);
       return;
     }
-    fetch(`/api/admin/user/${userId}`, { headers: { 'X-Admin-Key': key } })
+    if (!data) setLoading(true);
+    else setQuotesLoading(true);
+    fetch(`/api/admin/user/${userId}?quotesPage=${quotesPage}&quotesPageSize=20`, { headers: { 'X-Admin-Key': key } })
       .then((res) => {
         if (res.status === 401) {
           setError('גישה לא מורשית');
@@ -130,7 +194,14 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
         if (d) setData(d);
       })
       .catch((e) => setError(e.message ?? 'שגיאה'))
-      .finally(() => setLoading(false));
+      .finally(() => {
+        setLoading(false);
+        setQuotesLoading(false);
+      });
+  }, [userId, quotesPage]);
+
+  useEffect(() => {
+    setQuotesPage(1);
   }, [userId]);
 
   const quoteModels = useMemo(() => {
@@ -233,13 +304,15 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
   }
 
   const { user, profile, quotes, basketItems, settings, overrides } = data;
+  const quotesTotal = data.quotesPagination?.total ?? quotes.length;
+  const quotesTotalPages = data.quotesPagination?.totalPages ?? 1;
   const profileEntries = Object.entries(profile).filter(([, v]) => v != null && v !== '');
   const logoUrl = typeof profile.logo === 'string' && profile.logo.length > 0 ? profile.logo : null;
 
   const tabs: { id: TabId; label: string }[] = [
     { id: 'overview', label: 'סקירה' },
     { id: 'profile', label: 'פרופיל' },
-    { id: 'quotes', label: `הצעות (${quotes.length})` },
+    { id: 'quotes', label: `הצעות (${quotesTotal})` },
     { id: 'basket', label: `סל (${basketItems.length})` },
     { id: 'settings', label: 'הגדרות' },
   ];
@@ -387,7 +460,12 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
               <FileText size={20} className="text-slate-600" />
               <h2 className="font-bold text-slate-900">היסטוריית הצעות</h2>
             </div>
-            <div className="divide-y divide-slate-100 max-h-[70vh] overflow-y-auto">
+            <div className="divide-y divide-slate-100 max-h-[70vh] overflow-y-auto relative">
+              {quotesLoading && (
+                <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] z-10 flex items-center justify-center">
+                  <Loader2 size={28} className="animate-spin text-blue-600" />
+                </div>
+              )}
               {quoteModels.length === 0 ? (
                 <p className="p-6 text-slate-500 text-sm">אין הצעות</p>
               ) : (
@@ -412,6 +490,29 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
                 ))
               )}
             </div>
+            {quotesTotalPages > 1 && (
+              <div className="px-4 py-3 border-t border-slate-100 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => setQuotesPage((p) => Math.max(1, p - 1))}
+                  disabled={quotesPage <= 1 || quotesLoading}
+                  className="px-3 py-2 rounded-lg border border-slate-200 text-sm disabled:opacity-50"
+                >
+                  הקודם
+                </button>
+                <span className="text-sm text-slate-600">
+                  עמוד {quotesPage} מתוך {quotesTotalPages}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setQuotesPage((p) => Math.min(quotesTotalPages, p + 1))}
+                  disabled={quotesPage >= quotesTotalPages || quotesLoading}
+                  className="px-3 py-2 rounded-lg border border-slate-200 text-sm disabled:opacity-50"
+                >
+                  הבא
+                </button>
+              </div>
+            )}
           </section>
         )}
 
@@ -515,17 +616,17 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
                   items: previewQuote.items,
                   totalBeforeVAT: previewQuote.totalBeforeVAT,
                   totalWithVAT: previewQuote.totalWithVAT,
-                  profile: profileModel ?? undefined,
+                  profile: (previewQuote.quoteData?.profile ?? profileModel) || undefined,
                   customerName: previewQuote.customerName,
                   customerPhone: previewQuote.customerPhone,
                   customerEmail: previewQuote.customerEmail,
                   customerAddress: previewQuote.customerAddress,
                   customerCompanyId: previewQuote.customerCompanyId,
                   notes: previewQuote.notes,
-                  quoteTitle: defaultQuoteTitle,
+                  quoteTitle: previewQuote.quoteData?.quoteTitle ?? defaultQuoteTitle,
                   quoteNumber: previewQuote.quoteNumber,
-                  validityDays,
-                  vatRate,
+                  validityDays: previewQuote.quoteData?.validityDays ?? validityDays,
+                  vatRate: previewQuote.quoteData?.vatRate ?? vatRate,
                 }),
               }}
             />

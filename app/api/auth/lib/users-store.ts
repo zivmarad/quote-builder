@@ -20,6 +20,11 @@ export interface UserListItem {
   createdAt: string;
 }
 
+export interface UsersPageResult {
+  users: UserListItem[];
+  total: number;
+}
+
 function isLegacyHash(hash: string): boolean {
   return /^[a-f0-9]{64}$/i.test(hash);
 }
@@ -186,6 +191,52 @@ export async function getUsersList(): Promise<UserListItem[]> {
       createdAt: u.created_at,
     })) ?? []
   );
+}
+
+/** עמוד משתמשים לאדמין עם סינון בסיסי */
+export async function getUsersPage(params: {
+  page: number;
+  pageSize: number;
+  search?: string;
+  sinceIso?: string;
+}): Promise<UsersPageResult> {
+  if (!supabaseAdmin) return { users: [], total: 0 };
+
+  const safePage = Math.max(1, Math.floor(params.page || 1));
+  const safePageSize = Math.min(100, Math.max(1, Math.floor(params.pageSize || 25)));
+  const from = (safePage - 1) * safePageSize;
+  const to = from + safePageSize - 1;
+  const qText = (params.search ?? '').trim();
+
+  let query = supabaseAdmin
+    .from('app_users')
+    .select('id, username, email, created_at', { count: 'exact' });
+
+  if (qText) {
+    query = query.or(`username.ilike.%${qText}%,email.ilike.%${qText}%`);
+  }
+  if (params.sinceIso) {
+    query = query.gte('created_at', params.sinceIso);
+  }
+
+  const { data, error, count } = await query
+    .order('created_at', { ascending: false })
+    .range(from, to);
+
+  if (error) {
+    console.error('getUsersPage supabase error:', error);
+    return { users: [], total: 0 };
+  }
+
+  const users: UserListItem[] =
+    data?.map((u) => ({
+      id: u.id,
+      username: u.username,
+      email: u.email ?? null,
+      createdAt: u.created_at,
+    })) ?? [];
+
+  return { users, total: count ?? 0 };
 }
 
 /** סה"כ משתמשים */

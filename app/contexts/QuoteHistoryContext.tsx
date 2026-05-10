@@ -13,6 +13,35 @@ export type ExportMethod = 'download' | 'whatsapp' | 'email';
 /** סטטוס עסקי להצעה – טיוטה, נשלח, אושר, שולם */
 export type QuoteWorkflowStatus = 'draft' | 'sent' | 'approved' | 'paid';
 
+export interface QuoteDataSnapshot {
+  vatRate: number;
+  validityDays: number;
+  quoteTitle: string;
+  profileBusinessName?: string;
+  profileContactName?: string;
+  profileCompanyId?: string;
+  profilePhone?: string;
+  profileEmail?: string;
+  profileAddress?: string;
+  profileLogo?: string;
+  profile: {
+    businessName?: string;
+    contactName?: string;
+    companyId?: string;
+    phone?: string;
+    email?: string;
+    address?: string;
+    logo?: string;
+  };
+  customer: {
+    name?: string;
+    phone?: string;
+    email?: string;
+    address?: string;
+    companyId?: string;
+  };
+}
+
 export interface SavedQuote {
   id: string;
   createdAt: string; // ISO
@@ -32,6 +61,10 @@ export interface SavedQuote {
   status?: ExportMethod;
   /** סטטוס עסקי: טיוטה, נשלח, אושר, שולם */
   quoteStatus?: QuoteWorkflowStatus;
+  /** Snapshot בלתי תלוי בהגדרות עתידיות */
+  quoteData: QuoteDataSnapshot;
+  /** עותק snake_case לשמירה ב-JSONB */
+  quote_data?: QuoteDataSnapshot;
 }
 
 interface QuoteHistoryContextType {
@@ -129,6 +162,7 @@ export function QuoteHistoryProvider({ children, userId }: { children: React.Rea
   const addQuote = useCallback((quote: Omit<SavedQuote, 'id' | 'createdAt'>) => {
     const newQuote: SavedQuote = {
       ...quote,
+      quote_data: quote.quote_data ?? quote.quoteData,
       id: `q-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
       createdAt: new Date().toISOString(),
     };

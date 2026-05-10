@@ -4,7 +4,7 @@ import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react'
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useProfile } from '../contexts/ProfileContext';
-import { useQuoteHistory, type QuoteWorkflowStatus, type ExportMethod } from '../contexts/QuoteHistoryContext';
+import { useQuoteHistory, type QuoteWorkflowStatus, type ExportMethod, type SavedQuote } from '../contexts/QuoteHistoryContext';
 import { useQuoteBasket } from '../contexts/QuoteBasketContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { generateQuotePDFAsBlob, getQuotePreviewHtml } from '../components/utils/pdfExport';
@@ -236,9 +236,15 @@ export default function ProfilePage() {
     deleteQuote(quoteId);
   };
 
+  const getQuoteSnapshot = (quote: SavedQuote) => {
+    const raw = ((quote as unknown as { quote_data?: SavedQuote['quoteData'] }).quote_data ?? quote.quoteData) as SavedQuote['quoteData'] | undefined;
+    return raw;
+  };
+
   const handleDownloadQuote = async (quoteId: string) => {
     const quote = quotes.find((q) => q.id === quoteId);
     if (!quote) return;
+    const snap = getQuoteSnapshot(quote);
     setDownloadingId(quoteId);
     try {
       const blob = await generateQuotePDFAsBlob(
@@ -246,16 +252,17 @@ export default function ProfilePage() {
         quote.totalBeforeVAT,
         quote.VAT,
         quote.totalWithVAT,
-        profile,
+        snap?.profile ?? profile,
         quote.customerName ?? undefined,
         quote.notes ?? undefined,
-        undefined,
+        snap?.quoteTitle,
         quote.quoteNumber ?? undefined,
         quote.customerPhone ?? undefined,
         quote.customerEmail ?? undefined,
         quote.customerAddress ?? undefined,
         quote.customerCompanyId ?? undefined,
-        validityDays
+        snap?.validityDays ?? validityDays,
+        snap?.vatRate ?? vatRate
       );
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -1063,21 +1070,22 @@ export default function ProfilePage() {
       {previewQuoteId && (() => {
         const q = quotes.find((x) => x.id === previewQuoteId);
         if (!q) return null;
+        const snap = getQuoteSnapshot(q);
         const html = getQuotePreviewHtml({
           items: q.items,
           totalBeforeVAT: q.totalBeforeVAT,
           totalWithVAT: q.totalWithVAT,
-          profile,
+          profile: snap?.profile ?? profile,
           customerName: q.customerName,
           customerPhone: q.customerPhone,
           customerEmail: q.customerEmail,
           customerAddress: q.customerAddress,
           customerCompanyId: q.customerCompanyId,
           notes: q.notes,
-          quoteTitle: defaultQuoteTitle,
+          quoteTitle: snap?.quoteTitle ?? defaultQuoteTitle,
           quoteNumber: q.quoteNumber,
-          validityDays,
-          vatRate,
+          validityDays: snap?.validityDays ?? validityDays,
+          vatRate: snap?.vatRate ?? vatRate,
         });
         return (
           <div

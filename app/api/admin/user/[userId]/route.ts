@@ -21,6 +21,10 @@ export async function GET(
     return NextResponse.json({ error: 'חסר userId' }, { status: 400 });
   }
 
+  const url = new URL(request.url);
+  const quotesPage = Math.max(1, parseInt(url.searchParams.get('quotesPage') ?? '1', 10) || 1);
+  const quotesPageSize = Math.min(100, Math.max(1, parseInt(url.searchParams.get('quotesPageSize') ?? '20', 10) || 20));
+
   try {
     const user = await getUserById(userId);
     if (!user) {
@@ -50,6 +54,16 @@ export async function GET(
       overrides = (overridesRes.data?.overrides as Record<string, number>) ?? {};
     }
 
+    const sortedQuotes = [...quotes].sort((a, b) => {
+      const ad = typeof (a as Record<string, unknown>)?.createdAt === 'string' ? Date.parse((a as Record<string, unknown>).createdAt as string) : 0;
+      const bd = typeof (b as Record<string, unknown>)?.createdAt === 'string' ? Date.parse((b as Record<string, unknown>).createdAt as string) : 0;
+      return bd - ad;
+    });
+    const totalQuotes = sortedQuotes.length;
+    const quotesTotalPages = Math.max(1, Math.ceil(totalQuotes / quotesPageSize));
+    const from = (quotesPage - 1) * quotesPageSize;
+    const pagedQuotes = sortedQuotes.slice(from, from + quotesPageSize);
+
     return NextResponse.json({
       user: {
         id: user.id,
@@ -58,7 +72,13 @@ export async function GET(
         createdAt: user.createdAt,
       },
       profile,
-      quotes,
+      quotes: pagedQuotes,
+      quotesPagination: {
+        total: totalQuotes,
+        page: quotesPage,
+        pageSize: quotesPageSize,
+        totalPages: quotesTotalPages,
+      },
       basketItems,
       settings,
       overrides,

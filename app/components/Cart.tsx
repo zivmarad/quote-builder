@@ -5,14 +5,14 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../contexts/AuthContext';
 import { useQuoteBasket } from '../contexts/QuoteBasketContext';
 import { useProfile } from '../contexts/ProfileContext';
-import { useQuoteHistory } from '../contexts/QuoteHistoryContext';
+import { useQuoteHistory, type QuoteDataSnapshot } from '../contexts/QuoteHistoryContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { saveDraft } from '../../lib/drafts-storage';
 import { Trash2, Edit2, Check, X, ShoppingBag, Plus, FileText, Share2, Eye, Loader2, ChevronDown, ChevronUp, Save } from 'lucide-react';
 import ConfirmDialog from './ConfirmDialog';
 
 const PENDING_DRAFT_KEY = 'quoteBuilder_pendingDraft';
-import { generateQuotePDFAsBlob, getQuotePreviewHtml } from './utils/pdfExport';
+import { getQuotePreviewHtml } from './utils/pdfExport';
 
 export default function Cart() {
   const router = useRouter();
@@ -174,6 +174,35 @@ export default function Cart() {
     customerCompanyId: customerCompanyId.trim() || undefined,
   });
 
+  const buildQuoteSnapshot = (): QuoteDataSnapshot => ({
+    vatRate,
+    validityDays,
+    quoteTitle: defaultQuoteTitle,
+    profileBusinessName: profile.businessName || undefined,
+    profileContactName: profile.contactName || undefined,
+    profileCompanyId: profile.companyId || undefined,
+    profilePhone: profile.phone || undefined,
+    profileEmail: profile.email || undefined,
+    profileAddress: profile.address || undefined,
+    profileLogo: profile.logo || undefined,
+    profile: {
+      businessName: profile.businessName || undefined,
+      contactName: profile.contactName || undefined,
+      companyId: profile.companyId || undefined,
+      phone: profile.phone || undefined,
+      email: profile.email || undefined,
+      address: profile.address || undefined,
+      logo: profile.logo || undefined,
+    },
+    customer: {
+      name: customerName.trim() || undefined,
+      phone: customerPhone.trim() || undefined,
+      email: customerEmail.trim() || undefined,
+      address: customerAddress.trim() || undefined,
+      companyId: customerCompanyId.trim() || undefined,
+    },
+  });
+
   const reserveQuoteNumber = async (): Promise<number> => {
     try {
       const res = await fetch('/api/quotes/next-number', {
@@ -193,7 +222,8 @@ export default function Cart() {
 
   const createExportJob = async (
     exportType: 'download' | 'whatsapp',
-    quoteNumber: number
+    quoteNumber: number,
+    quoteData: QuoteDataSnapshot
   ): Promise<string | null> => {
     try {
       const res = await fetch('/api/quote-jobs', {
@@ -202,8 +232,24 @@ export default function Cart() {
         credentials: 'include',
         body: JSON.stringify({
           exportType,
-          status: 'queued',
           quoteNumber,
+          quoteData: {
+            ...quoteData,
+            quoteNumber,
+            createdAt: new Date().toISOString(),
+            customerName: quoteData.customer.name,
+            customerPhone: quoteData.customer.phone,
+            customerEmail: quoteData.customer.email,
+            customerAddress: quoteData.customer.address,
+            customerCompanyId: quoteData.customer.companyId,
+            notes: notes.trim() || undefined,
+            items,
+            totals: {
+              totalBeforeVAT,
+              vat: VAT,
+              totalWithVAT,
+            },
+          },
           payload: { customerName: customerName.trim() || null, itemsCount: items.length },
         }),
       });
@@ -237,6 +283,24 @@ export default function Cart() {
     }
   };
 
+  const waitForJobFile = async (jobId: string): Promise<string> => {
+    const timeoutMs = 120000;
+    const start = Date.now();
+    while (Date.now() - start < timeoutMs) {
+      const res = await fetch(`/api/quote-jobs/${jobId}`, { credentials: 'include' });
+      const data = (await res.json()) as {
+        ok?: boolean;
+        job?: { status?: 'queued' | 'processing' | 'completed' | 'failed'; fileUrl?: string | null; errorMessage?: string | null };
+      };
+      if (res.ok && data.ok && data.job) {
+        if (data.job.status === 'completed' && data.job.fileUrl) return data.job.fileUrl;
+        if (data.job.status === 'failed') throw new Error(data.job.errorMessage || 'job_failed');
+      }
+      await new Promise((r) => setTimeout(r, 1200));
+    }
+    throw new Error('job_timeout');
+  };
+
   const handleExportPDF = async () => {
     if (!user) {
       router.push('/login?from=' + encodeURIComponent('/cart'));
@@ -247,8 +311,8 @@ export default function Cart() {
     let jobId: string | null = null;
     try {
       const quoteNumber = await reserveQuoteNumber();
-      jobId = await createExportJob('download', quoteNumber);
-      await updateExportJob(jobId, 'processing');
+      const quoteData = buildQuoteSnapshot();
+      jobId = await createExportJob('download', quoteNumber, quoteData);
       addQuote({
         items,
         totalBeforeVAT,
@@ -263,30 +327,16 @@ export default function Cart() {
         quoteNumber,
         status: 'download',
         quoteStatus: 'draft',
+        quoteData,
+        quote_data: quoteData,
       });
-      const blob = await generateQuotePDFAsBlob(
-        items,
-        totalBeforeVAT,
-        VAT,
-        totalWithVAT,
-        profile,
-        customerName.trim() || undefined,
-        notes.trim() || undefined,
-        defaultQuoteTitle,
-        quoteNumber,
-        customerPhone,
-        customerEmail,
-        customerAddress,
-        customerCompanyId,
-        validityDays ?? undefined,
-        vatRate
-      );
-      const url = URL.createObjectURL(blob);
+      if (!jobId) throw new Error('job_create_failed');
+      const fileUrl = await waitForJobFile(jobId);
+      const url = fileUrl;
       const a = document.createElement('a');
       a.href = url;
       a.download = `hatzaat-mechir-${new Date().toISOString().slice(0, 10)}.pdf`;
       a.click();
-      URL.revokeObjectURL(url);
       clearBasket();
       setCustomerName('');
       setCustomerPhone('');
@@ -295,7 +345,6 @@ export default function Cart() {
       setCustomerCompanyId('');
       setNotes('');
       setToast('ה-PDF הורד וההצעה נשמרה');
-      await updateExportJob(jobId, 'completed');
       setTimeout(() => router.push('/'), 2500);
     } catch (e) {
       await updateExportJob(jobId, 'failed', e instanceof Error ? e.message : 'pdf_export_failed');
@@ -314,6 +363,7 @@ export default function Cart() {
     setIsSharing(true);
     const { customerPhone, customerEmail, customerAddress, customerCompanyId } = getCustomerContact();
     const quoteNumber = await reserveQuoteNumber();
+    const quoteData = buildQuoteSnapshot();
     let jobId: string | null = null;
     addQuote({
       items,
@@ -329,15 +379,17 @@ export default function Cart() {
       quoteNumber,
       status: 'whatsapp',
       quoteStatus: 'sent',
+      quoteData,
+      quote_data: quoteData,
     });
     try {
-      jobId = await createExportJob('whatsapp', quoteNumber);
-      await updateExportJob(jobId, 'processing');
-      const blob = await generateQuotePDFAsBlob(items, totalBeforeVAT, VAT, totalWithVAT, profile, customerName || undefined, notes || undefined, defaultQuoteTitle, quoteNumber, customerPhone, customerEmail, customerAddress, customerCompanyId, validityDays ?? undefined, vatRate);
+      jobId = await createExportJob('whatsapp', quoteNumber, quoteData);
+      if (!jobId) throw new Error('job_create_failed');
+      const fileUrl = await waitForJobFile(jobId);
+      const blob = await fetch(fileUrl).then((r) => r.blob());
       lastShareBlobRef.current = blob;
       setShareError(null);
       setShowWhatsAppModal(true);
-      await updateExportJob(jobId, 'completed');
     } catch (err) {
       if ((err as Error)?.name === 'AbortError') return;
       lastShareBlobRef.current = null;
