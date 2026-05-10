@@ -118,6 +118,7 @@ export function QuoteHistoryProvider({ children, userId }: { children: React.Rea
   const lastLoadedForUserIdRef = useRef<string | null | undefined>(undefined);
   const deletedIdsRef = useRef<string[]>([]);
   const pendingUpsertsRef = useRef<SavedQuote[]>([]);
+  const syncInFlightRef = useRef(false);
 
   const queueUpsert = useCallback((quote: SavedQuote) => {
     const normalized = normalizeQuote(quote);
@@ -125,6 +126,41 @@ export function QuoteHistoryProvider({ children, userId }: { children: React.Rea
     if (idx >= 0) pendingUpsertsRef.current[idx] = normalized;
     else pendingUpsertsRef.current.push(normalized);
   }, []);
+
+  const flushSync = useCallback(async () => {
+    if (!userId || lastLoadedForUserIdRef.current !== userId) return;
+    if (syncInFlightRef.current) return;
+    const deletedSnapshot = [...deletedIdsRef.current];
+    const upsertsSnapshot = [...pendingUpsertsRef.current];
+    if (!deletedSnapshot.length && !upsertsSnapshot.length) return;
+    syncInFlightRef.current = true;
+    try {
+      // Small batches avoid payload spikes and keep sync reliable.
+      const chunkSize = 15;
+      for (let i = 0; i < upsertsSnapshot.length; i += chunkSize) {
+        const chunk = upsertsSnapshot.slice(i, i + chunkSize);
+        const ok = await postSync('/history', userId, { quotes: chunk, deletedQuoteIds: i === 0 ? deletedSnapshot : [] });
+        if (!ok) return;
+      }
+      if (!upsertsSnapshot.length && deletedSnapshot.length) {
+        const ok = await postSync('/history', userId, { quotes: [], deletedQuoteIds: deletedSnapshot });
+        if (!ok) return;
+      }
+      if (deletedSnapshot.length) {
+        const deletedSet = new Set(deletedSnapshot);
+        deletedIdsRef.current = deletedIdsRef.current.filter((id) => !deletedSet.has(id));
+      }
+      if (upsertsSnapshot.length) {
+        const sent = new Set(upsertsSnapshot.map((q) => q.id));
+        pendingUpsertsRef.current = pendingUpsertsRef.current.filter((q) => !sent.has(q.id));
+      }
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(getDeletedIdsKey(userId), JSON.stringify(deletedIdsRef.current));
+      }
+    } finally {
+      syncInFlightRef.current = false;
+    }
+  }, [userId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -198,7 +234,8 @@ export function QuoteHistoryProvider({ children, userId }: { children: React.Rea
             return (Date.parse(q.createdAt || '') || 0) > (Date.parse(s.createdAt || '') || 0);
           });
           if (deltaUpserts.length || deletedIdsRef.current.length) {
-            void postSync('/history', userId, { quotes: deltaUpserts, deletedQuoteIds: deletedIdsRef.current });
+            deltaUpserts.forEach(queueUpsert);
+            void flushSync();
           }
         }
         setIsLoaded(true);
@@ -211,7 +248,7 @@ export function QuoteHistoryProvider({ children, userId }: { children: React.Rea
       setIsLoaded(true);
     })();
     return () => { cancelled = true; };
-  }, [userId]);
+  }, [userId, queueUpsert, flushSync]);
 
   useEffect(() => {
     if (!isLoaded || typeof window === 'undefined') return;
@@ -220,26 +257,23 @@ export function QuoteHistoryProvider({ children, userId }: { children: React.Rea
       const deletedKey = getDeletedIdsKey(userId);
       localStorage.setItem(key, JSON.stringify(quotes));
       localStorage.setItem(deletedKey, JSON.stringify(deletedIdsRef.current));
-      // שולחים ל-Supabase רק אם טענו נתונים עבור userId הזה – מונע דריסה בעת רענון
-      if (userId && lastLoadedForUserIdRef.current === userId) {
-        const deletedQuoteIds = [...deletedIdsRef.current];
-        const quoteUpserts = [...pendingUpsertsRef.current];
-        if (!quoteUpserts.length && !deletedQuoteIds.length) return;
-        void postSync('/history', userId, { quotes: quoteUpserts, deletedQuoteIds }).then((ok) => {
-          if (ok && deletedQuoteIds.length) {
-            deletedIdsRef.current = deletedIdsRef.current.filter((id) => !deletedQuoteIds.includes(id));
-            localStorage.setItem(deletedKey, JSON.stringify(deletedIdsRef.current));
-          }
-          if (ok && quoteUpserts.length) {
-            const sent = new Set(quoteUpserts.map((q) => q.id));
-            pendingUpsertsRef.current = pendingUpsertsRef.current.filter((q) => !sent.has(q.id));
-          }
-        });
-      }
+      void flushSync();
     } catch (e) {
       console.error('Failed to save quote history', e);
+      // Even if localStorage quota fails, keep retrying server sync.
+      void flushSync();
     }
-  }, [quotes, isLoaded, userId]);
+  }, [quotes, isLoaded, userId, flushSync]);
+
+  useEffect(() => {
+    if (!isLoaded || !userId) return;
+    const timer = window.setInterval(() => {
+      if (pendingUpsertsRef.current.length || deletedIdsRef.current.length) {
+        void flushSync();
+      }
+    }, 10000);
+    return () => window.clearInterval(timer);
+  }, [isLoaded, userId, flushSync]);
 
   const addQuote = useCallback((quote: Omit<SavedQuote, 'id' | 'createdAt'>) => {
     const newQuote: SavedQuote = {
