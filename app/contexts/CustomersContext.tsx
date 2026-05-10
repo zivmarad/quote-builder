@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { fetchSync, postSync, deleteSync } from '../../lib/sync';
 
 export interface Customer {
@@ -36,40 +36,40 @@ interface CustomersContextType {
 
 const CustomersContext = createContext<CustomersContextType | undefined>(undefined);
 
-export function CustomersProvider({ children, userId }: { children: React.ReactNode; userId?: string | null }) {
+/** מופרד עם key לפי userId כדי לאפס state בלי setState סינכרוני בתחילת effect (ESLint react-hooks/set-state-in-effect) */
+function CustomersProviderInner({
+  children,
+  userId,
+}: {
+  children: React.ReactNode;
+  userId: string | null;
+}) {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
-  const lastLoadedForUserIdRef = useRef<string | null | undefined>(undefined);
 
   const refresh = useCallback(async () => {
     if (!userId) {
       setCustomers([]);
       setIsLoaded(true);
-      lastLoadedForUserIdRef.current = userId;
       return;
     }
     const data = await fetchSync<{ customers: Customer[] }>('/customers', userId);
-    lastLoadedForUserIdRef.current = userId;
     setCustomers(Array.isArray(data?.customers) ? data!.customers : []);
     setIsLoaded(true);
   }, [userId]);
 
   useEffect(() => {
     let cancelled = false;
-    setIsLoaded(false);
-    lastLoadedForUserIdRef.current = undefined;
     void (async () => {
       if (!userId) {
         if (!cancelled) {
           setCustomers([]);
           setIsLoaded(true);
-          lastLoadedForUserIdRef.current = null;
         }
         return;
       }
       const data = await fetchSync<{ customers: Customer[] }>('/customers', userId);
       if (cancelled) return;
-      lastLoadedForUserIdRef.current = userId;
       setCustomers(Array.isArray(data?.customers) ? data!.customers : []);
       setIsLoaded(true);
     })();
@@ -80,7 +80,7 @@ export function CustomersProvider({ children, userId }: { children: React.ReactN
 
   const saveCustomer = useCallback(
     async (input: CustomerInput): Promise<boolean> => {
-      if (!userId || lastLoadedForUserIdRef.current !== userId) return false;
+      if (!userId) return false;
       const ok = await postSync('/customers', userId, {
         customer: {
           id: input.id,
@@ -100,7 +100,7 @@ export function CustomersProvider({ children, userId }: { children: React.ReactN
 
   const deleteCustomer = useCallback(
     async (id: string): Promise<boolean> => {
-      if (!userId || lastLoadedForUserIdRef.current !== userId) return false;
+      if (!userId) return false;
       const ok = await deleteSync('/customers', { id });
       if (ok) await refresh();
       return ok;
@@ -114,6 +114,15 @@ export function CustomersProvider({ children, userId }: { children: React.ReactN
   );
 
   return <CustomersContext.Provider value={value}>{children}</CustomersContext.Provider>;
+}
+
+export function CustomersProvider({ children, userId }: { children: React.ReactNode; userId?: string | null }) {
+  const stableKey = userId ?? '__guest__';
+  return (
+    <CustomersProviderInner key={stableKey} userId={userId ?? null}>
+      {children}
+    </CustomersProviderInner>
+  );
 }
 
 export function useCustomers(): CustomersContextType {
