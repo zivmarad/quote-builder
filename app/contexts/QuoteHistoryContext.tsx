@@ -159,6 +159,7 @@ export function QuoteHistoryProvider({ children, userId }: { children: React.Rea
       lastLoadedForUserIdRef.current = undefined; // עדיין לא טענו עבור userId הנוכחי
       deletedIdsRef.current = loadDeletedIds();
       if (userId) {
+        const localUserQuotes = loadFromStorage();
         const guestKey = getStorageKey(null);
         const guestRaw = localStorage.getItem(guestKey);
         const data = await fetchSync<{ quotes: SavedQuote[] }>('/history', userId);
@@ -173,13 +174,13 @@ export function QuoteHistoryProvider({ children, userId }: { children: React.Rea
             /* ignore */
           }
         }
-        const merged = mergeQuotes(serverQuotes, guestQuotes);
+        const merged = mergeQuotes(serverQuotes, localUserQuotes, guestQuotes);
         const deleted = new Set(deletedIdsRef.current);
         const filtered = deleted.size ? merged.filter((q) => !deleted.has(q.id)) : merged;
         lastLoadedForUserIdRef.current = userId;
         setQuotes(filtered);
         localStorage.setItem(key, JSON.stringify(filtered));
-        if (guestRaw) {
+        if (guestRaw || filtered.length !== serverQuotes.length) {
           localStorage.removeItem(guestKey);
           void postSync('/history', userId, { quotes: filtered, deletedQuoteIds: deletedIdsRef.current });
         }

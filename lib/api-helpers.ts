@@ -44,7 +44,12 @@ export function checkBodySize(request: Request, maxBytes: number = MAX_BODY_BYTE
 }
 
 const MAX_PROFILE_BODY_BYTES = 3 * 1024 * 1024; // 3MB לפרופיל (לוגו base64)
+const MAX_HISTORY_BODY_BYTES = 6 * 1024 * 1024; // 6MB להיסטוריית הצעות גדולה
 
 export function checkProfileBodySize(request: Request): NextResponse | null {
   return checkBodySize(request, MAX_PROFILE_BODY_BYTES);
+}
+
+export function checkHistoryBodySize(request: Request): NextResponse | null {
+  return checkBodySize(request, MAX_HISTORY_BODY_BYTES);
 }
