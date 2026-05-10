@@ -13,7 +13,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { usePriceOverrides } from '../contexts/PriceOverridesContext';
 import { categories } from '../service/services';
-import { getDrafts, deleteDraft, type QuoteDraft } from '../../lib/drafts-storage';
+import { getDrafts, deleteDraft, syncDraftsForLoggedInUser, type QuoteDraft } from '../../lib/drafts-storage';
 import { ArrowRight, UserCircle, Settings, FileText, ChevronLeft, Download, Trash2, Copy, DollarSign, KeyRound, Eye, ChevronDown, Check, Loader2, Smartphone, Plus, FileEdit } from 'lucide-react';
 import ConfirmDialog from '../components/ConfirmDialog';
 
@@ -162,7 +162,12 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    getDrafts(authUser?.id ?? null).then(setDrafts);
+    const uid = authUser?.id ?? null;
+    if (uid) {
+      syncDraftsForLoggedInUser(uid).then(setDrafts);
+    } else {
+      getDrafts(null).then(setDrafts);
+    }
   }, [authUser?.id]);
 
   useEffect(() => {

@@ -55,7 +55,12 @@ export function checkHistoryBodySize(request: Request): NextResponse | null {
 }
 
 const MAX_SINGLE_QUOTE_BODY_BYTES = 4 * 1024 * 1024; // שורת הצעה בודדת (JSONB)
+const MAX_DRAFTS_BODY_BYTES = 4 * 1024 * 1024; // עד 20 טיוטות עם פריטים
 
 export function checkSingleQuoteBodySize(request: Request): NextResponse | null {
   return checkBodySize(request, MAX_SINGLE_QUOTE_BODY_BYTES);
+}
+
+export function checkDraftsBodySize(request: Request): NextResponse | null {
+  return checkBodySize(request, MAX_DRAFTS_BODY_BYTES);
 }
