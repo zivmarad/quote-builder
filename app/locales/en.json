@@ -30,7 +30,8 @@
     "login": "Log in",
     "logout": "Log out",
     "signup": "Sign up",
-    "hello": "Hello"
+    "hello": "Hello",
+    "customers": "Customers"
   },
   "login": {
     "title": "Log in",
@@ -202,6 +203,33 @@
     "fromPrice": "From ",
     "perUnit": " per ",
     "quantityNote": "You can enter quantity in the questions step"
+  },
+  "customers": {
+    "title": "Customers",
+    "subtitle": "Manage customer details for reuse in quotes",
+    "searchPlaceholder": "Search by name, phone, email...",
+    "add": "New customer",
+    "addFirst": "Add your first customer",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "empty": "No saved customers yet",
+    "noResults": "No matching customers",
+    "fullName": "Full name",
+    "phone": "Phone",
+    "email": "Email",
+    "address": "Address",
+    "city": "City",
+    "notes": "Notes",
+    "deleteConfirm": "Delete this customer? This cannot be undone.",
+    "saved": "Saved",
+    "deleted": "Deleted",
+    "error": "Something went wrong. Try again.",
+    "nameRequired": "Full name is required",
+    "cartPick": "Select a customer",
+    "cartSearch": "Search customers...",
+    "cartClear": "Clear selection",
+    "cartHint": "Fills customer fields automatically (you can edit after)"
   },
   "requireAuth": {
     "redirecting": "Redirecting to login..."

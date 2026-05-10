@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../contexts/AuthContext';
 import { useQuoteBasket } from '../contexts/QuoteBasketContext';
 import { useProfile } from '../contexts/ProfileContext';
 import { useQuoteHistory, type QuoteDataSnapshot } from '../contexts/QuoteHistoryContext';
 import { useSettings } from '../contexts/SettingsContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useCustomers, type Customer } from '../contexts/CustomersContext';
 import { saveDraft } from '../../lib/drafts-storage';
 import { Trash2, Edit2, Check, X, ShoppingBag, Plus, FileText, Share2, Eye, Loader2, ChevronDown, ChevronUp, Save } from 'lucide-react';
 import ConfirmDialog from './ConfirmDialog';
@@ -32,6 +34,8 @@ export default function Cart() {
   const { profile } = useProfile();
   const { addQuote } = useQuoteHistory();
   const { defaultQuoteTitle, nextQuoteNumber, setNextQuoteNumber, validityDays, vatRate } = useSettings();
+  const { t } = useLanguage();
+  const { customers, isLoaded: customersLoaded } = useCustomers();
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editPrice, setEditPrice] = useState<string>('');
@@ -58,6 +62,52 @@ export default function Cart() {
   const [draftName, setDraftName] = useState('');
   const [deleteItemId, setDeleteItemId] = useState<string | null>(null);
   const [showClearBasketConfirm, setShowClearBasketConfirm] = useState(false);
+  const [customerComboOpen, setCustomerComboOpen] = useState(false);
+  const [customerComboQuery, setCustomerComboQuery] = useState('');
+  const customerComboRef = useRef<HTMLDivElement>(null);
+
+  const filteredCustomers = useMemo(() => {
+    const q = customerComboQuery.trim().toLowerCase();
+    const list = !q
+      ? customers
+      : customers.filter((c) => {
+          const h = [c.full_name, c.phone, c.email, c.city].join(' ').toLowerCase();
+          return h.includes(q);
+        });
+    return list.slice(0, 40);
+  }, [customers, customerComboQuery]);
+
+  useEffect(() => {
+    if (!customerComboOpen) return;
+    const onDoc = (e: MouseEvent) => {
+      if (customerComboRef.current && !customerComboRef.current.contains(e.target as Node)) {
+        setCustomerComboOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [customerComboOpen]);
+
+  const applyCustomerFromCrm = (c: Customer) => {
+    setCustomerName(c.full_name);
+    setCustomerPhone(c.phone);
+    setCustomerEmail(c.email);
+    setCustomerAddress([c.address, c.city].filter(Boolean).join(', '));
+    setCustomerCompanyId('');
+    setShowCustomerDetails(true);
+    setCustomerComboOpen(false);
+    setCustomerComboQuery('');
+  };
+
+  const clearCustomerFields = () => {
+    setCustomerName('');
+    setCustomerPhone('');
+    setCustomerEmail('');
+    setCustomerAddress('');
+    setCustomerCompanyId('');
+    setCustomerComboQuery('');
+    setCustomerComboOpen(false);
+  };
 
   useEffect(() => {
     if (!toast) return;
@@ -913,6 +963,57 @@ export default function Cart() {
         {/* פרטי לקוח – שם תמיד גלוי, השאר מתקפל */}
         <div className="px-6 py-4 bg-white border-t border-slate-100">
           <div className="flex flex-col gap-3">
+            {user && (
+              <div ref={customerComboRef} className="relative pb-2 border-b border-slate-100 mb-1">
+                <p className="text-xs font-bold text-slate-500 mb-1.5 text-right">{t('customers.cartPick')}</p>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="relative flex-1 min-w-0">
+                    <input
+                      type="search"
+                      value={customerComboQuery}
+                      onChange={(e) => {
+                        setCustomerComboQuery(e.target.value);
+                        setCustomerComboOpen(true);
+                      }}
+                      onFocus={() => setCustomerComboOpen(true)}
+                      placeholder={t('customers.cartSearch')}
+                      disabled={!customersLoaded}
+                      className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-right text-sm disabled:opacity-60"
+                    />
+                    {customerComboOpen && customersLoaded && filteredCustomers.length > 0 && (
+                      <ul
+                        className="absolute z-30 mt-1 w-full max-h-48 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg py-1 text-right"
+                        role="listbox"
+                      >
+                        {filteredCustomers.map((c) => (
+                          <li key={c.id}>
+                            <button
+                              type="button"
+                              className="w-full px-3 py-2 text-sm text-slate-800 hover:bg-blue-50 text-right"
+                              onMouseDown={(e) => e.preventDefault()}
+                              onClick={() => applyCustomerFromCrm(c)}
+                            >
+                              <span className="font-bold block truncate">{c.full_name}</span>
+                              <span className="text-xs text-slate-500 truncate block">
+                                {[c.phone, c.email].filter(Boolean).join(' · ') || '—'}
+                              </span>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={clearCustomerFields}
+                    className="shrink-0 px-3 py-2.5 rounded-xl border border-slate-200 text-sm font-bold text-slate-600 hover:bg-slate-50"
+                  >
+                    {t('customers.cartClear')}
+                  </button>
+                </div>
+                <p className="text-[11px] text-slate-400 mt-1.5 text-right">{t('customers.cartHint')}</p>
+              </div>
+            )}
             <label htmlFor="customerName" className="block text-sm font-bold text-slate-700 text-right">שם הלקוח</label>
             <input
               id="customerName"

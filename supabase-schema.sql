@@ -96,6 +96,23 @@ CREATE INDEX IF NOT EXISTS idx_app_users_email ON app_users(email);
 CREATE INDEX IF NOT EXISTS idx_app_users_username ON app_users(username);
 ALTER TABLE app_users ENABLE ROW LEVEL SECURITY;
 
+-- לקוחות (CRM) — אחרי app_users בגלל FK
+CREATE TABLE IF NOT EXISTS customers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id TEXT NOT NULL REFERENCES app_users (id) ON DELETE CASCADE,
+  full_name TEXT NOT NULL DEFAULT '',
+  phone TEXT NOT NULL DEFAULT '',
+  email TEXT NOT NULL DEFAULT '',
+  address TEXT NOT NULL DEFAULT '',
+  city TEXT NOT NULL DEFAULT '',
+  notes TEXT NOT NULL DEFAULT '',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_customers_user_id ON customers (user_id);
+CREATE INDEX IF NOT EXISTS idx_customers_user_updated ON customers (user_id, updated_at DESC);
+ALTER TABLE customers ENABLE ROW LEVEL SECURITY;
+
 -- טבלת קודי אימות/שחזור
 CREATE TABLE IF NOT EXISTS verification_codes (
   email TEXT NOT NULL,

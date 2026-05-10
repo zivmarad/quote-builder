@@ -49,3 +49,23 @@ export async function postSync(
     return false;
   }
 }
+
+/** מחיקת משאב סנכרון (מזהים ב-query בלבד; המשתמש נקבע מ-cookie) */
+export async function deleteSync(path: string, params: Record<string, string>): Promise<boolean> {
+  try {
+    const q = new URLSearchParams(params);
+    const res = await fetch(`/api/sync${path}?${q.toString()}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      if (res.status !== 401 && res.status !== 503) notifySyncFailed();
+      return false;
+    }
+    const data = await res.json();
+    return !!data?.ok;
+  } catch {
+    if (isSyncAvailable) notifySyncFailed();
+    return false;
+  }
+}

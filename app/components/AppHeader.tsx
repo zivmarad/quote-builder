@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useAuth } from '../contexts/AuthContext';
 import { useProfile } from '../contexts/ProfileContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { User, LogIn, UserPlus, LogOut, Globe, Home, ShieldAlert, Undo2 } from 'lucide-react';
+import { User, Users, LogIn, UserPlus, LogOut, Globe, Home, ShieldAlert, Undo2 } from 'lucide-react';
 
 const LOCALE_LABELS: Record<string, string> = {
   he: 'עב',
@@ -139,6 +139,26 @@ export default function AppHeader() {
             <User size={20} className="shrink-0" />
             <span className="inline max-w-[85px] sm:max-w-[95px] truncate">{t('header.profile')}</span>
           </Link>
+          {isLoaded && user && (
+            <>
+              <Link
+                href="/customers"
+                className="sm:hidden flex items-center justify-center text-slate-600 hover:text-slate-900 p-2.5 rounded-xl hover:bg-slate-100 min-h-[44px] min-w-[44px]"
+                aria-label={t('header.customers')}
+                title={t('header.customers')}
+              >
+                <Users size={20} />
+              </Link>
+              <Link
+                href="/customers"
+                className="hidden sm:flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 font-medium text-xs sm:text-sm px-2.5 sm:px-3 py-2.5 sm:py-2 rounded-xl hover:bg-slate-100 transition-colors min-h-[44px] shrink-0"
+                aria-label={t('header.customers')}
+              >
+                <Users size={18} className="shrink-0" />
+                <span className="hidden md:inline truncate max-w-[72px]">{t('header.customers')}</span>
+              </Link>
+            </>
+          )}
           {isLoaded &&
             (user ? (
               <>

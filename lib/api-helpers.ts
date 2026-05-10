@@ -64,3 +64,9 @@ export function checkSingleQuoteBodySize(request: Request): NextResponse | null 
 export function checkDraftsBodySize(request: Request): NextResponse | null {
   return checkBodySize(request, MAX_DRAFTS_BODY_BYTES);
 }
+
+const MAX_CUSTOMER_BODY_BYTES = 64 * 1024; // רשומת לקוח בודדת
+
+export function checkCustomerBodySize(request: Request): NextResponse | null {
+  return checkBodySize(request, MAX_CUSTOMER_BODY_BYTES);
+}
