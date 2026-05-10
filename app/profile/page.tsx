@@ -104,15 +104,50 @@ export default function ProfilePage() {
   const [showNewUserPrompt, setShowNewUserPrompt] = useState(false);
   const [deleteDraftId, setDeleteDraftId] = useState<string | null>(null);
   const [deleteQuoteId, setDeleteQuoteId] = useState<string | null>(null);
+  const [quoteSearch, setQuoteSearch] = useState('');
+  const [quotePage, setQuotePage] = useState(1);
+  const QUOTES_PAGE_SIZE = 20;
 
   const sortedQuotes = useMemo(
     () => [...quotes].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
     [quotes]
   );
+  const filteredQuotes = useMemo(() => {
+    const q = quoteSearch.trim().toLowerCase();
+    if (!q) return sortedQuotes;
+    return sortedQuotes.filter((quote) => {
+      const haystack = [
+        quote.customerName,
+        quote.customerPhone,
+        quote.customerEmail,
+        quote.customerAddress,
+        quote.customerCompanyId,
+        quote.notes,
+        quote.quoteNumber != null ? String(quote.quoteNumber) : '',
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      return haystack.includes(q);
+    });
+  }, [sortedQuotes, quoteSearch]);
+  const quoteTotalPages = Math.max(1, Math.ceil(filteredQuotes.length / QUOTES_PAGE_SIZE));
+  const pagedQuotes = useMemo(() => {
+    const start = (quotePage - 1) * QUOTES_PAGE_SIZE;
+    return filteredQuotes.slice(start, start + QUOTES_PAGE_SIZE);
+  }, [filteredQuotes, quotePage]);
   const sortedDrafts = useMemo(
     () => [...drafts].sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime()),
     [drafts]
   );
+
+  useEffect(() => {
+    setQuotePage(1);
+  }, [quoteSearch]);
+
+  useEffect(() => {
+    setQuotePage((prev) => Math.min(prev, quoteTotalPages));
+  }, [quoteTotalPages]);
 
   useEffect(() => () => { if (saveToastTimeoutRef.current) clearTimeout(saveToastTimeoutRef.current); }, []);
 
@@ -565,7 +600,19 @@ export default function ProfilePage() {
               >
                   <h1 className="text-xl font-black text-slate-900 mb-1">{t('profile.savedQuotesTitle')}</h1>
                   <p className="text-slate-500 text-sm mb-8">{t('profile.savedQuotesSubtitle')}</p>
-                  {sortedQuotes.length === 0 ? (
+                  <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="text-sm text-slate-500">
+                      סה״כ {filteredQuotes.length} הצעות
+                    </div>
+                    <input
+                      type="search"
+                      value={quoteSearch}
+                      onChange={(e) => setQuoteSearch(e.target.value)}
+                      placeholder="חיפוש לפי לקוח, טלפון, מייל, מספר הצעה..."
+                      className="w-full sm:w-80 px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    />
+                  </div>
+                  {filteredQuotes.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-14 text-center bg-slate-50/50 rounded-2xl border border-slate-100">
                       <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mb-3 text-slate-400">
                         <FileText size={28} />
@@ -574,7 +621,7 @@ export default function ProfilePage() {
                     </div>
                   ) : (
                     <ul className="space-y-4">
-                      {sortedQuotes.map((q) => {
+                      {pagedQuotes.map((q) => {
                         const dateStr = new Date(q.createdAt).toLocaleDateString('he-IL', {
                           day: '2-digit',
                           month: '2-digit',
@@ -684,6 +731,29 @@ export default function ProfilePage() {
                         );
                       })}
                     </ul>
+                  )}
+                  {quoteTotalPages > 1 && (
+                    <div className="mt-5 flex items-center justify-between gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setQuotePage((p) => Math.max(1, p - 1))}
+                        disabled={quotePage <= 1}
+                        className="px-3 py-2 rounded-lg border border-slate-200 text-sm disabled:opacity-50"
+                      >
+                        הקודם
+                      </button>
+                      <span className="text-sm text-slate-600">
+                        עמוד {quotePage} מתוך {quoteTotalPages}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setQuotePage((p) => Math.min(quoteTotalPages, p + 1))}
+                        disabled={quotePage >= quoteTotalPages}
+                        className="px-3 py-2 rounded-lg border border-slate-200 text-sm disabled:opacity-50"
+                      >
+                        הבא
+                      </button>
+                    </div>
                   )}
               </section>
 

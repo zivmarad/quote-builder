@@ -6,6 +6,8 @@ import { fetchSync, postSync } from '../../lib/sync';
 
 const getStorageKey = (userId: string | null | undefined) =>
   `quoteBuilderHistory_${userId ?? 'guest'}`;
+const getDeletedIdsKey = (userId: string | null | undefined) =>
+  `quoteBuilderHistoryDeleted_${userId ?? 'guest'}`;
 
 /** איך ההצעה יוצאה – הורדה, וואטסאפ, מייל */
 export type ExportMethod = 'download' | 'whatsapp' | 'email';
@@ -78,14 +80,48 @@ interface QuoteHistoryContextType {
 
 const QuoteHistoryContext = createContext<QuoteHistoryContextType | undefined>(undefined);
 
+function quoteSortDesc(a: SavedQuote, b: SavedQuote): number {
+  return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+}
+
+function normalizeQuote(raw: SavedQuote): SavedQuote {
+  const quoteData = raw.quoteData ?? raw.quote_data;
+  return {
+    ...raw,
+    quoteData,
+    quote_data: raw.quote_data ?? quoteData,
+  };
+}
+
+function mergeQuotes(...groups: SavedQuote[][]): SavedQuote[] {
+  const byId = new Map<string, SavedQuote>();
+  for (const group of groups) {
+    for (const raw of group) {
+      if (!raw || typeof raw !== 'object' || typeof raw.id !== 'string') continue;
+      const q = normalizeQuote(raw);
+      const existing = byId.get(q.id);
+      if (!existing) {
+        byId.set(q.id, q);
+        continue;
+      }
+      const nextTs = Date.parse(q.createdAt || '') || 0;
+      const prevTs = Date.parse(existing.createdAt || '') || 0;
+      byId.set(q.id, nextTs >= prevTs ? q : existing);
+    }
+  }
+  return [...byId.values()].sort(quoteSortDesc);
+}
+
 export function QuoteHistoryProvider({ children, userId }: { children: React.ReactNode; userId?: string | null }) {
   const [quotes, setQuotes] = useState<SavedQuote[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const lastLoadedForUserIdRef = useRef<string | null | undefined>(undefined);
+  const deletedIdsRef = useRef<string[]>([]);
 
   useEffect(() => {
     let cancelled = false;
     const key = getStorageKey(userId);
+    const deletedKey = getDeletedIdsKey(userId);
     const loadFromStorage = (): SavedQuote[] => {
       let raw = localStorage.getItem(key);
       if (!raw) {
@@ -99,7 +135,18 @@ export function QuoteHistoryProvider({ children, userId }: { children: React.Rea
       if (!raw) return [];
       try {
         const parsed = JSON.parse(raw) as unknown;
-        return Array.isArray(parsed) ? (parsed as SavedQuote[]) : [];
+        return Array.isArray(parsed) ? mergeQuotes(parsed as SavedQuote[]) : [];
+      } catch {
+        return [];
+      }
+    };
+
+    const loadDeletedIds = (): string[] => {
+      const raw = localStorage.getItem(deletedKey);
+      if (!raw) return [];
+      try {
+        const parsed = JSON.parse(raw) as unknown;
+        return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === 'string') : [];
       } catch {
         return [];
       }
@@ -110,6 +157,7 @@ export function QuoteHistoryProvider({ children, userId }: { children: React.Rea
       if (cancelled) return;
       setIsLoaded(false);
       lastLoadedForUserIdRef.current = undefined; // עדיין לא טענו עבור userId הנוכחי
+      deletedIdsRef.current = loadDeletedIds();
       if (userId) {
         const guestKey = getStorageKey(null);
         const guestRaw = localStorage.getItem(guestKey);
@@ -120,18 +168,20 @@ export function QuoteHistoryProvider({ children, userId }: { children: React.Rea
         if (guestRaw) {
           try {
             const parsed = JSON.parse(guestRaw) as unknown;
-            guestQuotes = Array.isArray(parsed) ? (parsed as SavedQuote[]) : [];
+            guestQuotes = Array.isArray(parsed) ? mergeQuotes(parsed as SavedQuote[]) : [];
           } catch {
             /* ignore */
           }
         }
-        const merged = [...serverQuotes, ...guestQuotes];
+        const merged = mergeQuotes(serverQuotes, guestQuotes);
+        const deleted = new Set(deletedIdsRef.current);
+        const filtered = deleted.size ? merged.filter((q) => !deleted.has(q.id)) : merged;
         lastLoadedForUserIdRef.current = userId;
-        setQuotes(merged);
-        localStorage.setItem(key, JSON.stringify(merged));
+        setQuotes(filtered);
+        localStorage.setItem(key, JSON.stringify(filtered));
         if (guestRaw) {
           localStorage.removeItem(guestKey);
-          void postSync('/history', userId, { quotes: merged });
+          void postSync('/history', userId, { quotes: filtered, deletedQuoteIds: deletedIdsRef.current });
         }
         setIsLoaded(true);
         return;
@@ -149,10 +199,18 @@ export function QuoteHistoryProvider({ children, userId }: { children: React.Rea
     if (!isLoaded || typeof window === 'undefined') return;
     try {
       const key = getStorageKey(userId);
+      const deletedKey = getDeletedIdsKey(userId);
       localStorage.setItem(key, JSON.stringify(quotes));
+      localStorage.setItem(deletedKey, JSON.stringify(deletedIdsRef.current));
       // שולחים ל-Supabase רק אם טענו נתונים עבור userId הזה – מונע דריסה בעת רענון
       if (userId && lastLoadedForUserIdRef.current === userId) {
-        void postSync('/history', userId, { quotes });
+        const deletedQuoteIds = [...deletedIdsRef.current];
+        void postSync('/history', userId, { quotes, deletedQuoteIds }).then((ok) => {
+          if (ok && deletedQuoteIds.length) {
+            deletedIdsRef.current = deletedIdsRef.current.filter((id) => !deletedQuoteIds.includes(id));
+            localStorage.setItem(deletedKey, JSON.stringify(deletedIdsRef.current));
+          }
+        });
       }
     } catch (e) {
       console.error('Failed to save quote history', e);
@@ -166,10 +224,11 @@ export function QuoteHistoryProvider({ children, userId }: { children: React.Rea
       id: `q-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
       createdAt: new Date().toISOString(),
     };
-    setQuotes((prev) => [newQuote, ...prev]);
+    setQuotes((prev) => mergeQuotes([newQuote], prev));
   }, []);
 
   const deleteQuote = useCallback((id: string) => {
+    if (!deletedIdsRef.current.includes(id)) deletedIdsRef.current.push(id);
     setQuotes((prev) => prev.filter((q) => q.id !== id));
   }, []);
 
