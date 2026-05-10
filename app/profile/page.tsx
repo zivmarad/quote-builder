@@ -14,7 +14,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { usePriceOverrides } from '../contexts/PriceOverridesContext';
 import { categories } from '../service/services';
 import { getDrafts, deleteDraft, syncDraftsForLoggedInUser, type QuoteDraft } from '../../lib/drafts-storage';
-import { ArrowRight, UserCircle, Settings, FileText, ChevronLeft, Download, Trash2, Copy, DollarSign, KeyRound, Eye, ChevronDown, Check, Loader2, Smartphone, Plus, FileEdit } from 'lucide-react';
+import { ArrowRight, UserCircle, Settings, FileText, ChevronLeft, Download, Trash2, Copy, DollarSign, KeyRound, Eye, ChevronDown, Check, Loader2, Smartphone, Plus, FileEdit, Users } from 'lucide-react';
 import ConfirmDialog from '../components/ConfirmDialog';
 
 const PENDING_DRAFT_KEY = 'quoteBuilder_pendingDraft';
@@ -25,12 +25,13 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
-type SectionId = 'details' | 'quotes' | 'drafts' | 'settings';
+type SectionId = 'details' | 'quotes' | 'drafts' | 'customers' | 'settings';
 
 const sectionConfig: { id: SectionId; labelKey: string; labelShortKey?: string; icon: React.ReactNode }[] = [
   { id: 'details', labelKey: 'profile.details', icon: <UserCircle size={22} /> },
   { id: 'quotes', labelKey: 'profile.navQuotes', labelShortKey: 'profile.navQuotes', icon: <FileText size={22} /> },
   { id: 'drafts', labelKey: 'profile.navDrafts', labelShortKey: 'profile.navDrafts', icon: <FileEdit size={22} /> },
+  { id: 'customers', labelKey: 'profile.navCustomers', labelShortKey: 'profile.navCustomers', icon: <Users size={22} /> },
   { id: 'settings', labelKey: 'profile.settings', icon: <Settings size={22} /> },
 ];
 
@@ -171,7 +172,7 @@ export default function ProfilePage() {
   }, [authUser?.id]);
 
   useEffect(() => {
-    const ids: SectionId[] = ['details', 'quotes', 'drafts', 'settings'];
+    const ids: SectionId[] = ['details', 'quotes', 'drafts', 'customers', 'settings'];
     const io = new IntersectionObserver(
       (entries) => {
         if (Date.now() < ioSkipUntilRef.current) return;
@@ -825,6 +826,31 @@ export default function ProfilePage() {
                       ))}
                     </ul>
                   )}
+              </section>
+
+              <section
+                id="profile-section-customers"
+                ref={assignSectionRef('customers')}
+                data-section-id="customers"
+                className="scroll-mt-28 md:scroll-mt-24 p-6 md:p-8 border-b border-slate-100"
+              >
+                <h1 className="text-xl font-black text-slate-900 mb-1">{t('profile.customersSectionTitle')}</h1>
+                <p className="text-slate-500 text-sm mb-6">{t('profile.customersSectionSubtitle')}</p>
+                <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
+                      <Users size={24} aria-hidden />
+                    </div>
+                    <p className="text-slate-600 text-sm leading-relaxed">{t('profile.customersSectionBlurb')}</p>
+                  </div>
+                  <Link
+                    href="/customers"
+                    className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-sm bg-blue-600 text-white hover:bg-blue-700 transition-colors shrink-0"
+                  >
+                    {t('profile.customersOpenPage')}
+                    <ArrowRight size={18} className="shrink-0 rtl:rotate-180" aria-hidden />
+                  </Link>
+                </div>
               </section>
 
               <section
