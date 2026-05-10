@@ -7,6 +7,8 @@ import { getRequestLogMeta, logError } from '../../../lib/observability';
 import { waitUntil } from '@vercel/functions';
 import { generateServerQuotePdf, type ServerQuoteSnapshot } from '../../../lib/server-quote-pdf';
 
+export const runtime = 'nodejs';
+
 type ExportJobType = 'download' | 'whatsapp';
 const QUOTE_EXPORT_BUCKET = process.env.QUOTE_EXPORT_BUCKET?.trim() || 'quote-exports';
 
@@ -122,15 +124,19 @@ export async function POST(request: NextRequest) {
       return json({ ok: false, error: 'שגיאה ביצירת משימה' }, { status: 500 });
     }
 
-    waitUntil(
-      processExportJob({
-        jobId,
-        userId: user.id,
-        exportType,
-        quoteData,
-        requestId: meta.requestId,
-      })
-    );
+    const processPromise = processExportJob({
+      jobId,
+      userId: user.id,
+      exportType,
+      quoteData,
+      requestId: meta.requestId,
+    });
+    try {
+      waitUntil(processPromise);
+    } catch {
+      // Local dev / non-Vercel fallback: still run background task best-effort.
+      void processPromise;
+    }
 
     return json({ ok: true, jobId, status: 'queued' }, { status: 202 });
   } catch (e) {

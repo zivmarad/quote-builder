@@ -12,7 +12,7 @@ import { Trash2, Edit2, Check, X, ShoppingBag, Plus, FileText, Share2, Eye, Load
 import ConfirmDialog from './ConfirmDialog';
 
 const PENDING_DRAFT_KEY = 'quoteBuilder_pendingDraft';
-import { getQuotePreviewHtml } from './utils/pdfExport';
+import { generateQuotePDFAsBlob, getQuotePreviewHtml } from './utils/pdfExport';
 
 export default function Cart() {
   const router = useRouter();
@@ -301,6 +301,27 @@ export default function Cart() {
     throw new Error('job_timeout');
   };
 
+  const generateClientPdfFallback = async (quoteNumber: number): Promise<Blob> => {
+    const { customerPhone, customerEmail, customerAddress, customerCompanyId } = getCustomerContact();
+    return generateQuotePDFAsBlob(
+      items,
+      totalBeforeVAT,
+      VAT,
+      totalWithVAT,
+      profile,
+      customerName.trim() || undefined,
+      notes.trim() || undefined,
+      defaultQuoteTitle,
+      quoteNumber,
+      customerPhone,
+      customerEmail,
+      customerAddress,
+      customerCompanyId,
+      validityDays ?? undefined,
+      vatRate
+    );
+  };
+
   const handleExportPDF = async () => {
     if (!user) {
       router.push('/login?from=' + encodeURIComponent('/cart'));
@@ -309,8 +330,10 @@ export default function Cart() {
     const { customerPhone, customerEmail, customerAddress, customerCompanyId } = getCustomerContact();
     setIsDownloading(true);
     let jobId: string | null = null;
+    let reservedQuoteNumber = nextQuoteNumber;
     try {
       const quoteNumber = await reserveQuoteNumber();
+      reservedQuoteNumber = quoteNumber;
       const quoteData = buildQuoteSnapshot();
       jobId = await createExportJob('download', quoteNumber, quoteData);
       addQuote({
@@ -348,7 +371,26 @@ export default function Cart() {
       setTimeout(() => router.push('/'), 2500);
     } catch (e) {
       await updateExportJob(jobId, 'failed', e instanceof Error ? e.message : 'pdf_export_failed');
-      setToast('שגיאה בהפקת ה-PDF');
+      try {
+        const blob = await generateClientPdfFallback(reservedQuoteNumber);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `hatzaat-mechir-${new Date().toISOString().slice(0, 10)}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+        clearBasket();
+        setCustomerName('');
+        setCustomerPhone('');
+        setCustomerEmail('');
+        setCustomerAddress('');
+        setCustomerCompanyId('');
+        setNotes('');
+        setToast('נוצר PDF בגיבוי מקומי');
+        setTimeout(() => router.push('/'), 2500);
+      } catch {
+        setToast('שגיאה בהפקת ה-PDF');
+      }
     } finally {
       setIsDownloading(false);
     }
@@ -394,6 +436,14 @@ export default function Cart() {
       if ((err as Error)?.name === 'AbortError') return;
       lastShareBlobRef.current = null;
       await updateExportJob(jobId, 'failed', err instanceof Error ? err.message : 'whatsapp_export_failed');
+      try {
+        const blob = await generateClientPdfFallback(quoteNumber);
+        lastShareBlobRef.current = blob;
+        setShareError(null);
+        setShowWhatsAppModal(true);
+      } catch {
+        setShareError('שגיאה בהפקת קובץ לשיתוף');
+      }
     } finally {
       setIsSharing(false);
     }

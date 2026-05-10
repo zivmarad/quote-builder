@@ -5,6 +5,8 @@ import { LIMITS } from '../../../../lib/rate-limit';
 import { isSupabaseConfigured, supabaseAdmin } from '../../../../lib/supabase-server';
 import { getRequestLogMeta, logError } from '../../../../lib/observability';
 
+export const runtime = 'nodejs';
+
 type ExportJobStatus = 'queued' | 'processing' | 'completed' | 'failed';
 
 export async function GET(
