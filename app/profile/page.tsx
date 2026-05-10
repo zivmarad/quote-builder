@@ -107,7 +107,11 @@ export default function ProfilePage() {
   const [deleteQuoteId, setDeleteQuoteId] = useState<string | null>(null);
   const [quoteSearch, setQuoteSearch] = useState('');
   const [quotePage, setQuotePage] = useState(1);
-  const QUOTES_PAGE_SIZE = 20;
+  const [draftPage, setDraftPage] = useState(1);
+  const [openQuoteId, setOpenQuoteId] = useState<string | null>(null);
+  const [openDraftId, setOpenDraftId] = useState<string | null>(null);
+  const QUOTES_PAGE_SIZE = 12;
+  const DRAFTS_PAGE_SIZE = 10;
 
   const sortedQuotes = useMemo(
     () => [...quotes].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
@@ -141,6 +145,11 @@ export default function ProfilePage() {
     () => [...drafts].sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime()),
     [drafts]
   );
+  const draftTotalPages = Math.max(1, Math.ceil(sortedDrafts.length / DRAFTS_PAGE_SIZE));
+  const pagedDrafts = useMemo(() => {
+    const start = (draftPage - 1) * DRAFTS_PAGE_SIZE;
+    return sortedDrafts.slice(start, start + DRAFTS_PAGE_SIZE);
+  }, [sortedDrafts, draftPage]);
 
   useEffect(() => {
     setQuotePage(1);
@@ -149,6 +158,27 @@ export default function ProfilePage() {
   useEffect(() => {
     setQuotePage((prev) => Math.min(prev, quoteTotalPages));
   }, [quoteTotalPages]);
+
+  useEffect(() => {
+    setDraftPage((prev) => Math.min(prev, draftTotalPages));
+  }, [draftTotalPages]);
+
+  useEffect(() => {
+    setOpenQuoteId((id) => {
+      if (!id) return null;
+      const start = (quotePage - 1) * QUOTES_PAGE_SIZE;
+      const onPage = filteredQuotes.slice(start, start + QUOTES_PAGE_SIZE).some((q) => q.id === id);
+      return onPage ? id : null;
+    });
+  }, [quotePage, filteredQuotes]);
+
+  useEffect(() => {
+    setOpenDraftId((id) => {
+      if (!id) return null;
+      const start = (draftPage - 1) * DRAFTS_PAGE_SIZE;
+      return sortedDrafts.slice(start, start + DRAFTS_PAGE_SIZE).some((d) => d.id === id) ? id : null;
+    });
+  }, [draftPage, sortedDrafts]);
 
   useEffect(() => () => { if (saveToastTimeoutRef.current) clearTimeout(saveToastTimeoutRef.current); }, []);
 
@@ -605,16 +635,19 @@ export default function ProfilePage() {
                 className="scroll-mt-28 md:scroll-mt-24 p-6 md:p-8 border-b border-slate-100"
               >
                   <h1 className="text-xl font-black text-slate-900 mb-1">{t('profile.savedQuotesTitle')}</h1>
-                  <p className="text-slate-500 text-sm mb-8">{t('profile.savedQuotesSubtitle')}</p>
+                  <p className="text-slate-500 text-sm mb-2">{t('profile.savedQuotesSubtitle')}</p>
+                  <p className="text-slate-400 text-xs mb-6">{t('profile.listExpandHint')}</p>
                   <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="text-sm text-slate-500">
-                      סה״כ {filteredQuotes.length} הצעות
+                      <span>{t('profile.quotesTotalLabel')}</span>{' '}
+                      <span className="font-semibold text-slate-700">{filteredQuotes.length}</span>{' '}
+                      <span>{t('profile.quotesTotalUnit')}</span>
                     </div>
                     <input
                       type="search"
                       value={quoteSearch}
                       onChange={(e) => setQuoteSearch(e.target.value)}
-                      placeholder="חיפוש לפי לקוח, טלפון, מייל, מספר הצעה..."
+                      placeholder={t('profile.quoteSearchPlaceholder')}
                       className="w-full sm:w-80 px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                     />
                   </div>
@@ -626,7 +659,7 @@ export default function ProfilePage() {
                       <p className="text-slate-500 text-sm max-w-xs">{t('profile.noSavedQuotes')}</p>
                     </div>
                   ) : (
-                    <ul className="space-y-4">
+                    <ul className="space-y-2">
                       {pagedQuotes.map((q) => {
                         const dateStr = new Date(q.createdAt).toLocaleDateString('he-IL', {
                           day: '2-digit',
@@ -635,104 +668,130 @@ export default function ProfilePage() {
                           hour: '2-digit',
                           minute: '2-digit',
                         });
+                        const isOpen = openQuoteId === q.id;
                         return (
                           <li
                             key={q.id}
-                            className="flex flex-col gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-colors"
+                            className="rounded-xl border border-slate-200 bg-slate-50/50 overflow-hidden"
                           >
-                            <div className="flex items-center gap-2 text-slate-500 text-xs font-medium">
-                              <FileText size={14} /> {t('profile.quoteLabel')}
-                            </div>
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className="font-bold text-slate-900">
-                                  {q.customerName?.trim() || t('profile.noCustomerName')}
-                                </span>
-                                {q.quoteNumber != null && (
-                                  <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
-                                    #{q.quoteNumber}
+                            <button
+                              type="button"
+                              aria-expanded={isOpen}
+                              onClick={() => {
+                                setOpenQuoteId((prev) => {
+                                  const next = prev === q.id ? null : q.id;
+                                  if (prev === q.id || next !== q.id) setStatusDropdownId(null);
+                                  return next;
+                                });
+                              }}
+                              className="w-full flex items-center gap-3 px-3 py-3 text-right hover:bg-slate-50/80 transition-colors min-h-[52px]"
+                            >
+                              <ChevronDown
+                                size={20}
+                                className={`shrink-0 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                                aria-hidden
+                              />
+                              <div className="min-w-0 flex-1 text-end">
+                                <div className="flex items-center gap-2 flex-wrap justify-end">
+                                  <span className="font-bold text-slate-900 truncate max-w-[min(100%,14rem)] sm:max-w-md">
+                                    {q.customerName?.trim() || t('profile.noCustomerName')}
                                   </span>
-                                )}
-                              </div>
-                              <div className="text-sm text-slate-500">{dateStr}</div>
-                              <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                <span className="text-sm font-semibold text-blue-600">
-                                  {formatPrice(q.totalWithVAT)} {t('profile.total')}
-                                </span>
-                                <div className="relative">
-                                  <button
-                                    type="button"
-                                    onClick={() => setStatusDropdownId(statusDropdownId === q.id ? null : q.id)}
-                                    className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full transition-colors ${quoteStatusColors[q.quoteStatus ?? 'draft']} hover:opacity-90`}
-                                  >
-                                    {quoteStatusLabels[q.quoteStatus ?? 'draft']}
-                                    <ChevronDown size={14} className="opacity-70" />
-                                  </button>
-                                  {statusDropdownId === q.id && (
-                                    <>
-                                      <div className="fixed inset-0 z-40" onClick={() => setStatusDropdownId(null)} aria-hidden />
-                                      <div className="absolute top-full right-0 mt-1 z-50 py-1 bg-white rounded-lg shadow-lg border border-slate-200 min-w-[100px]">
-                                        {(['draft', 'sent', 'approved', 'paid'] as const).map((st) => (
-                                          <button
-                                            key={st}
-                                            type="button"
-                                            onClick={() => {
-                                              updateQuoteStatus(q.id, st);
-                                              setStatusDropdownId(null);
-                                            }}
-                                            className={`block w-full text-right px-3 py-2 text-sm hover:bg-slate-50 ${q.quoteStatus === st ? 'font-bold text-blue-600' : 'text-slate-700'}`}
-                                          >
-                                            {quoteStatusLabels[st]}
-                                          </button>
-                                        ))}
-                                      </div>
-                                    </>
+                                  {q.quoteNumber != null && (
+                                    <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded shrink-0">
+                                      #{q.quoteNumber}
+                                    </span>
                                   )}
                                 </div>
-                                {q.status && (
-                                  <span className="text-xs text-slate-500">
-                                    {exportLabels[q.status as ExportMethod]}
-                                  </span>
-                                )}
+                                <div className="text-xs text-slate-500 mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 justify-end">
+                                  <span>{dateStr}</span>
+                                  <span className="text-slate-300">·</span>
+                                  <span className="font-semibold text-blue-600">{formatPrice(q.totalWithVAT)}</span>
+                                </div>
                               </div>
-                            </div>
-                            <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-200/80">
-                              <button
-                                type="button"
-                                onClick={() => setPreviewQuoteId(q.id)}
-                                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-sm border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors shrink-0"
-                                title={t('profile.preview')}
+                              <span
+                                className={`text-xs font-medium px-2.5 py-1 rounded-full shrink-0 max-w-[5.5rem] truncate ${quoteStatusColors[q.quoteStatus ?? 'draft']}`}
                               >
-                                <Eye size={16} />
-                                {t('profile.preview')}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleDuplicateQuote(q.id)}
-                                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-sm border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors shrink-0"
-                                title={t('profile.duplicate')}
-                              >
-                                <Copy size={16} />
-                                {t('profile.duplicate')}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleDownloadQuote(q.id)}
-                                disabled={downloadingId === q.id}
-                                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-bold text-sm bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 transition-colors shrink-0"
-                              >
-                                <Download size={16} />
-                                {downloadingId === q.id ? t('profile.downloading') : t('profile.downloadPdf')}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => setDeleteQuoteId(q.id)}
-                                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors shrink-0"
-                                title={t('profile.deleteFromHistory')}
-                              >
-                                <Trash2 size={18} />
-                              </button>
-                            </div>
+                                {quoteStatusLabels[q.quoteStatus ?? 'draft']}
+                              </span>
+                            </button>
+                            {isOpen && (
+                              <div className="px-3 pb-3 pt-0 border-t border-slate-200/80 bg-white/60">
+                                <div className="flex items-center gap-2 mt-3 flex-wrap">
+                                  <div className="relative">
+                                    <button
+                                      type="button"
+                                      onClick={() => setStatusDropdownId(statusDropdownId === q.id ? null : q.id)}
+                                      className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full transition-colors ${quoteStatusColors[q.quoteStatus ?? 'draft']} hover:opacity-90`}
+                                    >
+                                      {quoteStatusLabels[q.quoteStatus ?? 'draft']}
+                                      <ChevronDown size={14} className="opacity-70" />
+                                    </button>
+                                    {statusDropdownId === q.id && (
+                                      <>
+                                        <div className="fixed inset-0 z-40" onClick={() => setStatusDropdownId(null)} aria-hidden />
+                                        <div className="absolute top-full right-0 mt-1 z-50 py-1 bg-white rounded-lg shadow-lg border border-slate-200 min-w-[100px]">
+                                          {(['draft', 'sent', 'approved', 'paid'] as const).map((st) => (
+                                            <button
+                                              key={st}
+                                              type="button"
+                                              onClick={() => {
+                                                updateQuoteStatus(q.id, st);
+                                                setStatusDropdownId(null);
+                                              }}
+                                              className={`block w-full text-right px-3 py-2 text-sm hover:bg-slate-50 ${q.quoteStatus === st ? 'font-bold text-blue-600' : 'text-slate-700'}`}
+                                            >
+                                              {quoteStatusLabels[st]}
+                                            </button>
+                                          ))}
+                                        </div>
+                                      </>
+                                    )}
+                                  </div>
+                                  {q.status && (
+                                    <span className="text-xs text-slate-500">
+                                      {exportLabels[q.status as ExportMethod]}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="flex flex-wrap items-center gap-2 mt-3">
+                                  <button
+                                    type="button"
+                                    onClick={() => setPreviewQuoteId(q.id)}
+                                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-sm border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors shrink-0"
+                                    title={t('profile.preview')}
+                                  >
+                                    <Eye size={16} />
+                                    {t('profile.preview')}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDuplicateQuote(q.id)}
+                                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-sm border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors shrink-0"
+                                    title={t('profile.duplicate')}
+                                  >
+                                    <Copy size={16} />
+                                    {t('profile.duplicate')}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDownloadQuote(q.id)}
+                                    disabled={downloadingId === q.id}
+                                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-bold text-sm bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 transition-colors shrink-0"
+                                  >
+                                    <Download size={16} />
+                                    {downloadingId === q.id ? t('profile.downloading') : t('profile.downloadPdf')}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setDeleteQuoteId(q.id)}
+                                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors shrink-0"
+                                    title={t('profile.deleteFromHistory')}
+                                  >
+                                    <Trash2 size={18} />
+                                  </button>
+                                </div>
+                              </div>
+                            )}
                           </li>
                         );
                       })}
@@ -746,10 +805,10 @@ export default function ProfilePage() {
                         disabled={quotePage <= 1}
                         className="px-3 py-2 rounded-lg border border-slate-200 text-sm disabled:opacity-50"
                       >
-                        הקודם
+                        {t('profile.paginationPrev')}
                       </button>
                       <span className="text-sm text-slate-600">
-                        עמוד {quotePage} מתוך {quoteTotalPages}
+                        {t('profile.paginationPage')} {quotePage} {t('profile.paginationOf')} {quoteTotalPages}
                       </span>
                       <button
                         type="button"
@@ -757,7 +816,7 @@ export default function ProfilePage() {
                         disabled={quotePage >= quoteTotalPages}
                         className="px-3 py-2 rounded-lg border border-slate-200 text-sm disabled:opacity-50"
                       >
-                        הבא
+                        {t('profile.paginationNext')}
                       </button>
                     </div>
                   )}
@@ -770,7 +829,8 @@ export default function ProfilePage() {
                 className="scroll-mt-28 md:scroll-mt-24 p-6 md:p-8 border-b border-slate-100"
               >
                   <h1 className="text-xl font-black text-slate-900 mb-1">{t('profile.draftsSectionTitle')}</h1>
-                  <p className="text-slate-500 text-sm mb-8">{t('profile.draftsSectionSubtitle')}</p>
+                  <p className="text-slate-500 text-sm mb-2">{t('profile.draftsSectionSubtitle')}</p>
+                  <p className="text-slate-400 text-xs mb-6">{t('profile.listExpandHint')}</p>
                   {sortedDrafts.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-14 text-center bg-amber-50/30 rounded-2xl border border-amber-100">
                       <div className="w-14 h-14 rounded-2xl bg-amber-100/80 flex items-center justify-center mb-3 text-amber-600">
@@ -779,52 +839,100 @@ export default function ProfilePage() {
                       <p className="text-slate-600 text-sm max-w-xs">{t('profile.noDraftsYet')}</p>
                     </div>
                   ) : (
-                    <ul className="space-y-4">
-                      {sortedDrafts.map((d) => (
-                        <li
-                          key={d.id}
-                          className="flex flex-col gap-3 p-4 rounded-xl border border-amber-200 bg-amber-50/40 hover:bg-amber-50/60 transition-colors"
-                        >
-                          <div className="flex items-center gap-2 text-amber-700 text-xs font-medium">
-                            <FileEdit size={14} /> {t('profile.draftLabel')}
-                          </div>
-                          <div className="min-w-0">
-                            <div className="font-bold text-slate-900 text-lg">{d.name}</div>
-                            <div className="text-sm text-slate-600 mt-1">{getDraftSummary(d)}</div>
-                            <div className="flex items-center gap-2 mt-2 flex-wrap text-xs text-slate-500">
-                              <span>{d.items.length} {t('profile.itemsCount')}</span>
-                              <span>·</span>
-                              <span>{formatPrice(getDraftTotal(d))} {t('profile.total')}</span>
-                              <span>·</span>
-                              <span>{formatDraftDate(d.savedAt)}</span>
-                              {d.customerName?.trim() && (
-                                <>
-                                  <span>·</span>
-                                  <span>{t('profile.customer')}: {d.customerName}</span>
-                                </>
+                    <>
+                      <div className="text-sm text-slate-500 mb-4">
+                        <span>{t('profile.draftsTotalLabel')}</span>{' '}
+                        <span className="font-semibold text-slate-700">{sortedDrafts.length}</span>{' '}
+                        <span>{t('profile.draftsTotalUnit')}</span>
+                      </div>
+                      <ul className="space-y-2">
+                        {pagedDrafts.map((d) => {
+                          const isOpen = openDraftId === d.id;
+                          return (
+                            <li
+                              key={d.id}
+                              className="rounded-xl border border-amber-200 bg-amber-50/40 overflow-hidden"
+                            >
+                              <button
+                                type="button"
+                                aria-expanded={isOpen}
+                                onClick={() => setOpenDraftId((prev) => (prev === d.id ? null : d.id))}
+                                className="w-full flex items-center gap-3 px-3 py-3 text-right hover:bg-amber-50/70 transition-colors min-h-[52px]"
+                              >
+                                <ChevronDown
+                                  size={20}
+                                  className={`shrink-0 text-amber-600/70 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                                  aria-hidden
+                                />
+                                <div className="min-w-0 flex-1 text-end">
+                                  <div className="font-bold text-slate-900 truncate flex items-center gap-2 justify-end">
+                                    <FileEdit size={14} className="shrink-0 text-amber-700 opacity-80" aria-hidden />
+                                    <span className="truncate max-w-[min(100%,16rem)] sm:max-w-lg">{d.name}</span>
+                                  </div>
+                                  <div className="text-xs text-slate-600 mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 justify-end">
+                                    <span>{formatDraftDate(d.savedAt)}</span>
+                                    <span className="text-amber-200">·</span>
+                                    <span className="font-semibold text-amber-800">{formatPrice(getDraftTotal(d))}</span>
+                                    <span className="text-amber-200">·</span>
+                                    <span>{d.items.length} {t('profile.itemsCount')}</span>
+                                  </div>
+                                </div>
+                              </button>
+                              {isOpen && (
+                                <div className="px-3 pb-3 pt-0 border-t border-amber-200/80 bg-white/50">
+                                  <p className="text-sm text-slate-600 mt-3">{getDraftSummary(d)}</p>
+                                  <div className="flex items-center gap-2 mt-2 flex-wrap text-xs text-slate-500">
+                                    {d.customerName?.trim() && (
+                                      <span>{t('profile.customer')}: {d.customerName}</span>
+                                    )}
+                                  </div>
+                                  <div className="flex flex-wrap items-center gap-2 mt-3">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleLoadDraft(d)}
+                                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm bg-blue-600 text-white hover:bg-blue-700 transition-colors shrink-0"
+                                    >
+                                      {t('profile.loadToCart')}
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setDeleteDraftId(d.id)}
+                                      className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors shrink-0"
+                                      title={t('profile.deleteDraft')}
+                                    >
+                                      <Trash2 size={18} />
+                                    </button>
+                                  </div>
+                                </div>
                               )}
-                            </div>
-                          </div>
-                          <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-amber-200/80">
-                            <button
-                              type="button"
-                              onClick={() => handleLoadDraft(d)}
-                              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm bg-blue-600 text-white hover:bg-blue-700 transition-colors shrink-0"
-                            >
-                              {t('profile.loadToCart')}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setDeleteDraftId(d.id)}
-                              className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors shrink-0"
-                              title={t('profile.deleteDraft')}
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                      {draftTotalPages > 1 && (
+                        <div className="mt-5 flex items-center justify-between gap-3">
+                          <button
+                            type="button"
+                            onClick={() => setDraftPage((p) => Math.max(1, p - 1))}
+                            disabled={draftPage <= 1}
+                            className="px-3 py-2 rounded-lg border border-slate-200 text-sm disabled:opacity-50"
+                          >
+                            {t('profile.paginationPrev')}
+                          </button>
+                          <span className="text-sm text-slate-600">
+                            {t('profile.paginationPage')} {draftPage} {t('profile.paginationOf')} {draftTotalPages}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setDraftPage((p) => Math.min(draftTotalPages, p + 1))}
+                            disabled={draftPage >= draftTotalPages}
+                            className="px-3 py-2 rounded-lg border border-slate-200 text-sm disabled:opacity-50"
+                          >
+                            {t('profile.paginationNext')}
+                          </button>
+                        </div>
+                      )}
+                    </>
                   )}
               </section>
 
