@@ -3,13 +3,28 @@ import { getClientIdentifier, checkRateLimit, type RateLimitOptions } from './ra
 
 const MAX_BODY_BYTES = 1024 * 1024; // 1MB
 
+export function getOrCreateRequestId(request: Request): string {
+  const existing = request.headers.get('x-request-id')?.trim();
+  if (existing) return existing;
+  return crypto.randomUUID();
+}
+
+export function withRequestId(response: NextResponse, requestId: string): NextResponse {
+  response.headers.set('x-request-id', requestId);
+  return response;
+}
+
 /** מחזיר תגובת 429 אם חרג ממכסה; אחרת null (המשך לנתיב). */
-export function rateLimitResponse(request: Request, options: RateLimitOptions): NextResponse | null {
+export async function rateLimitResponse(request: Request, options: RateLimitOptions): Promise<NextResponse | null> {
   const id = getClientIdentifier(request);
-  if (checkRateLimit(id, options)) return null;
-  return NextResponse.json(
+  const requestId = getOrCreateRequestId(request);
+  if (await checkRateLimit(id, options)) return null;
+  return withRequestId(
+    NextResponse.json(
     { ok: false, error: 'יותר מדי בקשות. נסה שוב בעוד דקה.' },
     { status: 429 }
+    ),
+    requestId
   );
 }
 

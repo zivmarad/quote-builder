@@ -7,6 +7,8 @@ const SESSION_PREV_COOKIE = 'quoteBuilder_session_prev';
 /** מסמן שהסשן הנוכחי נוצר דרך התחזות מנהל */
 const IMPERSONATION_MARKER_COOKIE = 'quoteBuilder_impersonating';
 const JWT_EXPIRY_DAYS = 7;
+/** תוקף קצר למצב התחזות */
+const IMPERSONATION_MAX_AGE_SECONDS = 2 * 60 * 60;
 
 export interface SessionUser {
   id: string;
@@ -115,13 +117,16 @@ export function setSessionCookie(response: NextResponse, token: string): void {
 }
 
 export function setPrevSessionCookie(response: NextResponse, token: string): void {
-  response.cookies.set(SESSION_PREV_COOKIE, token, cookieBaseOptions());
+  response.cookies.set(SESSION_PREV_COOKIE, token, {
+    ...cookieBaseOptions(),
+    maxAge: IMPERSONATION_MAX_AGE_SECONDS,
+  });
 }
 
 export function setImpersonationMarkerCookie(response: NextResponse): void {
   response.cookies.set(IMPERSONATION_MARKER_COOKIE, '1', {
     ...cookieBaseOptions(),
-    maxAge: JWT_EXPIRY_DAYS * 24 * 60 * 60,
+    maxAge: IMPERSONATION_MAX_AGE_SECONDS,
   });
 }
 

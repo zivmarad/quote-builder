@@ -1,4 +1,4 @@
-/** ברירות מחדל לכניסת אדמין. תמיד פעילים; ב-Vercel אפשר להוסיף גם ADMIN_SECRET / ADMIN_USERNAME. */
+/** ברירות מחדל ללוקאל בלבד. בפרודקשן חייבים ENV מפורשים. */
 export const DEFAULT_ADMIN_USERNAME = 'זיו';
 export const DEFAULT_ADMIN_SECRET = 'זיו4';
 
@@ -32,15 +32,28 @@ function nfc(s: string): string {
 
 export function resolvedAdminUsername(): string {
   const v = process.env.ADMIN_USERNAME?.trim();
-  return v && v.length > 0 ? v : DEFAULT_ADMIN_USERNAME;
+  if (v && v.length > 0) return v;
+  return process.env.NODE_ENV === 'production' ? '' : DEFAULT_ADMIN_USERNAME;
 }
 
-/** סיסמאות תקפות: ברירת המחדל מהקוד + (אם קיים) ADMIN_SECRET משרת – כדי שלא ייחסמו אחרי הגדרה ב-Vercel. */
+/** סיסמאות תקפות: בפרודקשן רק ENV; בלוקאל ENV או ברירת מחדל. */
 export function allValidAdminSecrets(): string[] {
   const env = process.env.ADMIN_SECRET?.trim();
-  const list = [DEFAULT_ADMIN_SECRET];
-  if (env && env.length > 0 && env !== DEFAULT_ADMIN_SECRET) list.push(env);
+  if (process.env.NODE_ENV === 'production') {
+    return env && env.length > 0 ? [env] : [];
+  }
+  const list: string[] = [];
+  if (env && env.length > 0) list.push(env);
+  if (!list.includes(DEFAULT_ADMIN_SECRET)) list.push(DEFAULT_ADMIN_SECRET);
   return list;
+}
+
+/** מצב קונפיג אדמין: בפרודקשן חובה שם משתמש + סיסמה דרך ENV. */
+export function isAdminConfigReady(): boolean {
+  if (process.env.NODE_ENV !== 'production') return true;
+  const u = process.env.ADMIN_USERNAME?.trim();
+  const s = process.env.ADMIN_SECRET?.trim();
+  return !!u && !!s;
 }
 
 export function getAdminKeyFromRequest(request: Request): string | null {
@@ -52,21 +65,25 @@ export function getAdminKeyFromRequest(request: Request): string | null {
  * בודק כניסת אדמין. מחזיר מפתח ASCII ל־X-Admin-Key (לא UTF-8 גולמי – מגבלת Fetch).
  */
 export function tryAdminLogin(rawUsername: string, rawPassword: string): { key: string } | null {
+  if (!isAdminConfigReady()) return null;
   const u = nfc(typeof rawUsername === 'string' ? rawUsername.trim() : '');
   const p = typeof rawPassword === 'string' ? rawPassword.trim() : '';
   const secrets = new Set(allValidAdminSecrets());
   if (!secrets.has(p)) return null;
 
-  const resolvedUser = nfc(resolvedAdminUsername());
+  const resolved = resolvedAdminUsername();
+  const resolvedUser = resolved ? nfc(resolved) : '';
   const defaultUser = nfc(DEFAULT_ADMIN_USERNAME);
 
   const wireKey = encodeAdminKeyForHeader(p);
 
   if (u === '' && secrets.has(p)) return { key: wireKey };
 
-  if (u === defaultUser && p === DEFAULT_ADMIN_SECRET) return { key: wireKey };
+  if (process.env.NODE_ENV !== 'production' && u === defaultUser && p === DEFAULT_ADMIN_SECRET) {
+    return { key: wireKey };
+  }
 
-  if (u === resolvedUser && secrets.has(p)) return { key: wireKey };
+  if (resolvedUser && u === resolvedUser && secrets.has(p)) return { key: wireKey };
 
   return null;
 }

@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server';
 import { getUserByLogin, verifyPassword, rehashToBcryptIfNeeded } from '../lib/users-store';
 import { createSessionToken, setSessionCookie, clearImpersonationCookies } from '../../../../lib/auth-server';
-import { rateLimitResponse } from '../../../../lib/api-helpers';
+import { rateLimitResponse, withRequestId } from '../../../../lib/api-helpers';
 import { LIMITS } from '../../../../lib/rate-limit';
+import { getRequestLogMeta, logError, logWarn } from '../../../../lib/observability';
 
 export async function POST(request: Request) {
-  const rateLimited = rateLimitResponse(request, LIMITS.AUTH);
+  const meta = getRequestLogMeta(request);
+  const json = (body: unknown, init?: ResponseInit) => withRequestId(NextResponse.json(body, init), meta.requestId);
+  const rateLimited = await rateLimitResponse(request, LIMITS.AUTH);
   if (rateLimited) return rateLimited;
   try {
     const body = await request.json();
@@ -13,17 +16,20 @@ export async function POST(request: Request) {
     const password = typeof body.password === 'string' ? body.password : '';
 
     if (!login || !password) {
-      return NextResponse.json({ ok: false, error: 'נא למלא שם משתמש או אימייל וסיסמה' }, { status: 400 });
+      logWarn('Auth login bad request', { ...meta });
+      return json({ ok: false, error: 'נא למלא שם משתמש או אימייל וסיסמה' }, { status: 400 });
     }
 
     const found = await getUserByLogin(login);
     if (!found) {
-      return NextResponse.json({ ok: false, error: 'שם משתמש/אימייל או סיסמה שגויים' }, { status: 401 });
+      logWarn('Auth login user not found', { ...meta, login });
+      return json({ ok: false, error: 'שם משתמש/אימייל או סיסמה שגויים' }, { status: 401 });
     }
 
     const valid = await verifyPassword(password, found.passwordHash);
     if (!valid) {
-      return NextResponse.json({ ok: false, error: 'שם משתמש/אימייל או סיסמה שגויים' }, { status: 401 });
+      logWarn('Auth login invalid password', { ...meta, userId: found.id });
+      return json({ ok: false, error: 'שם משתמש/אימייל או סיסמה שגויים' }, { status: 401 });
     }
 
     await rehashToBcryptIfNeeded(found.id, password, found.passwordHash);
@@ -33,7 +39,7 @@ export async function POST(request: Request) {
       username: found.username,
       email: found.email,
     });
-    const response = NextResponse.json({
+    const response = json({
       ok: true,
       user: { id: found.id, username: found.username, email: found.email },
     });
@@ -41,7 +47,7 @@ export async function POST(request: Request) {
     clearImpersonationCookies(response);
     return response;
   } catch (e) {
-    console.error('Login error:', e);
-    return NextResponse.json({ ok: false, error: 'שגיאה בשרת' }, { status: 500 });
+    logError('Auth login exception', { ...meta, error: e instanceof Error ? e.message : String(e) });
+    return json({ ok: false, error: 'שגיאה בשרת' }, { status: 500 });
   }
 }

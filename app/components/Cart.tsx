@@ -174,6 +174,23 @@ export default function Cart() {
     customerCompanyId: customerCompanyId.trim() || undefined,
   });
 
+  const reserveQuoteNumber = async (): Promise<number> => {
+    try {
+      const res = await fetch('/api/quotes/next-number', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      const data = (await res.json()) as { ok?: boolean; quoteNumber?: number };
+      if (res.ok && data?.ok && typeof data.quoteNumber === 'number' && data.quoteNumber >= 1) {
+        setNextQuoteNumber(Math.max(nextQuoteNumber, data.quoteNumber + 1));
+        return data.quoteNumber;
+      }
+    } catch {
+      // fallback below
+    }
+    return nextQuoteNumber;
+  };
+
   const handleExportPDF = async () => {
     if (!user) {
       router.push('/login?from=' + encodeURIComponent('/cart'));
@@ -182,6 +199,7 @@ export default function Cart() {
     const { customerPhone, customerEmail, customerAddress, customerCompanyId } = getCustomerContact();
     setIsDownloading(true);
     try {
+      const quoteNumber = await reserveQuoteNumber();
       addQuote({
         items,
         totalBeforeVAT,
@@ -193,7 +211,7 @@ export default function Cart() {
         customerAddress,
         customerCompanyId,
         notes: notes.trim() || undefined,
-        quoteNumber: nextQuoteNumber,
+        quoteNumber,
         status: 'download',
         quoteStatus: 'draft',
       });
@@ -206,7 +224,7 @@ export default function Cart() {
         customerName.trim() || undefined,
         notes.trim() || undefined,
         defaultQuoteTitle,
-        nextQuoteNumber,
+        quoteNumber,
         customerPhone,
         customerEmail,
         customerAddress,
@@ -220,7 +238,6 @@ export default function Cart() {
       a.download = `hatzaat-mechir-${new Date().toISOString().slice(0, 10)}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
-      setNextQuoteNumber(nextQuoteNumber + 1);
       clearBasket();
       setCustomerName('');
       setCustomerPhone('');
@@ -243,6 +260,7 @@ export default function Cart() {
     }
     setIsSharing(true);
     const { customerPhone, customerEmail, customerAddress, customerCompanyId } = getCustomerContact();
+    const quoteNumber = await reserveQuoteNumber();
     addQuote({
       items,
       totalBeforeVAT,
@@ -254,13 +272,12 @@ export default function Cart() {
       customerAddress,
       customerCompanyId,
       notes: notes.trim() || undefined,
-      quoteNumber: nextQuoteNumber,
+      quoteNumber,
       status: 'whatsapp',
       quoteStatus: 'sent',
     });
     try {
-      const blob = await generateQuotePDFAsBlob(items, totalBeforeVAT, VAT, totalWithVAT, profile, customerName || undefined, notes || undefined, defaultQuoteTitle, nextQuoteNumber, customerPhone, customerEmail, customerAddress, customerCompanyId, validityDays ?? undefined, vatRate);
-      setNextQuoteNumber(nextQuoteNumber + 1);
+      const blob = await generateQuotePDFAsBlob(items, totalBeforeVAT, VAT, totalWithVAT, profile, customerName || undefined, notes || undefined, defaultQuoteTitle, quoteNumber, customerPhone, customerEmail, customerAddress, customerCompanyId, validityDays ?? undefined, vatRate);
       lastShareBlobRef.current = blob;
       setShareError(null);
       setShowWhatsAppModal(true);

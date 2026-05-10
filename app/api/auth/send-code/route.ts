@@ -9,7 +9,7 @@ import { LIMITS } from '../../../../lib/rate-limit';
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(request: Request) {
-  const rateLimited = rateLimitResponse(request, LIMITS.SEND_CODE);
+  const rateLimited = await rateLimitResponse(request, LIMITS.SEND_CODE);
   if (rateLimited) return rateLimited;
   try {
     const body = await request.json();

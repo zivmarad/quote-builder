@@ -10,7 +10,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** הרשמה אחרי אימות אימייל: קוד + שם משתמש + סיסמה */
 export async function POST(request: Request) {
-  const rateLimited = rateLimitResponse(request, LIMITS.AUTH);
+  const rateLimited = await rateLimitResponse(request, LIMITS.AUTH);
   if (rateLimited) return rateLimited;
   try {
     const body = await request.json();

@@ -5,7 +5,7 @@ import { rateLimitResponse, checkBodySize } from '../../../../lib/api-helpers';
 import { LIMITS } from '../../../../lib/rate-limit';
 
 export async function GET(request: NextRequest) {
-  const rateLimited = rateLimitResponse(request, LIMITS.SYNC);
+  const rateLimited = await rateLimitResponse(request, LIMITS.SYNC);
   if (rateLimited) return rateLimited;
   const user = await getCurrentUser(request);
   if (!user) {
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const rateLimited = rateLimitResponse(request, LIMITS.SYNC);
+  const rateLimited = await rateLimitResponse(request, LIMITS.SYNC);
   if (rateLimited) return rateLimited;
   const bodyTooBig = checkBodySize(request);
   if (bodyTooBig) return bodyTooBig;

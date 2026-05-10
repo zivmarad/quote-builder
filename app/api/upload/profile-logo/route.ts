@@ -28,7 +28,7 @@ function parseDataUrl(dataUrl: string): { buffer: Buffer; contentType: string; e
 
 /** העלאת לוגו ל־Supabase Storage – נשמר URL בפרופיל (יציב, לא תלוי ב־localStorage). */
 export async function POST(request: NextRequest) {
-  const rateLimited = rateLimitResponse(request, LIMITS.LOGO_UPLOAD);
+  const rateLimited = await rateLimitResponse(request, LIMITS.LOGO_UPLOAD);
   if (rateLimited) return rateLimited;
   const tooBig = checkBodySize(request, MAX_LOGO_UPLOAD_BYTES);
   if (tooBig) return tooBig;
