@@ -104,5 +104,24 @@ CREATE INDEX IF NOT EXISTS idx_admin_audit_logs_actor_user_id ON admin_audit_log
 CREATE INDEX IF NOT EXISTS idx_admin_audit_logs_target_user_id ON admin_audit_logs(target_user_id);
 ALTER TABLE admin_audit_logs ENABLE ROW LEVEL SECURITY;
 
+-- תור ייצוא הצעות (מעקב סטטוס ייצוא/יצירת PDF)
+CREATE TABLE IF NOT EXISTS quote_export_jobs (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  export_type TEXT NOT NULL,
+  status TEXT NOT NULL,
+  quote_number INTEGER,
+  payload JSONB NOT NULL DEFAULT '{}',
+  error_message TEXT,
+  attempts INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  finished_at TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS idx_quote_export_jobs_user_id ON quote_export_jobs(user_id);
+CREATE INDEX IF NOT EXISTS idx_quote_export_jobs_status ON quote_export_jobs(status);
+CREATE INDEX IF NOT EXISTS idx_quote_export_jobs_created_at ON quote_export_jobs(created_at);
+ALTER TABLE quote_export_jobs ENABLE ROW LEVEL SECURITY;
+
 -- מדיניות: שירות (service_role) יכול הכל. לקוח (anon) לא יכול גישה ישירה
 -- אנחנו משתמשים רק ב־API routes עם service_role, אז זה תקין

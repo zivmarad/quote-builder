@@ -191,6 +191,52 @@ export default function Cart() {
     return nextQuoteNumber;
   };
 
+  const createExportJob = async (
+    exportType: 'download' | 'whatsapp',
+    quoteNumber: number
+  ): Promise<string | null> => {
+    try {
+      const res = await fetch('/api/quote-jobs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          exportType,
+          status: 'queued',
+          quoteNumber,
+          payload: { customerName: customerName.trim() || null, itemsCount: items.length },
+        }),
+      });
+      const data = (await res.json()) as { ok?: boolean; jobId?: string };
+      if (res.ok && data.ok && typeof data.jobId === 'string') return data.jobId;
+    } catch {
+      // keep flow working even if queue tracking failed
+    }
+    return null;
+  };
+
+  const updateExportJob = async (
+    jobId: string | null,
+    status: 'processing' | 'completed' | 'failed',
+    errorMessage?: string
+  ) => {
+    if (!jobId) return;
+    try {
+      await fetch(`/api/quote-jobs/${jobId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          status,
+          incrementAttempts: status === 'processing',
+          errorMessage: errorMessage ?? null,
+        }),
+      });
+    } catch {
+      // non-blocking telemetry path
+    }
+  };
+
   const handleExportPDF = async () => {
     if (!user) {
       router.push('/login?from=' + encodeURIComponent('/cart'));
@@ -198,8 +244,11 @@ export default function Cart() {
     }
     const { customerPhone, customerEmail, customerAddress, customerCompanyId } = getCustomerContact();
     setIsDownloading(true);
+    let jobId: string | null = null;
     try {
       const quoteNumber = await reserveQuoteNumber();
+      jobId = await createExportJob('download', quoteNumber);
+      await updateExportJob(jobId, 'processing');
       addQuote({
         items,
         totalBeforeVAT,
@@ -246,7 +295,11 @@ export default function Cart() {
       setCustomerCompanyId('');
       setNotes('');
       setToast('ה-PDF הורד וההצעה נשמרה');
+      await updateExportJob(jobId, 'completed');
       setTimeout(() => router.push('/'), 2500);
+    } catch (e) {
+      await updateExportJob(jobId, 'failed', e instanceof Error ? e.message : 'pdf_export_failed');
+      setToast('שגיאה בהפקת ה-PDF');
     } finally {
       setIsDownloading(false);
     }
@@ -261,6 +314,7 @@ export default function Cart() {
     setIsSharing(true);
     const { customerPhone, customerEmail, customerAddress, customerCompanyId } = getCustomerContact();
     const quoteNumber = await reserveQuoteNumber();
+    let jobId: string | null = null;
     addQuote({
       items,
       totalBeforeVAT,
@@ -277,13 +331,17 @@ export default function Cart() {
       quoteStatus: 'sent',
     });
     try {
+      jobId = await createExportJob('whatsapp', quoteNumber);
+      await updateExportJob(jobId, 'processing');
       const blob = await generateQuotePDFAsBlob(items, totalBeforeVAT, VAT, totalWithVAT, profile, customerName || undefined, notes || undefined, defaultQuoteTitle, quoteNumber, customerPhone, customerEmail, customerAddress, customerCompanyId, validityDays ?? undefined, vatRate);
       lastShareBlobRef.current = blob;
       setShareError(null);
       setShowWhatsAppModal(true);
+      await updateExportJob(jobId, 'completed');
     } catch (err) {
       if ((err as Error)?.name === 'AbortError') return;
       lastShareBlobRef.current = null;
+      await updateExportJob(jobId, 'failed', err instanceof Error ? err.message : 'whatsapp_export_failed');
     } finally {
       setIsSharing(false);
     }

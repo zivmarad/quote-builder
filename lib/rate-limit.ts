@@ -119,4 +119,6 @@ export const LIMITS = {
   ADMIN_IMPERSONATE: { max: 25, windowMs: 60 * 1000 },
   /** שמירת מספר הצעה סידורי */
   QUOTE_NUMBER: { max: 80, windowMs: 60 * 1000 },
+  /** יצירה/עדכון תורי ייצוא */
+  QUOTE_JOBS: { max: 120, windowMs: 60 * 1000 },
 } as const;
