@@ -15,6 +15,11 @@ import ConfirmDialog from './ConfirmDialog';
 
 const PENDING_DRAFT_KEY = 'quoteBuilder_pendingDraft';
 import { generateQuotePDFAsBlob, getQuotePreviewHtml } from './utils/pdfExport';
+import {
+  buildCartPreviewParams,
+  GUEST_PREVIEW_WATERMARK_BANNER,
+  GUEST_PREVIEW_WATERMARK_LINE,
+} from '../../lib/guest-quote-preview';
 
 export default function Cart() {
   const router = useRouter();
@@ -76,6 +81,42 @@ export default function Cart() {
         });
     return list.slice(0, 40);
   }, [customers, customerComboQuery]);
+
+  const cartPreviewHtml = useMemo(() => {
+    const params = buildCartPreviewParams(!user, {
+      items,
+      totalBeforeVAT,
+      totalWithVAT: contextTotalWithVAT,
+      profile,
+      customerName: customerName.trim() || undefined,
+      customerPhone: customerPhone.trim() || undefined,
+      customerEmail: customerEmail.trim() || undefined,
+      customerAddress: customerAddress.trim() || undefined,
+      customerCompanyId: customerCompanyId.trim() || undefined,
+      notes: notes.trim() || undefined,
+      quoteTitle: defaultQuoteTitle,
+      quoteNumber: nextQuoteNumber,
+      validityDays: validityDays ?? undefined,
+      vatRate,
+    });
+    return getQuotePreviewHtml(params);
+  }, [
+    user,
+    items,
+    totalBeforeVAT,
+    contextTotalWithVAT,
+    profile,
+    customerName,
+    customerPhone,
+    customerEmail,
+    customerAddress,
+    customerCompanyId,
+    notes,
+    defaultQuoteTitle,
+    nextQuoteNumber,
+    validityDays,
+    vatRate,
+  ]);
 
   useEffect(() => {
     if (!customerComboOpen) return;
@@ -1246,27 +1287,30 @@ export default function Cart() {
                 סגור
               </button>
             </div>
-            <div className="quote-preview-container p-4 bg-slate-100 min-h-0 flex-1 [&_.quote-preview-body]:shadow-lg [&_.quote-preview-body]:bg-white [&_.quote-preview-body]:my-0">
+            <div className="quote-preview-container relative p-4 bg-slate-100 min-h-0 flex-1 [&_.quote-preview-body]:shadow-lg [&_.quote-preview-body]:bg-white [&_.quote-preview-body]:my-0">
+              {!user && (
+                <div className="pointer-events-none absolute inset-0 z-[5] overflow-hidden" aria-hidden>
+                  <div
+                    className="absolute left-1/2 top-1/2 w-[220%] text-center select-none"
+                    style={{ transform: 'translate(-50%, -50%) rotate(-26deg)' }}
+                  >
+                    {Array.from({ length: 7 }, (_, i) => (
+                      <p
+                        key={i}
+                        className="py-6 text-slate-500/18 font-bold text-base sm:text-lg whitespace-nowrap"
+                      >
+                        {GUEST_PREVIEW_WATERMARK_LINE}
+                      </p>
+                    ))}
+                  </div>
+                  <p className="absolute bottom-3 left-3 right-3 z-[6] rounded-xl border border-blue-200 bg-blue-50/95 px-3 py-2.5 text-center text-xs sm:text-sm font-semibold text-blue-900 shadow-sm">
+                    {GUEST_PREVIEW_WATERMARK_BANNER}
+                  </p>
+                </div>
+              )}
               <div
-                className="min-w-0"
-                dangerouslySetInnerHTML={{
-                  __html: getQuotePreviewHtml({
-                    items,
-                    totalBeforeVAT,
-                    totalWithVAT,
-                    profile,
-                    customerName: customerName.trim() || undefined,
-                    customerPhone: customerPhone.trim() || undefined,
-                    customerEmail: customerEmail.trim() || undefined,
-                    customerAddress: customerAddress.trim() || undefined,
-                    customerCompanyId: customerCompanyId.trim() || undefined,
-                    notes: notes.trim() || undefined,
-                    quoteTitle: defaultQuoteTitle,
-                    quoteNumber: nextQuoteNumber,
-                    validityDays: validityDays ?? undefined,
-                    vatRate,
-                  }),
-                }}
+                className="min-w-0 relative z-[1]"
+                dangerouslySetInnerHTML={{ __html: cartPreviewHtml }}
               />
             </div>
           </div>
