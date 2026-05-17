@@ -12,7 +12,7 @@ export default function MarketingFooter() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-slate-600">
           <span>© {year} מחולל הצעות מחיר</span>
           <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1">
-            <Link href="/landing" className="hover:text-slate-900 font-medium transition-colors">
+            <Link href="/landing#sample-quotes" className="hover:text-slate-900 font-medium transition-colors">
               הצעות מחיר לדוגמא
             </Link>
             <Link href="/contact" className="hover:text-slate-900 font-medium transition-colors">

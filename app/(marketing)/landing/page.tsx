@@ -16,6 +16,7 @@ import { LandingImage } from './LandingImage';
 import { LandingVideo } from './LandingVideo';
 import { PhoneMockup } from './PhoneMockup';
 import LandingFaq from './LandingFaq';
+import LandingSampleQuotes from './LandingSampleQuotes';
 import LandingJsonLd from './LandingJsonLd';
 
 const siteUrl = getSiteUrl();
@@ -252,6 +253,8 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+
+        <LandingSampleQuotes />
 
         <LandingFaq />
 
