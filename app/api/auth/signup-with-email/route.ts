@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { emailExists, usernameExists, hashPassword, generateId, createUser } from '../lib/users-store';
-import { consumeVerificationCode } from '../lib/verification-codes-store';
+import { checkVerificationCode, consumeVerificationCode } from '../lib/verification-codes-store';
 import { sendNewUserNotificationEmail } from '../lib/send-email';
 import { createSessionToken, setSessionCookie, clearImpersonationCookies } from '../../../../lib/auth-server';
 import { rateLimitResponse } from '../../../../lib/api-helpers';
@@ -32,8 +32,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: 'הסיסמה חייבת להכיל לפחות 4 תווים' }, { status: 400 });
     }
 
-    const valid = await consumeVerificationCode(email, code);
-    if (!valid) {
+    if (!(await checkVerificationCode(email, code))) {
       return NextResponse.json({ ok: false, error: 'קוד לא תקין או שפג תוקפו' }, { status: 401 });
     }
 
@@ -42,6 +41,11 @@ export async function POST(request: Request) {
     }
     if (await usernameExists(username)) {
       return NextResponse.json({ ok: false, error: 'שם המשתמש כבר תפוס' }, { status: 400 });
+    }
+
+    const consumed = await consumeVerificationCode(email, code);
+    if (!consumed) {
+      return NextResponse.json({ ok: false, error: 'קוד לא תקין או שפג תוקפו' }, { status: 401 });
     }
 
     const newUser = {
