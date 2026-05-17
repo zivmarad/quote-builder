@@ -4,7 +4,8 @@ import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react'
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useProfile } from '../contexts/ProfileContext';
-import { useQuoteHistory, type QuoteWorkflowStatus, type ExportMethod, type SavedQuote } from '../contexts/QuoteHistoryContext';
+import { useQuoteHistory, type QuoteWorkflowStatus, type SavedQuote } from '../contexts/QuoteHistoryContext';
+import { getQuoteListBadge } from '../../lib/quote-badge';
 import { useQuoteBasket } from '../contexts/QuoteBasketContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { generateQuotePDFAsBlob, getQuotePreviewHtml } from '../components/utils/pdfExport';
@@ -39,19 +40,6 @@ const formatPrice = (price: number) =>
   new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(price);
 
 
-const quoteStatusColors: Record<QuoteWorkflowStatus, string> = {
-  draft: 'bg-slate-100 text-slate-700',
-  sent: 'bg-blue-50 text-blue-700',
-  approved: 'bg-green-50 text-green-700',
-  paid: 'bg-emerald-600 text-white',
-};
-
-const exportLabelKeys: Record<ExportMethod, string> = {
-  download: 'profile.exportDownload',
-  whatsapp: 'profile.exportWhatsapp',
-  email: 'profile.exportEmail',
-};
-
 const quoteStatusKeys: Record<QuoteWorkflowStatus, string> = {
   draft: 'profile.quoteStatusDraft',
   sent: 'profile.quoteStatusSent',
@@ -68,8 +56,14 @@ export default function ProfilePage() {
   const { getBasePrice, setBasePrice } = usePriceOverrides();
   const { user: authUser, changePassword } = useAuth();
   const { t, dir } = useLanguage();
-  const exportLabels: Record<ExportMethod, string> = { download: t(exportLabelKeys.download), whatsapp: t(exportLabelKeys.whatsapp), email: t(exportLabelKeys.email) };
   const quoteStatusLabels: Record<QuoteWorkflowStatus, string> = { draft: t(quoteStatusKeys.draft), sent: t(quoteStatusKeys.sent), approved: t(quoteStatusKeys.approved), paid: t(quoteStatusKeys.paid) };
+  const quoteBadgeLabels = {
+    downloaded: t('profile.statusDownloadedToDevice'),
+    sent: t('profile.quoteStatusSent'),
+    draft: t('profile.quoteStatusDraft'),
+    approved: t('profile.quoteStatusApproved'),
+    paid: t('profile.quoteStatusPaid'),
+  };
   const [activeSection, setActiveSection] = useState<SectionId>('details');
   const sectionRefs = useRef<Partial<Record<SectionId, HTMLElement | null>>>({});
   const ioSkipUntilRef = useRef(0);
@@ -669,6 +663,7 @@ export default function ProfilePage() {
                           minute: '2-digit',
                         });
                         const isOpen = openQuoteId === q.id;
+                        const listBadge = getQuoteListBadge(q, quoteBadgeLabels);
                         return (
                           <li
                             key={q.id}
@@ -709,9 +704,9 @@ export default function ProfilePage() {
                                 </div>
                               </div>
                               <span
-                                className={`text-xs font-medium px-2.5 py-1 rounded-full shrink-0 max-w-[5.5rem] truncate ${quoteStatusColors[q.quoteStatus ?? 'draft']}`}
+                                className={`text-xs font-medium px-2.5 py-1 rounded-full shrink-0 max-w-[6.5rem] truncate ${listBadge.colorClass}`}
                               >
-                                {quoteStatusLabels[q.quoteStatus ?? 'draft']}
+                                {listBadge.label}
                               </span>
                             </button>
                             {isOpen && (
@@ -721,9 +716,9 @@ export default function ProfilePage() {
                                     <button
                                       type="button"
                                       onClick={() => setStatusDropdownId(statusDropdownId === q.id ? null : q.id)}
-                                      className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full transition-colors ${quoteStatusColors[q.quoteStatus ?? 'draft']} hover:opacity-90`}
+                                      className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full transition-colors ${listBadge.colorClass} hover:opacity-90`}
                                     >
-                                      {quoteStatusLabels[q.quoteStatus ?? 'draft']}
+                                      {listBadge.label}
                                       <ChevronDown size={14} className="opacity-70" />
                                     </button>
                                     {statusDropdownId === q.id && (
@@ -747,11 +742,6 @@ export default function ProfilePage() {
                                       </>
                                     )}
                                   </div>
-                                  {q.status && (
-                                    <span className="text-xs text-slate-500">
-                                      {exportLabels[q.status as ExportMethod]}
-                                    </span>
-                                  )}
                                 </div>
                                 <div className="flex flex-wrap items-center gap-2 mt-3">
                                   <button

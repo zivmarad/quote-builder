@@ -440,7 +440,6 @@ export default function Cart() {
         notes: notes.trim() || undefined,
         quoteNumber,
         status: 'download',
-        quoteStatus: 'draft',
         quoteData,
         quote_data: quoteData,
       });
