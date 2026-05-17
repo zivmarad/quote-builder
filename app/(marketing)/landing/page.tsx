@@ -123,7 +123,7 @@ function HeroCtas() {
         התחל עכשיו בחינם
       </Link>
       <Link
-        href="/category/paint"
+        href="/?try=1"
         className="text-sm text-slate-500 hover:text-blue-600 underline underline-offset-2 transition-colors"
       >
         או: נסה קודם בלי הרשמה
