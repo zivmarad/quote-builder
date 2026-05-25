@@ -122,7 +122,7 @@ export default function CategoryPage() {
                 }`}
               >
                 <div className="flex items-start gap-2 mb-1">
-                  <div className="flex-1 flex items-center gap-2 justify-end flex-wrap min-w-0">
+                  <div className="flex-1 flex items-center gap-2 justify-start flex-wrap min-w-0 text-right">
                     {isCustom && (
                       <span className="text-[10px] font-bold uppercase tracking-wide text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full shrink-0">
                         {t('customCatalog.myService')}
