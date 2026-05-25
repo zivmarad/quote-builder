@@ -21,7 +21,11 @@
   "home": {
     "title": "Quote Builder",
     "subtitle": "Choose a trade to start quick, accurate pricing",
-    "profileLink": "Personal area – details, history & settings"
+    "profileLink": "Personal area – details, history & settings",
+    "searchPlaceholder": "Search trade or service...",
+    "searchLabel": "Quick search",
+    "noResults": "No results found",
+    "searchHint": "Type to search all trades and services"
   },
   "header": {
     "appName": "Quote Builder",

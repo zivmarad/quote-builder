@@ -116,19 +116,22 @@ const features = [
 
 function HeroCtas() {
   return (
-    <div className="flex flex-col items-center gap-3 w-full max-w-md mx-auto lg:mx-0 lg:items-start">
-      <Link
-        href="/signup?from=%2Fcategory%2Fpaint"
-        className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 rounded-xl font-bold text-white bg-[#2563eb] hover:bg-[#1d4ed8] transition-all text-lg shadow-lg shadow-blue-600/25 hover:shadow-xl"
-      >
-        התחל עכשיו בחינם
-      </Link>
+    <div className="flex flex-col items-center gap-4 w-full max-w-md mx-auto lg:mx-0 lg:items-start">
       <Link
         href="/?try=1"
-        className="text-sm text-slate-500 hover:text-blue-600 underline underline-offset-2 transition-colors"
+        className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 rounded-xl font-bold text-white bg-[#2563eb] hover:bg-[#1d4ed8] transition-all text-lg shadow-lg shadow-blue-600/25 hover:shadow-xl"
       >
-        או: נסה קודם בלי הרשמה
+        נסה עכשיו בחינם
       </Link>
+      <p className="text-sm text-slate-500 text-center lg:text-right">
+        רוצה לשמור הצעות ופרטי עסק?{' '}
+        <Link
+          href="/signup"
+          className="font-bold text-[#2563eb] hover:text-[#1d4ed8] underline underline-offset-2 transition-colors"
+        >
+          הירשם בחינם
+        </Link>
+      </p>
     </div>
   );
 }

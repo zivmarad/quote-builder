@@ -20,8 +20,11 @@ export default function CategoryPage() {
     if (!category) return [];
     const q = search.trim().toLowerCase();
     if (!q) return category.services;
-    return category.services.filter((s) => s.name.toLowerCase().includes(q));
-  }, [category, search]);
+    return category.services.filter((s) => {
+      const translated = t(`service.${s.id}`, s.name);
+      return translated.toLowerCase().includes(q) || s.name.toLowerCase().includes(q);
+    });
+  }, [category, search, t]);
 
   if (!category) {
     return (
@@ -80,7 +83,7 @@ export default function CategoryPage() {
             >
               <h2 className="text-base sm:text-lg font-bold text-slate-900 mb-1">{t(`service.${service.id}`, service.name)}</h2>
               <p className="text-sm text-slate-500 mb-2">
-                {t('category.fromPrice')}₪{getBasePrice(service.id, service.basePrice).toLocaleString('he-IL')}{t('category.perUnit')}{service.unit}
+                {t('category.fromPrice')} ₪{getBasePrice(service.id, service.basePrice).toLocaleString('he-IL')} {t('category.perUnit')} {service.unit}
               </p>
               {service.isCounter && (
                 <p className="text-xs text-slate-400">{t('category.quantityNote')}</p>

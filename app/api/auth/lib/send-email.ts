@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import nodemailer from 'nodemailer';
 
 function getFromEmail(): string {
@@ -17,13 +18,21 @@ function getTransporter() {
   });
 }
 
+function uniqueMessageId(fromEmail: string): string {
+  const domain = fromEmail.split('@')[1] ?? 'quote-builder.local';
+  return `<${randomUUID()}@${domain}>`;
+}
+
 export async function sendVerificationEmail(to: string, code: string): Promise<void> {
   const transporter = getTransporter();
   const fromEmail = getFromEmail();
   await transporter.sendMail({
     from: `בונה הצעות מחיר <${fromEmail}>`,
     to,
-    subject: 'קוד אימות – בונה הצעות מחיר',
+    subject: `קוד אימות: ${code} – בונה הצעות מחיר`,
+    headers: {
+      'Message-ID': uniqueMessageId(fromEmail),
+    },
     text: `קוד האימות שלך: ${code}\n\nהקוד תקף ל־10 דקות.\nאם לא ביקשת קוד זה, התעלם מהמייל.`,
     html: `
       <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 400px;">

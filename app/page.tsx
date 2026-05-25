@@ -1,7 +1,9 @@
 'use client';
 
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Palette, Umbrella, Droplet, Layers, Zap, Snowflake, Hammer, Link2, TreePine, Wrench, Building2, DoorOpen, Package, ChevronRight, Box, Radio, Cog } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Palette, Umbrella, Droplet, Layers, Zap, Snowflake, Hammer, Link2, TreePine, Wrench, Building2, DoorOpen, Package, ChevronRight, Box, Radio, Cog, Search } from 'lucide-react';
 import { categories } from './service/services';
 import { useLanguage } from './contexts/LanguageContext';
 
@@ -43,8 +45,57 @@ const categoryColors: Record<string, string> = {
   misc: 'text-slate-500',
 };
 
+type SearchResult = {
+  type: 'category' | 'service';
+  categoryId: string;
+  categoryName: string;
+  serviceId?: string;
+  serviceName?: string;
+  href: string;
+};
+
 export default function HomePage() {
+  const router = useRouter();
   const { t, dir } = useLanguage();
+  const [search, setSearch] = useState('');
+
+  const searchResults = useMemo((): SearchResult[] => {
+    const q = search.trim().toLowerCase();
+    if (!q) return [];
+
+    const results: SearchResult[] = [];
+
+    for (const cat of categories) {
+      const categoryName = t(`categoryName.${cat.id}`, cat.name);
+      if (categoryName.toLowerCase().includes(q) || cat.name.toLowerCase().includes(q)) {
+        results.push({
+          type: 'category',
+          categoryId: cat.id,
+          categoryName,
+          href: `/category/${cat.id}`,
+        });
+      }
+
+      for (const svc of cat.services) {
+        const serviceName = t(`service.${svc.id}`, svc.name);
+        if (serviceName.toLowerCase().includes(q) || svc.name.toLowerCase().includes(q)) {
+          results.push({
+            type: 'service',
+            categoryId: cat.id,
+            categoryName,
+            serviceId: svc.id,
+            serviceName,
+            href: `/category/${cat.id}/${svc.id}`,
+          });
+        }
+      }
+    }
+
+    return results.slice(0, 12);
+  }, [search, t]);
+
+  const showResults = search.trim().length > 0;
+
   return (
     <main className="min-h-screen bg-[#F8FAFC] px-5 py-6 sm:p-6 md:p-12" dir={dir}>
       <div className="max-w-5xl mx-auto text-right">
@@ -55,12 +106,61 @@ export default function HomePage() {
           <p className="text-slate-500 font-medium text-sm sm:text-base mb-4">
             {t('home.subtitle')}
           </p>
-          <Link
-            href="/profile"
-            className="inline-flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 hover:underline touch-manipulation"
-          >
-            {t('home.profileLink')}
-          </Link>
+
+          <div className="relative max-w-xl">
+            <label htmlFor="home-search" className="sr-only">
+              {t('home.searchLabel')}
+            </label>
+            <Search
+              className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none"
+              aria-hidden
+            />
+            <input
+              id="home-search"
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t('home.searchPlaceholder')}
+              className="w-full pr-12 pl-4 py-3.5 rounded-2xl border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
+              dir="rtl"
+              autoComplete="off"
+            />
+            {showResults && (
+              <div className="absolute z-20 top-full mt-2 w-full bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden">
+                {searchResults.length > 0 ? (
+                  <ul className="max-h-72 overflow-y-auto py-1">
+                    {searchResults.map((result) => (
+                      <li key={`${result.type}-${result.categoryId}-${result.serviceId ?? 'cat'}`}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            router.push(result.href);
+                            setSearch('');
+                          }}
+                          className="w-full text-right px-4 py-3 hover:bg-blue-50 active:bg-blue-100 transition-colors flex items-center justify-between gap-3"
+                        >
+                          <div className="min-w-0">
+                            <p className="font-semibold text-slate-900 text-sm truncate">
+                              {result.type === 'service' ? result.serviceName : result.categoryName}
+                            </p>
+                            {result.type === 'service' && (
+                              <p className="text-xs text-slate-500 truncate">{result.categoryName}</p>
+                            )}
+                          </div>
+                          <ChevronRight size={16} className="text-slate-300 shrink-0 rotate-180" />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="px-4 py-4 text-sm text-slate-500">{t('home.noResults')}</p>
+                )}
+              </div>
+            )}
+          </div>
+          {!showResults && (
+            <p className="mt-2 text-xs text-slate-400">{t('home.searchHint')}</p>
+          )}
         </header>
 
         <section className="home-categories-grid">
