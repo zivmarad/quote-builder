@@ -305,7 +305,9 @@
     "drywall": "Гипсокартон",
     "doors": "Двери",
     "communications": "Связь",
-    "misc": "Разное"
+    "misc": "Разное",
+    "earthwork": "Земляные работы",
+    "sofa-cleaning": "Чистка мягкой мебели"
   },
   "service": {
     "paint-wall-touchup": "Single wall painting (touch-ups/refresh)",
@@ -484,7 +486,25 @@
     "misc-crane-rental": "Crane/lift booking (external service)",
     "misc-scaffold-rental": "Scaffolding rental",
     "misc-garden-waste": "Garden waste and debris removal",
-    "misc-pest-control": "Professional pest control"
+    "misc-pest-control": "Professional pest control",
+    "earthwork-excavation": "Общая выемка грунта",
+    "earthwork-foundation": "Выемка под фундамент",
+    "earthwork-soil-removal": "Вывоз грунта",
+    "earthwork-grading": "Планировка и уплотнение",
+    "earthwork-access-road": "Подъездная дорога / основание",
+    "earthwork-retaining": "Подпорная стена / террасы",
+    "earthwork-drainage": "Копка дренажных траншей",
+    "earthwork-pool": "Выемка под бассейн / котлован",
+    "earthwork-site-prep": "Подготовка участка",
+    "sofa-2-seater": "Диван на 2 места",
+    "sofa-3-seater": "Диван на 3 места",
+    "sofa-corner": "Угловой диван / 4+ мест",
+    "sofa-armchair": "Кресло / пуф",
+    "sofa-mattress": "Чистка матраса",
+    "sofa-dining-chair": "Обеденный стул (обивка)",
+    "sofa-carpet": "Чистка ковра",
+    "sofa-car-upholstery": "Чистка салона авто",
+    "sofa-office-chair": "Офисное кресло (обивка)"
   },
   "question": {
     "paint": {
@@ -1453,6 +1473,111 @@
       "q2": "Rodent treatment (traps)?",
       "q3": "American cockroach treatment?",
       "q4": "Eco-friendly materials?"
+    },
+    "earthwork-excavation": {
+      "q1": "Rocky / hard soil?",
+      "q2": "Haul to licensed disposal site?",
+      "q3": "No machine access?",
+      "q4": "Depth over 2.5 m?"
+    },
+    "earthwork-foundation": {
+      "q1": "Excavation shoring?",
+      "q2": "Manual digging at corners?",
+      "q3": "Precise laser level?",
+      "q4": "Concrete grade beam?"
+    },
+    "earthwork-soil-removal": {
+      "q1": "Haul over 30 km?",
+      "q2": "Construction waste soil?",
+      "q3": "Manual loading?",
+      "q4": "Waiting on site (1+ hour)?"
+    },
+    "earthwork-grading": {
+      "q1": "Professional compaction?",
+      "q2": "Sub-base / sand layer?",
+      "q3": "Slope and drainage?",
+      "q4": "Large area (200+ m²)?"
+    },
+    "earthwork-access-road": {
+      "q1": "Roller compaction?",
+      "q2": "14/20 aggregate layers?",
+      "q3": "Geotextile fabric?",
+      "q4": "Soft / muddy ground?"
+    },
+    "earthwork-retaining": {
+      "q1": "Height over 2 m?",
+      "q2": "Rear drainage?",
+      "q3": "Geotechnical document?",
+      "q4": "Tight yard access?"
+    },
+    "earthwork-drainage": {
+      "q1": "Stone / concrete lining?",
+      "q2": "Install manholes?",
+      "q3": "Depth over 1.2 m?",
+      "q4": "Crossing existing utilities?"
+    },
+    "earthwork-pool": {
+      "q1": "Full soil haul?",
+      "q2": "Sand base preparation?",
+      "q3": "Excavation edge finish?",
+      "q4": "Narrow access only?"
+    },
+    "earthwork-site-prep": {
+      "q1": "Remove shrubs / trees?",
+      "q2": "Light demolition?",
+      "q3": "Site fencing?",
+      "q4": "Large area (500+ m²)?"
+    },
+    "sofa-2-seater": {
+      "q1": "Delicate / velvet fabric?",
+      "q2": "Leather care?",
+      "q3": "Tough stains?",
+      "q4": "Protection spray?"
+    },
+    "sofa-3-seater": {
+      "q1": "Delicate / velvet fabric?",
+      "q2": "Leather care?",
+      "q3": "Tough stains?",
+      "q4": "Protection spray?"
+    },
+    "sofa-corner": {
+      "q1": "Extra modules?",
+      "q2": "Leather care?",
+      "q3": "Tough stains?",
+      "q4": "Protection spray?"
+    },
+    "sofa-armchair": {
+      "q1": "Leather care?",
+      "q2": "Tough stains?",
+      "q3": "Protection spray?"
+    },
+    "sofa-mattress": {
+      "q1": "Double mattress?",
+      "q2": "Pet / odor treatment?",
+      "q3": "Dust mite treatment?",
+      "q4": "Accelerated drying?"
+    },
+    "sofa-dining-chair": {
+      "q1": "Delicate fabric?",
+      "q2": "Tough stains?",
+      "q3": "Protection spray?"
+    },
+    "sofa-carpet": {
+      "q1": "Shag / thick carpet?",
+      "q2": "Stain pre-treatment?",
+      "q3": "Over 20 m²?",
+      "q4": "Dry clean only?"
+    },
+    "sofa-car-upholstery": {
+      "q1": "7-seater / SUV?",
+      "q2": "Leather care?",
+      "q3": "Stains / smoke odor?",
+      "q4": "Headliner / carpet?"
+    },
+    "sofa-office-chair": {
+      "q1": "Executive leather?",
+      "q2": "Stains / wear?",
+      "q3": "Post-clean protection?"
     }
   }
 }

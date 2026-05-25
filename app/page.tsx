@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Palette, Umbrella, Droplet, Layers, Zap, Snowflake, Hammer, Link2, TreePine, Wrench, Building2, DoorOpen, Package, ChevronRight, Box, Radio, Cog, Search, Plus } from 'lucide-react';
+import { Palette, Umbrella, Droplet, Layers, Zap, Snowflake, Hammer, Link2, TreePine, Wrench, Building2, DoorOpen, Package, ChevronRight, Box, Radio, Cog, Search, Plus, Mountain, Sofa } from 'lucide-react';
 import { categories } from './service/services';
 import { useLanguage } from './contexts/LanguageContext';
 
@@ -24,6 +24,8 @@ const categoryIcons: Record<string, React.ComponentType<{ size?: number; classNa
   doors: DoorOpen,
   communications: Radio,
   misc: Package,
+  earthwork: Mountain,
+  'sofa-cleaning': Sofa,
 };
 
 const categoryColors: Record<string, string> = {
@@ -43,6 +45,8 @@ const categoryColors: Record<string, string> = {
   doors: 'text-amber-900',
   communications: 'text-violet-600',
   misc: 'text-slate-500',
+  earthwork: 'text-orange-700',
+  'sofa-cleaning': 'text-teal-600',
 };
 
 type SearchResult = {
