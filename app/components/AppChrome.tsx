@@ -10,6 +10,7 @@ import AppHeader from './AppHeader';
 import Footer from './Footer';
 import RegisterServiceWorker from './RegisterServiceWorker';
 import InAppBrowserBanner from './InAppBrowserBanner';
+import InstallAppPrompt from './InstallAppPrompt';
 
 function isMarketingLanding(pathname: string): boolean {
   return pathname === '/landing' || pathname.startsWith('/landing/');
@@ -35,6 +36,7 @@ export default function AppChrome({ children }: { children: React.ReactNode }) {
         <StorageQuotaAlert />
         <SyncFailureBanner />
         <RegisterServiceWorker />
+        <InstallAppPrompt />
       </QuoteBasketWithAuth>
     </UserDataProviders>
   );

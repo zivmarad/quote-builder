@@ -28,14 +28,9 @@ export default function SignupPage() {
     setFrom(f.startsWith('/') ? f : `/${f}`);
   }, []);
 
-  const PROFILE_PROMPT_KEY = 'quoteBuilder_showProfilePrompt';
-
-  const goToTarget = () => {
+  const goToWelcome = () => {
     if (typeof window === 'undefined') return;
-    try {
-      sessionStorage.setItem(PROFILE_PROMPT_KEY, '1');
-    } catch { /* ignore */ }
-    window.location.href = `${window.location.origin}/profile?newUser=1`;
+    window.location.href = `${window.location.origin}/welcome`;
   };
 
   const handleSendCode = async (e: React.FormEvent) => {
@@ -86,7 +81,7 @@ export default function SignupPage() {
     setLoading(true);
     try {
       const result = await signupWithEmail(email, code, username, password);
-      if (result.ok) goToTarget();
+      if (result.ok) goToWelcome();
       else setError(result.error ?? 'שגיאה בהרשמה');
     } catch (err) {
       console.error('Signup error:', err);

@@ -19,7 +19,6 @@ import { ArrowRight, UserCircle, Settings, FileText, ChevronLeft, Download, Tras
 import ConfirmDialog from '../components/ConfirmDialog';
 
 const PENDING_DRAFT_KEY = 'quoteBuilder_pendingDraft';
-const PROFILE_PROMPT_KEY = 'quoteBuilder_showProfilePrompt';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -96,7 +95,6 @@ export default function ProfilePage() {
   const [installSuccess, setInstallSuccess] = useState(false);
   const [installLoading, setInstallLoading] = useState(false);
   const [drafts, setDrafts] = useState<QuoteDraft[]>([]);
-  const [showNewUserPrompt, setShowNewUserPrompt] = useState(false);
   const [deleteDraftId, setDeleteDraftId] = useState<string | null>(null);
   const [deleteQuoteId, setDeleteQuoteId] = useState<string | null>(null);
   const [quoteSearch, setQuoteSearch] = useState('');
@@ -175,15 +173,6 @@ export default function ProfilePage() {
   }, [draftPage, sortedDrafts]);
 
   useEffect(() => () => { if (saveToastTimeoutRef.current) clearTimeout(saveToastTimeoutRef.current); }, []);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      const shouldShow = sessionStorage.getItem(PROFILE_PROMPT_KEY) === '1';
-      const fromNewUser = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('newUser') === '1';
-      if (shouldShow || fromNewUser) setShowNewUserPrompt(true);
-    } catch { /* ignore */ }
-  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -1213,56 +1202,6 @@ export default function ProfilePage() {
         >
           <Check size={20} className="shrink-0 text-green-400" />
           {t('profile.savedToast')}
-        </div>
-      )}
-
-      {showNewUserPrompt && (
-        <div
-          className="fixed inset-0 z-[200] bg-black/50 flex items-center justify-center p-4"
-          dir="rtl"
-          role="dialog"
-          aria-labelledby="new-user-prompt-title"
-          aria-modal="true"
-        >
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 flex flex-col gap-5">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-                <UserCircle size={28} className="text-blue-600" />
-              </div>
-              <h2 id="new-user-prompt-title" className="text-xl font-black text-slate-900">
-                {t('profile.welcomeTitle')}
-              </h2>
-            </div>
-            <p className="text-slate-600 text-sm leading-relaxed">
-              {t('profile.welcomeMessage')}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  try { sessionStorage.removeItem(PROFILE_PROMPT_KEY); } catch { /* ignore */ }
-                  setShowNewUserPrompt(false);
-                  if (typeof window !== 'undefined') window.history.replaceState({}, '', '/profile');
-                  window.setTimeout(() => scrollToSection('details'), 0);
-                }}
-                className="flex-1 py-3 px-4 rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-              >
-                {t('profile.fillNow')}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  try { sessionStorage.removeItem(PROFILE_PROMPT_KEY); } catch { /* ignore */ }
-                  setShowNewUserPrompt(false);
-                  if (typeof window !== 'undefined') window.history.replaceState({}, '', '/profile');
-                  router.push('/');
-                }}
-                className="flex-1 py-3 px-4 rounded-xl font-bold border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
-              >
-                {t('profile.notNow')}
-              </button>
-            </div>
-          </div>
         </div>
       )}
 

@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Palette, Umbrella, Droplet, Layers, Zap, Snowflake, Hammer, Link2, TreePine, Wrench, Building2, DoorOpen, Package, ChevronRight, Box, Radio, Cog, Search } from 'lucide-react';
+import { Palette, Umbrella, Droplet, Layers, Zap, Snowflake, Hammer, Link2, TreePine, Wrench, Building2, DoorOpen, Package, ChevronRight, Box, Radio, Cog, Search, Plus } from 'lucide-react';
 import { categories } from './service/services';
 import { useLanguage } from './contexts/LanguageContext';
 
@@ -182,6 +182,20 @@ export default function HomePage() {
               </Link>
             );
           })}
+          <Link
+            href="/request-profession"
+            className="card-hover-safe bg-gradient-to-br from-slate-50 to-blue-50/50 min-h-[120px] sm:aspect-square sm:min-h-0 rounded-2xl shadow-[0_4px_6px_-1px_rgb(0_0_0_/_0.1)] border-2 border-dashed border-blue-200 hover:border-blue-400 hover:shadow-lg transition-all flex flex-col items-center justify-center text-center group active:scale-[0.98] p-4 relative"
+          >
+            <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center mb-2 sm:mb-3 group-hover:bg-blue-200 transition-colors">
+              <Plus size={24} className="text-blue-600" />
+            </div>
+            <span className="font-semibold text-[1.05rem] text-[#1E293B] leading-tight">
+              {t('home.addProfessionTitle')}
+            </span>
+            <span className="mt-2 text-blue-500 text-xs font-medium group-hover:text-blue-600 transition-colors">
+              {t('home.addProfessionSubtitle')}
+            </span>
+          </Link>
         </section>
       </div>
     </main>

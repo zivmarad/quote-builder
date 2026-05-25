@@ -1,15 +1,16 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { Phone, MessageCircle, HelpCircle } from 'lucide-react';
+import { SUPPORT_PHONE, SUPPORT_PHONE_LINK, SUPPORT_WHATSAPP_LINK } from '../../lib/contact-links';
 
 export const metadata: Metadata = {
   title: 'צור קשר | בונה הצעות מחיר',
   description: 'צור קשר עם בונה הצעות מחיר – שאלות, תמיכה ועזרה.',
 };
 
-const PHONE = '0502218880';
-const PHONE_LINK = 'tel:0502218880';
-const WHATSAPP_LINK = `https://wa.me/972502218880`;
+const PHONE = SUPPORT_PHONE;
+const PHONE_LINK = SUPPORT_PHONE_LINK;
+const WHATSAPP_LINK = SUPPORT_WHATSAPP_LINK;
 
 export default function ContactPage() {
   return (

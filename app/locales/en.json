@@ -25,7 +25,35 @@
     "searchPlaceholder": "Search trade or service...",
     "searchLabel": "Quick search",
     "noResults": "No results found",
-    "searchHint": "Type to search all trades and services"
+    "searchHint": "Type to search all trades and services",
+    "addProfessionTitle": "Another trade?",
+    "addProfessionSubtitle": "Request a new category"
+  },
+  "welcome": {
+    "title": "Welcome!",
+    "subtitle": "Set up your profile for your first quote – details appear automatically on every quote",
+    "companyId": "Business ID / tax ID (optional)",
+    "companyIdPlaceholder": "e.g. business registration number",
+    "continue": "Continue to home",
+    "skip": "Skip – I'll fill in later",
+    "businessNameRequired": "Please enter a business or full name"
+  },
+  "requestProfession": {
+    "backHome": "Back to home",
+    "title": "Request a new trade",
+    "subtitle": "Need a trade that's not in the app? We'll add it for you",
+    "explanation": "New trades are added manually by our team to keep accurate pricing and professional questions for each field.",
+    "step1": "Tap the button and send a WhatsApp message",
+    "step2": "Specify the trade you need",
+    "step3": "We'll notify you when it's added to the app",
+    "whatsappButton": "Send request via WhatsApp",
+    "note": "Adding new trades is free"
+  },
+  "installPrompt": {
+    "title": "Add the app to your device",
+    "subtitle": "You created your first quote! Add the site to your home screen for quick access in the field",
+    "close": "Close",
+    "later": "Maybe later"
   },
   "header": {
     "appName": "Quote Builder",

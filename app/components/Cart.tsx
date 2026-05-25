@@ -11,6 +11,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useCustomers, type Customer } from '../contexts/CustomersContext';
 import { saveDraft } from '../../lib/drafts-storage';
 import { Trash2, Edit2, Check, X, ShoppingBag, Plus, FileText, Share2, Eye, Loader2, ChevronDown, ChevronUp, Save } from 'lucide-react';
+import { markFirstQuoteCompleted } from '../../lib/first-quote-install';
 import ConfirmDialog from './ConfirmDialog';
 
 const PENDING_DRAFT_KEY = 'quoteBuilder_pendingDraft';
@@ -413,6 +414,19 @@ export default function Cart() {
     );
   };
 
+  const completeQuoteExport = (toastMessage: string) => {
+    markFirstQuoteCompleted();
+    clearBasket();
+    setCustomerName('');
+    setCustomerPhone('');
+    setCustomerEmail('');
+    setCustomerAddress('');
+    setCustomerCompanyId('');
+    setNotes('');
+    setToast(toastMessage);
+    setTimeout(() => router.push('/'), 2500);
+  };
+
   const handleExportPDF = async () => {
     if (!user) {
       router.push('/login?from=' + encodeURIComponent('/cart'));
@@ -450,15 +464,7 @@ export default function Cart() {
       a.href = url;
       a.download = `hatzaat-mechir-${new Date().toISOString().slice(0, 10)}.pdf`;
       a.click();
-      clearBasket();
-      setCustomerName('');
-      setCustomerPhone('');
-      setCustomerEmail('');
-      setCustomerAddress('');
-      setCustomerCompanyId('');
-      setNotes('');
-      setToast('ה-PDF הורד וההצעה נשמרה');
-      setTimeout(() => router.push('/'), 2500);
+      completeQuoteExport('ה-PDF הורד וההצעה נשמרה');
     } catch (e) {
       await updateExportJob(jobId, 'failed', e instanceof Error ? e.message : 'pdf_export_failed');
       try {
@@ -469,15 +475,7 @@ export default function Cart() {
         a.download = `hatzaat-mechir-${new Date().toISOString().slice(0, 10)}.pdf`;
         a.click();
         URL.revokeObjectURL(url);
-        clearBasket();
-        setCustomerName('');
-        setCustomerPhone('');
-        setCustomerEmail('');
-        setCustomerAddress('');
-        setCustomerCompanyId('');
-        setNotes('');
-        setToast('נוצר PDF בגיבוי מקומי');
-        setTimeout(() => router.push('/'), 2500);
+        completeQuoteExport('נוצר PDF בגיבוי מקומי');
       } catch {
         setToast('שגיאה בהפקת ה-PDF');
       }
@@ -557,15 +555,7 @@ export default function Cart() {
       lastShareBlobRef.current = null;
       setShareError(null);
       setShowWhatsAppModal(false);
-      clearBasket();
-      setCustomerName('');
-      setCustomerPhone('');
-      setCustomerEmail('');
-      setCustomerAddress('');
-      setCustomerCompanyId('');
-      setNotes('');
-      setToast('ההצעה נשלחה בהצלחה');
-      setTimeout(() => router.push('/'), 2500);
+      completeQuoteExport('ההצעה נשלחה בהצלחה');
     } catch (err) {
       if ((err as Error)?.name === 'AbortError') return;
       setShareError('שיתוף ישיר זמין כשהאתר נטען בכתובת מאובטחת (https). בינתיים הורד את ה-PDF למטה ושלח אותו.');
@@ -588,15 +578,7 @@ export default function Cart() {
     lastShareBlobRef.current = null;
     setShareError(null);
     setShowWhatsAppModal(false);
-    clearBasket();
-    setCustomerName('');
-    setCustomerPhone('');
-    setCustomerEmail('');
-    setCustomerAddress('');
-    setCustomerCompanyId('');
-    setNotes('');
-    setToast('ה-PDF הורד וההצעה נשמרה');
-    setTimeout(() => router.push('/'), 2500);
+    completeQuoteExport('ה-PDF הורד וההצעה נשמרה');
   };
 
   const handleDownloadAndOpenWhatsAppWeb = () => {
@@ -613,15 +595,7 @@ export default function Cart() {
     window.open('https://web.whatsapp.com', '_blank');
     setShareError(null);
     setShowWhatsAppModal(false);
-    clearBasket();
-    setCustomerName('');
-    setCustomerPhone('');
-    setCustomerEmail('');
-    setCustomerAddress('');
-    setCustomerCompanyId('');
-    setNotes('');
-    setToast('ה-PDF הורד – אפשר לשלוח בוואטסאפ Web');
-    setTimeout(() => router.push('/'), 2500);
+    completeQuoteExport('ה-PDF הורד – אפשר לשלוח בוואטסאפ Web');
   };
 
   const formatPrice = (price: number) => {
