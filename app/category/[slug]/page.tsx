@@ -106,43 +106,47 @@ export default function CategoryPage() {
             return (
               <div
                 key={service.id}
-                className={`relative rounded-2xl sm:rounded-3xl ${
-                  isCustom ? 'border-violet-200' : 'border-slate-100'
+                role="button"
+                tabIndex={0}
+                onClick={() => router.push(`/category/${category.id}/${service.id}`)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    router.push(`/category/${category.id}/${service.id}`);
+                  }
+                }}
+                className={`btn-hover-safe w-full text-right bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl shadow-sm border transition-all active:scale-[0.98] min-h-[72px] cursor-pointer ${
+                  isCustom
+                    ? 'border-violet-200 hover:border-violet-400 hover:shadow-md'
+                    : 'border-slate-100 hover:border-blue-500 hover:shadow-md'
                 }`}
               >
-                {isCustom && (
-                  <button
-                    type="button"
-                    onClick={(e) => handleDeleteService(service.id, e)}
-                    className="absolute left-3 top-3 z-10 p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                    aria-label={t('customCatalog.deleteService')}
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                )}
-                <button
-                  onClick={() => router.push(`/category/${category.id}/${service.id}`)}
-                  className={`btn-hover-safe w-full text-right bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl shadow-sm border transition-all active:scale-[0.98] min-h-[72px] ${
-                    isCustom
-                      ? 'border-violet-200 hover:border-violet-400 hover:shadow-md'
-                      : 'border-slate-100 hover:border-blue-500 hover:shadow-md'
-                  }`}
-                >
-                  <div className="flex items-center gap-2 justify-end flex-wrap mb-1">
+                <div className="flex items-start gap-2 mb-1">
+                  <div className="flex-1 flex items-center gap-2 justify-end flex-wrap min-w-0">
                     {isCustom && (
-                      <span className="text-[10px] font-bold uppercase tracking-wide text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full">
+                      <span className="text-[10px] font-bold uppercase tracking-wide text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full shrink-0">
                         {t('customCatalog.myService')}
                       </span>
                     )}
                     <h2 className="text-base sm:text-lg font-bold text-slate-900">{displayName}</h2>
                   </div>
-                  <p className="text-sm text-slate-500 mb-2">
-                    {t('category.fromPrice')} ₪{getBasePrice(service.id, service.basePrice).toLocaleString('he-IL')} {t('category.perUnit')} {service.unit}
-                  </p>
-                  {service.isCounter && (
-                    <p className="text-xs text-slate-400">{t('category.quantityNote')}</p>
+                  {isCustom && (
+                    <button
+                      type="button"
+                      onClick={(e) => handleDeleteService(service.id, e)}
+                      className="shrink-0 p-2 -m-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      aria-label={t('customCatalog.deleteService')}
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   )}
-                </button>
+                </div>
+                <p className="text-sm text-slate-500 mb-2">
+                  {t('category.fromPrice')} ₪{getBasePrice(service.id, service.basePrice).toLocaleString('he-IL')} {t('category.perUnit')} {service.unit}
+                </p>
+                {service.isCounter && (
+                  <p className="text-xs text-slate-400">{t('category.quantityNote')}</p>
+                )}
               </div>
             );
           })}

@@ -6,12 +6,14 @@ import { Building2, Loader2, Sparkles } from 'lucide-react';
 import RequireAuth from '../components/RequireAuth';
 import { useAuth } from '../contexts/AuthContext';
 import { useProfile } from '../contexts/ProfileContext';
+import { useSettings } from '../contexts/SettingsContext';
 import { useLanguage } from '../contexts/LanguageContext';
 
 export default function WelcomePage() {
   const router = useRouter();
   const { user } = useAuth();
   const { profile, setProfile, syncStatus } = useProfile();
+  const { vatRate, setVatRate } = useSettings();
   const { t, dir } = useLanguage();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [logoUploading, setLogoUploading] = useState(false);
@@ -197,6 +199,26 @@ export default function WelcomePage() {
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     dir="ltr"
                   />
+                </div>
+
+                <div>
+                  <label htmlFor="welcome-vatRate" className="block text-sm font-bold text-slate-700 mb-2">
+                    {t('profile.vatLabel')}
+                  </label>
+                  <select
+                    id="welcome-vatRate"
+                    value={vatRate}
+                    onChange={(e) => {
+                      const v = parseFloat(e.target.value);
+                      if (!isNaN(v) && v >= 0) setVatRate(v);
+                    }}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                  >
+                    <option value={0}>{t('profile.vatOptionExempt')}</option>
+                    <option value={0.17}>{t('profile.vatOption17')}</option>
+                    <option value={0.18}>{t('profile.vatOption18')}</option>
+                  </select>
+                  <p className="text-slate-500 text-xs mt-1">{t('profile.vatHint')}</p>
                 </div>
 
                 <p className="text-slate-400 text-xs">{t('profile.detailsNote')}</p>
