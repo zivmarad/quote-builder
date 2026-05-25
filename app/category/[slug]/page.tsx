@@ -1,30 +1,55 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { categories } from '../../service/services';
 import { usePriceOverrides } from '../../contexts/PriceOverridesContext';
+import { useCustomCatalog } from '../../contexts/CustomCatalogContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { Search } from 'lucide-react';
+import { getServiceDisplayName, isCustomServiceId } from '../../../lib/custom-catalog-types';
+import AddCustomServiceModal from '../../components/AddCustomServiceModal';
+import { Search, Plus, Trash2 } from 'lucide-react';
 
 export default function CategoryPage() {
   const { slug } = useParams();
   const router = useRouter();
+  const { user } = useAuth();
   const { getBasePrice } = usePriceOverrides();
+  const { getMergedServices, addCustomService, deleteCustomService } = useCustomCatalog();
   const { t, dir } = useLanguage();
   const [search, setSearch] = useState('');
+  const [showAddService, setShowAddService] = useState(false);
   const categoryId = Array.isArray(slug) ? slug[0] : slug;
   const category = categories.find((c) => c.id === categoryId);
 
-  const filteredServices = useMemo(() => {
+  const allServices = useMemo(() => {
     if (!category) return [];
+    return getMergedServices(category.id, category.services);
+  }, [category, getMergedServices]);
+
+  const filteredServices = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return category.services;
-    return category.services.filter((s) => {
-      const translated = t(`service.${s.id}`, s.name);
-      return translated.toLowerCase().includes(q) || s.name.toLowerCase().includes(q);
+    if (!q) return allServices;
+    return allServices.filter((s) => {
+      const display = getServiceDisplayName(t, s);
+      return display.toLowerCase().includes(q) || s.name.toLowerCase().includes(q);
     });
-  }, [category, search, t]);
+  }, [allServices, search, t]);
+
+  const handleAddServiceClick = () => {
+    if (!user) {
+      router.push(`/login?from=${encodeURIComponent(`/category/${categoryId}`)}`);
+      return;
+    }
+    setShowAddService(true);
+  };
+
+  const handleDeleteService = async (serviceId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!category || !window.confirm(t('customCatalog.deleteServiceConfirm'))) return;
+    await deleteCustomService(category.id, serviceId);
+  };
 
   if (!category) {
     return (
@@ -75,29 +100,75 @@ export default function CategoryPage() {
         </header>
 
         <section className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-          {filteredServices.map((service) => (
-            <button
-              key={service.id}
-              onClick={() => router.push(`/category/${category.id}/${service.id}`)}
-              className="btn-hover-safe w-full text-right bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl shadow-sm border border-slate-100 hover:border-blue-500 hover:shadow-md transition-all active:scale-[0.98] min-h-[72px]"
-            >
-              <h2 className="text-base sm:text-lg font-bold text-slate-900 mb-1">{t(`service.${service.id}`, service.name)}</h2>
-              <p className="text-sm text-slate-500 mb-2">
-                {t('category.fromPrice')} ₪{getBasePrice(service.id, service.basePrice).toLocaleString('he-IL')} {t('category.perUnit')} {service.unit}
-              </p>
-              {service.isCounter && (
-                <p className="text-xs text-slate-400">{t('category.quantityNote')}</p>
-              )}
-            </button>
-          ))}
+          {filteredServices.map((service) => {
+            const isCustom = isCustomServiceId(service.id);
+            const displayName = getServiceDisplayName(t, service);
+            return (
+              <div
+                key={service.id}
+                className={`relative rounded-2xl sm:rounded-3xl ${
+                  isCustom ? 'border-violet-200' : 'border-slate-100'
+                }`}
+              >
+                {isCustom && (
+                  <button
+                    type="button"
+                    onClick={(e) => handleDeleteService(service.id, e)}
+                    className="absolute left-3 top-3 z-10 p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    aria-label={t('customCatalog.deleteService')}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                )}
+                <button
+                  onClick={() => router.push(`/category/${category.id}/${service.id}`)}
+                  className={`btn-hover-safe w-full text-right bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl shadow-sm border transition-all active:scale-[0.98] min-h-[72px] ${
+                    isCustom
+                      ? 'border-violet-200 hover:border-violet-400 hover:shadow-md'
+                      : 'border-slate-100 hover:border-blue-500 hover:shadow-md'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 justify-end flex-wrap mb-1">
+                    {isCustom && (
+                      <span className="text-[10px] font-bold uppercase tracking-wide text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full">
+                        {t('customCatalog.myService')}
+                      </span>
+                    )}
+                    <h2 className="text-base sm:text-lg font-bold text-slate-900">{displayName}</h2>
+                  </div>
+                  <p className="text-sm text-slate-500 mb-2">
+                    {t('category.fromPrice')} ₪{getBasePrice(service.id, service.basePrice).toLocaleString('he-IL')} {t('category.perUnit')} {service.unit}
+                  </p>
+                  {service.isCounter && (
+                    <p className="text-xs text-slate-400">{t('category.quantityNote')}</p>
+                  )}
+                </button>
+              </div>
+            );
+          })}
 
-          {filteredServices.length === 0 && (
+          <button
+            type="button"
+            onClick={handleAddServiceClick}
+            className="w-full min-h-[72px] rounded-2xl sm:rounded-3xl border-2 border-dashed border-blue-200 bg-blue-50/40 hover:bg-blue-50 hover:border-blue-400 transition-all flex flex-col items-center justify-center gap-2 p-4 active:scale-[0.98]"
+          >
+            <Plus size={22} className="text-blue-600" />
+            <span className="font-bold text-blue-700 text-sm">{t('customCatalog.addServiceButton')}</span>
+          </button>
+
+          {filteredServices.length === 0 && search.trim() && (
             <p className="text-slate-400 text-sm col-span-full">
-              {search.trim() ? t('category.noResults') : t('category.noServices')}
+              {t('category.noResults')}
             </p>
           )}
         </section>
       </div>
+
+      <AddCustomServiceModal
+        open={showAddService}
+        onClose={() => setShowAddService(false)}
+        onSave={(input) => addCustomService(category.id, input)}
+      />
     </main>
   );
 }

@@ -7,25 +7,45 @@ import type { Question } from '../../../service/services';
 import { motion, AnimatePresence } from 'framer-motion';
 import AddToBasketButton from '../../../components/AddToBasketButton';
 import EditablePriceLabel from '../../../components/EditablePriceLabel';
+import AddCustomQuestionModal from '../../../components/AddCustomQuestionModal';
 import { usePriceOverrides } from '../../../contexts/PriceOverridesContext';
+import { useCustomCatalog } from '../../../contexts/CustomCatalogContext';
+import { useAuth } from '../../../contexts/AuthContext';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import {
+  getQuestionDisplayText,
+  getServiceDisplayName,
+  isCustomQuestionId,
+} from '../../../../lib/custom-catalog-types';
 import { calculateQuestionExtraPrice, formatImpactLabel } from '../../../../lib/quote-pricing';
+import { Plus, Trash2 } from 'lucide-react';
 
 export default function ServiceWizardPage() {
   const { slug, serviceId } = useParams();
   const router = useRouter();
+  const { user } = useAuth();
   const { getBasePrice, getImpactValue, setBasePrice, setQuestionImpact } = usePriceOverrides();
+  const { getMergedServices, getMergedQuestions, addQuestion, deleteQuestion } = useCustomCatalog();
   const { t, dir } = useLanguage();
 
   const categoryId = Array.isArray(slug) ? slug[0] : slug;
   const svcId = Array.isArray(serviceId) ? serviceId[0] : serviceId;
 
   const category = categories.find((c) => c.id === categoryId);
-  const service = category?.services.find((s) => s.id === svcId);
+  const service = useMemo(() => {
+    if (!category) return undefined;
+    return getMergedServices(category.id, category.services).find((s) => s.id === svcId);
+  }, [category, getMergedServices, svcId]);
+
+  const questions = useMemo(() => {
+    if (!service) return [];
+    return getMergedQuestions(service.id, service.questions);
+  }, [service, getMergedQuestions]);
 
   const [quantityInput, setQuantityInput] = useState<string>('1');
   const [answers, setAnswers] = useState<Record<string, boolean>>({});
   const [questionQuantities, setQuestionQuantities] = useState<Record<string, string>>({});
+  const [showAddQuestion, setShowAddQuestion] = useState(false);
 
   const qtyNum = Math.max(1, parseInt(quantityInput, 10) || 1);
 
@@ -40,7 +60,7 @@ export default function ServiceWizardPage() {
 
   const selectedExtrasList = useMemo(() => {
     if (!service) return [];
-    return service.questions
+    return questions
       .filter((q) => answers[q.id] === true)
       .map((q) => {
         const impactValue = getImpactValue(service.id, q.id, q.impact.value);
@@ -53,13 +73,13 @@ export default function ServiceWizardPage() {
             ? Math.min(qty, Math.max(1, parseInt(questionQuantities[q.id] || '1', 10) || 1))
             : null;
         const label = hasQtyLabel ? q.impact.quantityLabel! : "יח'";
-        const qText = t(`question.${service.id}.${q.id}`, q.text);
+        const qText = getQuestionDisplayText(t, service.id, q);
         const text = qtyQ != null && qtyQ > 0
           ? `${qText} (${qtyQ} ${label})`
           : qText;
         return { text, price };
       });
-  }, [service, answers, baseTotal, qty, questionQuantities, t, getImpactValue]);
+  }, [service, questions, answers, baseTotal, qty, questionQuantities, t, getImpactValue]);
 
   const extrasTotal = useMemo(() => {
     return selectedExtrasList.reduce((sum, e) => sum + e.price, 0);
@@ -77,6 +97,24 @@ export default function ServiceWizardPage() {
     requestAnimationFrame(setEnd);
   }, []);
 
+  const handleAddQuestionClick = () => {
+    if (!user) {
+      router.push(`/login?from=${encodeURIComponent(`/category/${categoryId}/${svcId}`)}`);
+      return;
+    }
+    setShowAddQuestion(true);
+  };
+
+  const handleDeleteQuestion = async (questionId: string) => {
+    if (!category || !service || !window.confirm(t('customCatalog.deleteQuestionConfirm'))) return;
+    await deleteQuestion(category.id, service.id, questionId);
+    setAnswers((prev) => {
+      const next = { ...prev };
+      delete next[questionId];
+      return next;
+    });
+  };
+
   if (!category || !service) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-slate-50" dir={dir}>
@@ -85,7 +123,7 @@ export default function ServiceWizardPage() {
     );
   }
 
-  const serviceName = t(`service.${service.id}`, service.name);
+  const serviceName = getServiceDisplayName(t, service);
   const editHint = t('serviceWizard.tapToEditPrice');
 
   const handleToggle = (question: Question, value: boolean) => {
@@ -117,7 +155,7 @@ export default function ServiceWizardPage() {
   const handleQuestionQuantityBlur = (qId: string) => {
     const val = questionQuantities[qId];
     const num = parseInt(val || '', 10);
-    const q = service?.questions.find((x) => x.id === qId);
+    const q = questions.find((x) => x.id === qId);
     const isFixedWithQty = q?.impact.type === 'fixed' && 'quantityLabel' in (q?.impact || {}) && qty > 1;
     const maxQty = isFixedWithQty ? qty : Infinity;
     if (val === '' || Number.isNaN(num) || num < 1) {
@@ -181,15 +219,26 @@ export default function ServiceWizardPage() {
         )}
 
         <section className="space-y-4">
-          <div className="mb-2">
-            <h2 className="text-sm font-semibold text-slate-700">{t('serviceWizard.customizeTitle')}</h2>
-            <p className="text-xs text-slate-500">{t('serviceWizard.customizeHint')}</p>
+          <div className="mb-2 flex items-start justify-between gap-3 flex-wrap">
+            <div>
+              <h2 className="text-sm font-semibold text-slate-700">{t('serviceWizard.customizeTitle')}</h2>
+              <p className="text-xs text-slate-500">{t('serviceWizard.customizeHint')}</p>
+            </div>
+            <button
+              type="button"
+              onClick={handleAddQuestionClick}
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 px-3 py-2 rounded-xl border border-blue-200 bg-blue-50 hover:bg-blue-100 transition-colors"
+            >
+              <Plus size={14} />
+              {t('customCatalog.addQuestionButton')}
+            </button>
           </div>
 
           <AnimatePresence>
-            {service.questions.map((q, index) => {
+            {questions.map((q, index) => {
               const impactValue = getImpactValue(service.id, q.id, q.impact.value);
               const impactLabel = formatImpactLabel(q, impactValue, service.unit);
+              const isCustomQ = isCustomQuestionId(q.id);
               return (
               <motion.div
                 key={q.id}
@@ -198,7 +247,26 @@ export default function ServiceWizardPage() {
                 transition={{ duration: 0.3, delay: index * 0.05 }}
                 className="bg-white rounded-3xl border border-slate-100 shadow-sm px-5 py-4 flex flex-col gap-3"
               >
-                <span className="text-sm font-bold text-slate-900">{t(`question.${service.id}.${q.id}`, q.text)}</span>
+                <div className="flex items-start justify-between gap-2">
+                  <span className="text-sm font-bold text-slate-900 flex-1">
+                    {getQuestionDisplayText(t, service.id, q)}
+                  </span>
+                  {isCustomQ && (
+                    <div className="flex items-center gap-1 shrink-0">
+                      <span className="text-[10px] font-bold uppercase tracking-wide text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full">
+                        {t('customCatalog.myQuestion')}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteQuestion(q.id)}
+                        className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        aria-label={t('customCatalog.deleteQuestion')}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  )}
+                </div>
                 <div className="flex items-center justify-between gap-3 flex-wrap">
                   <div className="flex gap-2">
                     <button
@@ -282,6 +350,12 @@ export default function ServiceWizardPage() {
           </div>
         </div>
       </motion.div>
+
+      <AddCustomQuestionModal
+        open={showAddQuestion}
+        onClose={() => setShowAddQuestion(false)}
+        onSave={(input) => addQuestion(category.id, service.id, input)}
+      />
     </main>
   );
 }

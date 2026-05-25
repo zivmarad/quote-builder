@@ -13,7 +13,9 @@ import RequireAuth from '../components/RequireAuth';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { usePriceOverrides } from '../contexts/PriceOverridesContext';
+import { useCustomCatalog } from '../contexts/CustomCatalogContext';
 import { categories } from '../service/services';
+import { getServiceDisplayName, isCustomServiceId } from '../../lib/custom-catalog-types';
 import { getDrafts, deleteDraft, syncDraftsForLoggedInUser, type QuoteDraft } from '../../lib/drafts-storage';
 import { ArrowRight, UserCircle, Settings, FileText, ChevronLeft, Download, Trash2, Copy, DollarSign, KeyRound, Eye, ChevronDown, Check, Loader2, Smartphone, Plus, FileEdit, Users } from 'lucide-react';
 import ConfirmDialog from '../components/ConfirmDialog';
@@ -53,6 +55,7 @@ export default function ProfilePage() {
   const { loadBasket } = useQuoteBasket();
   const { defaultQuoteTitle, nextQuoteNumber, validityDays, vatRate, setDefaultQuoteTitle, setNextQuoteNumber, setValidityDays, setVatRate } = useSettings();
   const { getBasePrice, setBasePrice } = usePriceOverrides();
+  const { getMergedServices } = useCustomCatalog();
   const { user: authUser, changePassword } = useAuth();
   const { t, dir } = useLanguage();
   const quoteStatusLabels: Record<QuoteWorkflowStatus, string> = { draft: t(quoteStatusKeys.draft), sent: t(quoteStatusKeys.sent), approved: t(quoteStatusKeys.approved), paid: t(quoteStatusKeys.paid) };
@@ -1134,18 +1137,29 @@ export default function ProfilePage() {
                     </h2>
                     <p className="text-slate-500 text-sm mb-4">{t('profile.basePricesDesc')}</p>
                     <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
-                      {categories.map((cat) => (
+                      {categories.map((cat) => {
+                        const services = getMergedServices(cat.id, cat.services);
+                        if (services.length === 0) return null;
+                        return (
                         <div key={cat.id} className="bg-slate-50 rounded-xl p-4 border border-slate-100">
                           <h3 className="text-sm font-bold text-slate-600 mb-3 flex items-center gap-2">
-                            <span>{cat.icon}</span> {cat.name}
+                            <span>{cat.icon}</span> {t(`categoryName.${cat.id}`, cat.name)}
                           </h3>
                           <ul className="space-y-2">
-                            {cat.services.map((svc) => {
+                            {services.map((svc) => {
                               const effective = getBasePrice(svc.id, svc.basePrice);
                               const isOverridden = effective !== svc.basePrice;
+                              const displayName = getServiceDisplayName(t, svc);
                               return (
                                 <li key={svc.id} className="flex flex-wrap items-center gap-2 sm:gap-4 py-2 border-b border-slate-100 last:border-0">
-                                  <span className="flex-1 min-w-0 text-sm text-slate-800">{svc.name}</span>
+                                  <span className="flex-1 min-w-0 text-sm text-slate-800 flex items-center gap-2">
+                                    {displayName}
+                                    {isCustomServiceId(svc.id) && (
+                                      <span className="text-[10px] font-bold text-violet-600 bg-violet-50 px-1.5 py-0.5 rounded-full">
+                                        {t('customCatalog.myService')}
+                                      </span>
+                                    )}
+                                  </span>
                                   <span className="text-xs text-slate-500 shrink-0">{t('profile.defaultPrice')}: ₪{svc.basePrice.toLocaleString('he-IL')}</span>
                                   <input
                                     type="number"
@@ -1170,7 +1184,8 @@ export default function ProfilePage() {
                             })}
                           </ul>
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
               </section>

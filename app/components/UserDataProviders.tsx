@@ -6,6 +6,7 @@ import { ProfileProvider } from '../contexts/ProfileContext';
 import { QuoteHistoryProvider } from '../contexts/QuoteHistoryContext';
 import { SettingsProvider } from '../contexts/SettingsContext';
 import { PriceOverridesProvider } from '../contexts/PriceOverridesContext';
+import { CustomCatalogProvider } from '../contexts/CustomCatalogContext';
 import { CustomersProvider } from '../contexts/CustomersContext';
 import { syncDraftsForLoggedInUser } from '../../lib/drafts-storage';
 
@@ -24,7 +25,9 @@ export default function UserDataProviders({ children }: { children: React.ReactN
       <QuoteHistoryProvider userId={userId}>
         <SettingsProvider userId={userId}>
           <PriceOverridesProvider userId={userId}>
-            <CustomersProvider userId={userId}>{children}</CustomersProvider>
+            <CustomCatalogProvider userId={userId}>
+              <CustomersProvider userId={userId}>{children}</CustomersProvider>
+            </CustomCatalogProvider>
           </PriceOverridesProvider>
         </SettingsProvider>
       </QuoteHistoryProvider>

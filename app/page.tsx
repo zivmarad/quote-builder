@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { Palette, Umbrella, Droplet, Layers, Zap, Snowflake, Hammer, Link2, TreePine, Wrench, Building2, DoorOpen, Package, ChevronRight, Box, Radio, Cog, Search, Plus, Mountain, Sofa } from 'lucide-react';
 import { categories } from './service/services';
 import { useLanguage } from './contexts/LanguageContext';
+import { useCustomCatalog } from './contexts/CustomCatalogContext';
+import { getServiceDisplayName } from '../lib/custom-catalog-types';
 
 const categoryIcons: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
   paint: Palette,
@@ -61,6 +63,7 @@ type SearchResult = {
 export default function HomePage() {
   const router = useRouter();
   const { t, dir } = useLanguage();
+  const { getMergedServices } = useCustomCatalog();
   const [search, setSearch] = useState('');
 
   const searchResults = useMemo((): SearchResult[] => {
@@ -80,8 +83,9 @@ export default function HomePage() {
         });
       }
 
-      for (const svc of cat.services) {
-        const serviceName = t(`service.${svc.id}`, svc.name);
+      const services = getMergedServices(cat.id, cat.services);
+      for (const svc of services) {
+        const serviceName = getServiceDisplayName(t, svc);
         if (serviceName.toLowerCase().includes(q) || svc.name.toLowerCase().includes(q)) {
           results.push({
             type: 'service',
@@ -96,7 +100,7 @@ export default function HomePage() {
     }
 
     return results.slice(0, 12);
-  }, [search, t]);
+  }, [search, t, getMergedServices]);
 
   const showResults = search.trim().length > 0;
 
