@@ -240,7 +240,8 @@
     "perUnit": "لـ",
     "quantityUnitsTitle": "الكمية (وحدات)",
     "customizeTitle": "تخصيص عرض السعر",
-    "customizeHint": "حدد الخيارات المناسبة للعمل."
+    "customizeHint": "حدد الخيارات المناسبة للعمل.",
+    "tapToEditPrice": "اضغط لتعديل السعر"
   },
   "category": {
     "chooseService": "اختر نوع العمل للمتابعة للأسئلة وتقدير السعر",

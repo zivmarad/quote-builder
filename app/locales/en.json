@@ -240,7 +240,8 @@
     "perUnit": "per",
     "quantityUnitsTitle": "Quantity (units)",
     "customizeTitle": "Customize your quote",
-    "customizeHint": "Check the options that apply to the job."
+    "customizeHint": "Check the options that apply to the job.",
+    "tapToEditPrice": "Tap to edit price"
   },
   "category": {
     "chooseService": "Choose a job type to continue to questions and accurate price estimate",

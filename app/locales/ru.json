@@ -240,7 +240,8 @@
     "perUnit": "за",
     "quantityUnitsTitle": "Количество (ед.)",
     "customizeTitle": "Настройка сметы",
-    "customizeHint": "Отметьте подходящие варианты."
+    "customizeHint": "Отметьте подходящие варианты.",
+    "tapToEditPrice": "Нажмите, чтобы изменить цену"
   },
   "category": {
     "chooseService": "Выберите вид работ для вопросов и оценки",

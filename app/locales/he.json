@@ -240,7 +240,8 @@
     "perUnit": "לכל",
     "quantityUnitsTitle": "כמות יחידות",
     "customizeTitle": "התאמת הצעת המחיר",
-    "customizeHint": "סמן את האפשרויות הרלוונטיות לעבודה."
+    "customizeHint": "סמן את האפשרויות הרלוונטיות לעבודה.",
+    "tapToEditPrice": "לחץ לעריכת המחיר"
   },
   "category": {
     "chooseService": "בחר סוג עבודה כדי להמשיך לשאלות ולהערכת מחיר מדויקת",

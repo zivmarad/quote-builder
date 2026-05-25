@@ -6,13 +6,15 @@ import { categories } from '../../../service/services';
 import type { Question } from '../../../service/services';
 import { motion, AnimatePresence } from 'framer-motion';
 import AddToBasketButton from '../../../components/AddToBasketButton';
+import EditablePriceLabel from '../../../components/EditablePriceLabel';
 import { usePriceOverrides } from '../../../contexts/PriceOverridesContext';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { calculateQuestionExtraPrice, formatImpactLabel } from '../../../../lib/quote-pricing';
 
 export default function ServiceWizardPage() {
   const { slug, serviceId } = useParams();
   const router = useRouter();
-  const { getBasePrice } = usePriceOverrides();
+  const { getBasePrice, getImpactValue, setBasePrice, setQuestionImpact } = usePriceOverrides();
   const { t, dir } = useLanguage();
 
   const categoryId = Array.isArray(slug) ? slug[0] : slug;
@@ -41,22 +43,10 @@ export default function ServiceWizardPage() {
     return service.questions
       .filter((q) => answers[q.id] === true)
       .map((q) => {
+        const impactValue = getImpactValue(service.id, q.id, q.impact.value);
+        const price = calculateQuestionExtraPrice(q, impactValue, baseTotal, qty, questionQuantities);
         const hasQtyLabel = 'quantityLabel' in q.impact && q.impact.quantityLabel;
         const useQtyForFixed = q.impact.type === 'fixed' && hasQtyLabel && qty > 1;
-        let price: number;
-        if (q.impact.type === 'percent') {
-          price = (baseTotal * q.impact.value) / 100;
-        } else if (q.impact.type === 'fixedPerUnit') {
-          price = q.impact.value * qty;
-        } else if (q.impact.type === 'fixedWithQuantity') {
-          const qtyQ = Math.max(1, parseInt(questionQuantities[q.id] || '1', 10) || 1);
-          price = q.impact.value * qtyQ;
-        } else if (useQtyForFixed) {
-          const qtyQ = Math.min(qty, Math.max(1, parseInt(questionQuantities[q.id] || '1', 10) || 1));
-          price = q.impact.value * qtyQ;
-        } else {
-          price = q.impact.value;
-        }
         const qtyQ = q.impact.type === 'fixedWithQuantity'
           ? Math.max(1, parseInt(questionQuantities[q.id] || '1', 10) || 1)
           : useQtyForFixed
@@ -69,7 +59,7 @@ export default function ServiceWizardPage() {
           : qText;
         return { text, price };
       });
-  }, [service, answers, baseTotal, qty, questionQuantities, t]);
+  }, [service, answers, baseTotal, qty, questionQuantities, t, getImpactValue]);
 
   const extrasTotal = useMemo(() => {
     return selectedExtrasList.reduce((sum, e) => sum + e.price, 0);
@@ -77,7 +67,6 @@ export default function ServiceWizardPage() {
 
   const total = baseTotal + extrasTotal;
 
-  /** מציב סמן בסוף השדה כדי שניתן יהיה להוסיף ספרות (10 ולא 01) ולמחוק עם Backspace */
   const focusEnd = useCallback((el: HTMLInputElement | null) => {
     if (!el) return;
     const len = (el.value || '').length;
@@ -97,6 +86,7 @@ export default function ServiceWizardPage() {
   }
 
   const serviceName = t(`service.${service.id}`, service.name);
+  const editHint = t('serviceWizard.tapToEditPrice');
 
   const handleToggle = (question: Question, value: boolean) => {
     setAnswers((prev) => ({ ...prev, [question.id]: value }));
@@ -158,9 +148,15 @@ export default function ServiceWizardPage() {
             <span>{serviceName}</span>
             <span className="text-xl text-slate-500">{category.icon}</span>
           </h1>
-          <p className="mt-2 text-sm text-slate-500">
-            {t('serviceWizard.basePrice')}: ₪{effectiveBasePrice.toLocaleString('he-IL')} {t('serviceWizard.perUnit')} {service.unit}
-          </p>
+          <div className="mt-2 flex items-center gap-2 flex-wrap text-sm text-slate-500">
+            <span>{t('serviceWizard.basePrice')}:</span>
+            <EditablePriceLabel
+              label={`₪${effectiveBasePrice.toLocaleString('he-IL')} ${t('serviceWizard.perUnit')} ${service.unit}`}
+              defaultValue={effectiveBasePrice}
+              onSave={(v) => setBasePrice(service.id, v)}
+              editHint={editHint}
+            />
+          </div>
         </header>
 
         {service.isCounter && (
@@ -191,7 +187,10 @@ export default function ServiceWizardPage() {
           </div>
 
           <AnimatePresence>
-            {service.questions.map((q, index) => (
+            {service.questions.map((q, index) => {
+              const impactValue = getImpactValue(service.id, q.id, q.impact.value);
+              const impactLabel = formatImpactLabel(q, impactValue, service.unit);
+              return (
               <motion.div
                 key={q.id}
                 initial={{ opacity: 0, y: 10 }}
@@ -221,15 +220,12 @@ export default function ServiceWizardPage() {
                       }`}
                     >{t('common.no')}</button>
                   </div>
-                  <span className="text-[11px] font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded-lg">
-                    {q.impact.type === 'percent' 
-                      ? `+${q.impact.value}%` 
-                      : q.impact.type === 'fixedPerUnit' 
-                        ? `+₪${q.impact.value}/${service.unit}` 
-                        : (q.impact.type === 'fixedWithQuantity' || (q.impact.type === 'fixed' && 'quantityLabel' in q.impact && q.impact.quantityLabel))
-                          ? `+₪${q.impact.value}/${q.impact.quantityLabel ?? "יח'"}`
-                          : `+₪${q.impact.value}`}
-                  </span>
+                  <EditablePriceLabel
+                    label={impactLabel}
+                    defaultValue={impactValue}
+                    onSave={(v) => setQuestionImpact(service.id, q.id, v)}
+                    editHint={editHint}
+                  />
                 </div>
                 {hasQuantityInput(q) && answers[q.id] === true && (
                   <div className="flex items-center gap-3 pt-1 border-t border-slate-100">
@@ -250,7 +246,8 @@ export default function ServiceWizardPage() {
                   </div>
                 )}
               </motion.div>
-            ))}
+            );
+            })}
           </AnimatePresence>
         </section>
       </div>
