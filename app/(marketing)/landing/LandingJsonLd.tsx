@@ -21,7 +21,7 @@ export default function LandingJsonLd() {
   const softwareApp = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
-    name: 'מחולל הצעות מחיר',
+    name: 'בונה הצעות מחיר',
     applicationCategory: 'BusinessApplication',
     operatingSystem: 'Web',
     offers: {
@@ -30,7 +30,7 @@ export default function LandingJsonLd() {
       priceCurrency: 'ILS',
     },
     description:
-      'מחולל הצעות מחיר לקבלנים ושיפוצניקים בישראל – יצירת PDF ממותג, תמחור דינמי ושליחה בוואטסאפ.',
+      'בונה הצעות מחיר לקבלנים ושיפוצניקים בישראל – יצירת PDF ממותג, תמחור דינמי ושליחה בוואטסאפ.',
     ...(landingUrl ? { url: landingUrl } : {}),
     ...(ogImage ? { image: ogImage } : {}),
   };

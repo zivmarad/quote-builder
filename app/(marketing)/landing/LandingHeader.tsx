@@ -8,7 +8,7 @@ export default function LandingHeader() {
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4" dir="rtl">
         <Link href="/landing" className="font-black text-slate-900 text-lg shrink-0">
-          מחולל הצעות מחיר
+          בונה הצעות מחיר
         </Link>
         <nav className="flex items-center gap-4 sm:gap-6 text-sm font-medium">
           <a href="#how-it-works" className="text-slate-600 hover:text-slate-900 transition-colors whitespace-nowrap">

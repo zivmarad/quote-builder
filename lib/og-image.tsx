@@ -2,7 +2,7 @@ import { ImageResponse } from 'next/og';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-export const OG_ALT = 'בונה הצעות מחיר – מחולל הצעות מחיר';
+export const OG_ALT = 'בונה הצעות מחיר';
 export const OG_SIZE = { width: 1200, height: 630 };
 export const OG_CONTENT_TYPE = 'image/png';
 

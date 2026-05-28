@@ -20,11 +20,11 @@ import LandingSampleQuotes from './LandingSampleQuotes';
 import LandingJsonLd from './LandingJsonLd';
 
 export const metadata: Metadata = withSiteMetadata('/landing', {
-  title: 'מחולל הצעות מחיר לקבלנים ושיפוצניקים | הצעת מחיר לדוגמא',
+  title: 'בונה הצעות מחיר לקבלנים ושיפוצניקים | הצעת מחיר לדוגמא',
   description:
-    'מחולל הצעות מחיר לקבלנים ושיפוצניקים – צור PDF מקצועי וממותג ב-60 שניות מהשטח. תמחור דינמי, שליחה בוואטסאפ, הצעת מחיר לדוגמא בחינם.',
+    'בונה הצעות מחיר לקבלנים ושיפוצניקים – צור PDF מקצועי וממותג ב-60 שניות מהשטח. תמחור דינמי, שליחה בוואטסאפ, הצעת מחיר לדוגמא בחינם.',
   openGraph: {
-    title: 'מחולל הצעות מחיר לקבלנים ושיפוצניקים',
+    title: 'בונה הצעות מחיר לקבלנים ושיפוצניקים',
     description:
       'הצעת מחיר מקצועית ב-60 שניות. PDF ממותג, שליחה בוואטסאפ – נסה בחינם.',
   },
@@ -35,19 +35,19 @@ const steps = [
     title: 'בוחרים ענף',
     text: 'צבע, אינסטלציה, חשמל, מיזוג, גבס, דלתות ועוד – כל התחומים במקום אחד.',
     img: '/landing/step-1-categories.png',
-    imgAlt: 'מחולל הצעות מחיר – בחירת תחום עבודה',
+    imgAlt: 'בונה הצעות מחיר – בחירת תחום עבודה',
   },
   {
     title: 'מסמנים אקסטרות ומעדכנים מחיר',
     text: 'מחיר בסיס ברור, שאלות רלוונטיות (כן/לא) ותוספות – הסה"כ מתעדכן בזמן אמת.',
     img: '/landing/step-2-pricing.png',
-    imgAlt: 'מחולל הצעות מחיר – התאמת מחיר ותוספות',
+    imgAlt: 'בונה הצעות מחיר – התאמת מחיר ותוספות',
   },
   {
     title: 'שולחים ללקוח בוואטסאפ',
     text: 'הצעה מסודרת עם הלוגו שלך – הורדה למכשיר או שיתוף ישיר ללקוח.',
     img: '/landing/step-3-pdf.png',
-    imgAlt: 'מחולל הצעות מחיר – PDF ממותג מוכן לשליחה',
+    imgAlt: 'בונה הצעות מחיר – PDF ממותג מוכן לשליחה',
   },
 ];
 
@@ -134,7 +134,7 @@ export default function LandingPage() {
           <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-10 sm:pb-16">
             <div className="flex flex-col items-center text-center lg:items-start lg:text-right max-w-xl mx-auto lg:mx-0 lg:max-w-none">
               <h1 className="text-3xl sm:text-4xl lg:text-[2.65rem] font-black text-[#0F172A] leading-tight mb-4 w-full">
-                מחולל הצעות מחיר לקבלנים ושיפוצניקים
+                בונה הצעות מחיר לקבלנים ושיפוצניקים
               </h1>
               <p className="text-base sm:text-lg text-slate-600 mb-6 leading-relaxed w-full">
                 צור הצעת מחיר מקצועית ב-60 שניות – ישר מהשטח. תפסיק לבזבז שעות על אקסלים בערב ותתחיל
@@ -154,7 +154,7 @@ export default function LandingPage() {
         <section className="py-14 sm:py-20 bg-white" aria-labelledby="pain-solution-heading">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 id="pain-solution-heading" className="sr-only">
-              למה מחולל הצעות מחיר
+              למה בונה הצעות מחיר
             </h2>
             <div className="grid sm:grid-cols-3 gap-6 lg:gap-8">
               {painSolutionCards.map((card) => {
