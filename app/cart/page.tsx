@@ -1,11 +1,20 @@
-'use client'; // חובה כדי שהסל והלוגיקה שלו יעבדו
+'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Cart from '../components/Cart';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
+import { useSpotlightOnboarding } from '../hooks/useSpotlightOnboarding';
 
 export default function CartPage() {
+  const { complete, isActive } = useSpotlightOnboarding();
+
+  useEffect(() => {
+    if (isActive) {
+      complete();
+    }
+  }, [isActive, complete]);
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] py-6 sm:py-8 px-3 sm:px-4 pb-28 sm:pb-8">
       <div className="max-w-4xl mx-auto">

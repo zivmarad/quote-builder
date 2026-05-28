@@ -133,12 +133,3 @@ body {
 .cart-bump {
   animation: cart-bump 0.55s ease-out;
 }
-
-body.spotlight-onboarding-active * {
-  pointer-events: none;
-}
-
-body.spotlight-onboarding-active .spotlight-target,
-body.spotlight-onboarding-active .spotlight-tooltip {
-  pointer-events: auto;
-}

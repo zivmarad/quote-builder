@@ -8,11 +8,7 @@ import { useCustomCatalog } from '../../contexts/CustomCatalogContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { getServiceDisplayName, isCustomServiceId } from '../../../lib/custom-catalog-types';
-import {
-  getSpotlightCategoryId,
-  setSpotlightServiceId,
-  SPOTLIGHT_TARGET_CLASS,
-} from '@/lib/spotlight-onboarding';
+import { SPOTLIGHT_TARGET_CLASS } from '@/lib/spotlight-onboarding';
 import { useSpotlightOnboarding } from '../../hooks/useSpotlightOnboarding';
 import SpotlightOverlay from '../../components/onboarding/SpotlightOverlay';
 import AddCustomServiceModal from '../../components/AddCustomServiceModal';
@@ -25,7 +21,7 @@ export default function CategoryPage() {
   const { getBasePrice } = usePriceOverrides();
   const { getMergedServices, addCustomService, deleteCustomService } = useCustomCatalog();
   const { t, dir } = useLanguage();
-  const { step, advance, skip } = useSpotlightOnboarding();
+  const { shouldShow, dismissPage } = useSpotlightOnboarding();
   const [search, setSearch] = useState('');
   const [showAddService, setShowAddService] = useState(false);
   const spotlightRef = useRef<HTMLDivElement>(null);
@@ -46,12 +42,9 @@ export default function CategoryPage() {
     });
   }, [allServices, search, t]);
 
+  const showServiceSpotlight = shouldShow('category');
   const spotlightServiceId =
-    step === 'category-service' &&
-    categoryId === getSpotlightCategoryId() &&
-    filteredServices[0]
-      ? filteredServices[0].id
-      : null;
+    showServiceSpotlight && filteredServices[0] ? filteredServices[0].id : null;
 
   const handleAddServiceClick = () => {
     if (!user) {
@@ -67,10 +60,9 @@ export default function CategoryPage() {
     await deleteCustomService(category.id, serviceId);
   };
 
-  const navigateToService = (serviceId: string, isSpotlightTarget: boolean) => {
-    if (isSpotlightTarget) {
-      setSpotlightServiceId(serviceId);
-      advance('pricing-add');
+  const navigateToService = (serviceId: string) => {
+    if (showServiceSpotlight) {
+      dismissPage('category');
     }
     router.push(`/category/${category!.id}/${serviceId}`);
   };
@@ -134,11 +126,11 @@ export default function CategoryPage() {
                 ref={isSpotlight ? spotlightRef : undefined}
                 role="button"
                 tabIndex={0}
-                onClick={() => navigateToService(service.id, isSpotlight)}
+                onClick={() => navigateToService(service.id)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    navigateToService(service.id, isSpotlight);
+                    navigateToService(service.id);
                   }
                 }}
                 className={`btn-hover-safe w-full text-right bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl shadow-sm border transition-all active:scale-[0.98] min-h-[72px] cursor-pointer ${
@@ -196,7 +188,7 @@ export default function CategoryPage() {
         targetRef={spotlightRef}
         hint={t('spotlight.categoryService')}
         skipLabel={t('spotlight.skip')}
-        onSkip={skip}
+        onDismiss={() => dismissPage('category')}
       />
 
       <AddCustomServiceModal

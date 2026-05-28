@@ -1,6 +1,6 @@
 'use client';
 
-import { useLayoutEffect, useRef, useSyncExternalStore, type RefObject } from 'react';
+import { useRef, useSyncExternalStore, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 
 type SpotlightOverlayProps = {
@@ -8,28 +8,44 @@ type SpotlightOverlayProps = {
   targetRef: RefObject<HTMLElement | null>;
   hint: string;
   skipLabel: string;
-  onSkip: () => void;
+  onDismiss: () => void;
 };
 
-type TooltipPos = { top: number; left: number; width: number; placement: 'above' | 'below' };
+type TooltipPos = {
+  top: number;
+  left: number;
+  width: number;
+  placement: 'above' | 'below';
+  arrowLeft: number;
+};
 
 function computeTooltipPos(rect: DOMRect): TooltipPos {
-  const tooltipWidth = Math.min(288, window.innerWidth - 32);
+  const tooltipWidth = Math.min(240, window.innerWidth - 32);
   const centerX = rect.left + rect.width / 2;
   const left = Math.min(
     Math.max(16, centerX - tooltipWidth / 2),
     window.innerWidth - tooltipWidth - 16,
   );
   const spaceBelow = window.innerHeight - rect.bottom;
-  const placement = spaceBelow > 140 ? 'below' : 'above';
-  const top = placement === 'below' ? rect.bottom + 12 : rect.top - 12;
-  return { top, left, width: tooltipWidth, placement };
+  const placement = spaceBelow > 120 ? 'below' : 'above';
+  const top = placement === 'below' ? rect.bottom + 10 : rect.top - 10;
+  const arrowLeft = Math.min(
+    Math.max(12, centerX - left),
+    tooltipWidth - 12,
+  );
+  return { top, left, width: tooltipWidth, placement, arrowLeft };
 }
 
 function posEqual(a: TooltipPos | null, b: TooltipPos | null): boolean {
   if (a === b) return true;
   if (!a || !b) return false;
-  return a.top === b.top && a.left === b.left && a.width === b.width && a.placement === b.placement;
+  return (
+    a.top === b.top &&
+    a.left === b.left &&
+    a.width === b.width &&
+    a.placement === b.placement &&
+    a.arrowLeft === b.arrowLeft
+  );
 }
 
 function useIsClient(): boolean {
@@ -94,48 +110,56 @@ export default function SpotlightOverlay({
   targetRef,
   hint,
   skipLabel,
-  onSkip,
+  onDismiss,
 }: SpotlightOverlayProps) {
   const mounted = useIsClient();
   const pos = useTargetTooltipPos(targetRef, open);
-
-  useLayoutEffect(() => {
-    if (!open) {
-      document.body.classList.remove('spotlight-onboarding-active');
-      return;
-    }
-
-    document.body.classList.add('spotlight-onboarding-active');
-    return () => document.body.classList.remove('spotlight-onboarding-active');
-  }, [open]);
 
   if (!mounted || !open || !pos) return null;
 
   return createPortal(
     <>
-      <div
-        className="fixed inset-0 z-[50] bg-slate-900/30 backdrop-blur-[2px] pointer-events-none transition-opacity"
-        aria-hidden
+      <button
+        type="button"
+        aria-label={skipLabel}
+        className="fixed inset-0 z-[50] bg-slate-900/10 transition-opacity cursor-default"
+        onClick={onDismiss}
       />
       <div
         role="dialog"
         aria-live="polite"
-        className="spotlight-tooltip fixed z-[55] rounded-2xl bg-white border border-slate-100 shadow-xl shadow-slate-900/10 p-4 text-right pointer-events-auto"
+        className="spotlight-tooltip fixed z-[55] pointer-events-auto"
         style={{
           top: pos.placement === 'below' ? pos.top : undefined,
           bottom: pos.placement === 'above' ? window.innerHeight - pos.top : undefined,
           left: pos.left,
           width: pos.width,
         }}
+        onClick={(e) => e.stopPropagation()}
       >
-        <p className="text-sm font-semibold text-slate-800 leading-relaxed">{hint}</p>
-        <button
-          type="button"
-          onClick={onSkip}
-          className="mt-3 text-xs font-medium text-slate-400 hover:text-slate-600 transition-colors"
-        >
-          {skipLabel}
-        </button>
+        <div className="relative rounded-xl bg-slate-900 text-white px-3.5 py-2.5 shadow-lg shadow-slate-900/20">
+          {pos.placement === 'below' ? (
+            <span
+              aria-hidden
+              className="absolute -top-1.5 w-3 h-3 bg-slate-900 rotate-45"
+              style={{ left: pos.arrowLeft - 6 }}
+            />
+          ) : (
+            <span
+              aria-hidden
+              className="absolute -bottom-1.5 w-3 h-3 bg-slate-900 rotate-45"
+              style={{ left: pos.arrowLeft - 6 }}
+            />
+          )}
+          <p className="text-xs font-medium leading-relaxed text-white/95">{hint}</p>
+          <button
+            type="button"
+            onClick={onDismiss}
+            className="mt-1.5 text-[11px] text-white/50 hover:text-white/80 transition-colors"
+          >
+            {skipLabel}
+          </button>
+        </div>
       </div>
     </>,
     document.body,

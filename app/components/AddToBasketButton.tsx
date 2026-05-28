@@ -23,7 +23,7 @@ export default function AddToBasketButton({ service }: AddToBasketButtonProps) {
   const router = useRouter();
   const { addItem } = useQuoteBasket();
   const { t } = useLanguage();
-  const { step, advance } = useSpotlightOnboarding();
+  const { shouldShow, dismissPage } = useSpotlightOnboarding();
 
   const handleAdd = () => {
     addItem({
@@ -36,8 +36,8 @@ export default function AddToBasketButton({ service }: AddToBasketButtonProps) {
       unit: service.unit,
     });
 
-    if (step === 'pricing-add') {
-      advance('go-cart');
+    if (shouldShow('service')) {
+      dismissPage('service');
     }
 
     router.back();

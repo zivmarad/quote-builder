@@ -28,12 +28,12 @@ export default function FloatingCartButton() {
   const router = useRouter();
   const pathname = usePathname();
   const { t } = useLanguage();
-  const { step, advance, skip } = useSpotlightOnboarding();
+  const { shouldShow, dismissPage, complete } = useSpotlightOnboarding();
   const prevCountRef = useRef(itemCount);
   const cartButtonRef = useRef<HTMLButtonElement>(null);
   const [bounce, setBounce] = useState(false);
 
-  const showGoCartSpotlight = step === 'go-cart' && itemCount > 0;
+  const showGoCartSpotlight = shouldShow('go-cart') && itemCount > 0;
 
   useEffect(() => {
     if (itemCount > prevCountRef.current && itemCount > 0) {
@@ -77,11 +77,12 @@ export default function FloatingCartButton() {
         type="button"
         onClick={() => {
           if (showGoCartSpotlight) {
-            advance('done');
+            dismissPage('go-cart');
+            complete();
           }
           router.push('/cart');
         }}
-        className={`fixed z-[52] flex items-center justify-between gap-3 sm:gap-4 bg-[#2563EB] text-white rounded-full shadow-xl hover:shadow-blue-500/40 active:scale-[0.98] sm:hover:scale-105 transition-all duration-300 group min-h-[64px] pl-5 pr-5 sm:pl-6 sm:pr-6 py-4 bottom-5 left-5 right-5 sm:left-auto sm:right-6 sm:min-w-[200px] ${bounce ? 'cart-bump' : ''} ${showGoCartSpotlight ? SPOTLIGHT_TARGET_CLASS : ''}`}
+        className={`fixed flex items-center justify-between gap-3 sm:gap-4 bg-[#2563EB] text-white rounded-full shadow-xl hover:shadow-blue-500/40 active:scale-[0.98] sm:hover:scale-105 transition-all duration-300 group min-h-[64px] pl-5 pr-5 sm:pl-6 sm:pr-6 py-4 bottom-5 left-5 right-5 sm:left-auto sm:right-6 sm:min-w-[200px] ${showGoCartSpotlight ? 'z-[53]' : 'z-[52]'} ${bounce ? 'cart-bump' : ''} ${showGoCartSpotlight ? SPOTLIGHT_TARGET_CLASS : ''}`}
         style={{ marginBottom: 'max(20px, env(safe-area-inset-bottom, 0px))' }}
       >
         <div className="text-right flex-1 min-w-0 flex flex-col items-end gap-0.5">
@@ -101,7 +102,7 @@ export default function FloatingCartButton() {
         targetRef={cartButtonRef}
         hint={t('spotlight.goCart')}
         skipLabel={t('spotlight.skip')}
-        onSkip={skip}
+        onDismiss={() => dismissPage('go-cart')}
       />
     </>
   );

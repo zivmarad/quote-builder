@@ -31,9 +31,8 @@ import { useLanguage } from './contexts/LanguageContext';
 import { useCustomCatalog } from './contexts/CustomCatalogContext';
 import { getServiceDisplayName } from '../lib/custom-catalog-types';
 import {
-  SPOTLIGHT_HOME_CATEGORY_ID,
+  SPOTLIGHT_SUGGESTED_HOME_CATEGORY_ID,
   SPOTLIGHT_TARGET_CLASS,
-  setSpotlightCategoryId,
 } from '@/lib/spotlight-onboarding';
 import { useSpotlightOnboarding } from './hooks/useSpotlightOnboarding';
 import SpotlightOverlay from './components/onboarding/SpotlightOverlay';
@@ -93,11 +92,12 @@ export default function HomePage() {
   const router = useRouter();
   const { t, dir } = useLanguage();
   const { getMergedServices } = useCustomCatalog();
-  const { step, advance, skip } = useSpotlightOnboarding();
+  const { shouldShow, dismissPage } = useSpotlightOnboarding();
   const [search, setSearch] = useState('');
   const spotlightRef = useRef<HTMLAnchorElement>(null);
 
-  const showCategorySpotlight = step === 'home-category';
+  const showCategorySpotlight = shouldShow('home');
+  const suggestedCategoryId = SPOTLIGHT_SUGGESTED_HOME_CATEGORY_ID;
 
   const searchResults = useMemo((): SearchResult[] => {
     const q = search.trim().toLowerCase();
@@ -204,16 +204,15 @@ export default function HomePage() {
           {categories.map((cat) => {
             const IconComponent = categoryIcons[cat.id] ?? Package;
             const iconColor = categoryColors[cat.id] ?? 'text-slate-500';
-            const isSpotlight = showCategorySpotlight && cat.id === SPOTLIGHT_HOME_CATEGORY_ID;
+            const isSpotlight = showCategorySpotlight && cat.id === suggestedCategoryId;
             return (
               <Link
                 key={cat.id}
                 ref={isSpotlight ? spotlightRef : undefined}
                 href={`/category/${cat.id}`}
                 onClick={() => {
-                  if (isSpotlight) {
-                    setSpotlightCategoryId(cat.id);
-                    advance('category-service');
+                  if (showCategorySpotlight) {
+                    dismissPage('home');
                   }
                 }}
                 className={`card-hover-safe bg-white min-h-[120px] sm:aspect-square sm:min-h-0 rounded-2xl shadow-[0_4px_6px_-1px_rgb(0_0_0_/_0.1)] border border-[#E2E8F0] hover:border-blue-400 hover:shadow-lg transition-all flex flex-col items-center justify-center text-center group active:scale-[0.98] p-4 relative ${
@@ -259,7 +258,7 @@ export default function HomePage() {
         targetRef={spotlightRef}
         hint={t('spotlight.homeCategory')}
         skipLabel={t('spotlight.skip')}
-        onSkip={skip}
+        onDismiss={() => dismissPage('home')}
       />
     </main>
   );

@@ -13,8 +13,7 @@ import { useCustomCatalog } from '../../../contexts/CustomCatalogContext';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import {
-  getSpotlightCategoryId,
-  getSpotlightServiceId,
+  SPOTLIGHT_ELEVATED_CLASS,
   SPOTLIGHT_TARGET_CLASS,
 } from '@/lib/spotlight-onboarding';
 import { useSpotlightOnboarding } from '../../../hooks/useSpotlightOnboarding';
@@ -34,7 +33,7 @@ export default function ServiceWizardPage() {
   const { getBasePrice, getImpactValue, setBasePrice, setQuestionImpact } = usePriceOverrides();
   const { getMergedServices, getMergedQuestions, addQuestion, deleteQuestion } = useCustomCatalog();
   const { t, dir } = useLanguage();
-  const { step, skip } = useSpotlightOnboarding();
+  const { shouldShow, dismissPage } = useSpotlightOnboarding();
   const addButtonRef = useRef<HTMLDivElement>(null);
 
   const categoryId = Array.isArray(slug) ? slug[0] : slug;
@@ -135,10 +134,7 @@ export default function ServiceWizardPage() {
   const serviceName = getServiceDisplayName(t, service);
   const editHint = t('serviceWizard.tapToEditPrice');
 
-  const showAddSpotlight =
-    step === 'pricing-add' &&
-    categoryId === getSpotlightCategoryId() &&
-    svcId === getSpotlightServiceId();
+  const showAddSpotlight = shouldShow('service');
 
   const handleToggle = (question: Question, value: boolean) => {
     setAnswers((prev) => ({ ...prev, [question.id]: value }));
@@ -337,7 +333,7 @@ export default function ServiceWizardPage() {
       <motion.div 
         initial={{ y: 100 }} 
         animate={{ y: 0 }} 
-        className="fixed bottom-0 inset-x-0 z-30 p-2 sm:p-4 bg-gradient-to-t from-slate-50 via-slate-50 to-transparent"
+        className={`fixed bottom-0 inset-x-0 p-2 sm:p-4 bg-gradient-to-t from-slate-50 via-slate-50 to-transparent ${showAddSpotlight ? SPOTLIGHT_ELEVATED_CLASS : 'z-30'}`}
         style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
       >
         <div className="mx-auto max-w-md sm:max-w-3xl px-2 sm:px-1 flex justify-center">
@@ -373,7 +369,7 @@ export default function ServiceWizardPage() {
         targetRef={addButtonRef}
         hint={t('spotlight.pricingAdd')}
         skipLabel={t('spotlight.skip')}
-        onSkip={skip}
+        onDismiss={() => dismissPage('service')}
       />
 
       <AddCustomQuestionModal

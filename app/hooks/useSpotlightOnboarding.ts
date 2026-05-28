@@ -1,12 +1,12 @@
 'use client';
 
-import { useSyncExternalStore } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
 import {
-  advanceSpotlightStep,
-  getSpotlightStep,
-  skipSpotlightOnboarding,
+  completeOnboarding,
+  dismissPageHint,
+  getSpotlightSnapshot,
   subscribeSpotlight,
-  type SpotlightStep,
+  type SpotlightPage,
 } from '@/lib/spotlight-onboarding';
 
 function useIsClient(): boolean {
@@ -19,17 +19,34 @@ function useIsClient(): boolean {
 
 export function useSpotlightOnboarding() {
   const mounted = useIsClient();
-  const storedStep = useSyncExternalStore(
+  const snapshot = useSyncExternalStore(
     subscribeSpotlight,
-    getSpotlightStep,
-    (): SpotlightStep => 'done',
+    getSpotlightSnapshot,
+    () => ({ complete: true, seenPages: [] as SpotlightPage[] }),
   );
-  const step = mounted ? storedStep : 'done';
+
+  const isActive = mounted && !snapshot.complete;
+
+  const shouldShow = useCallback(
+    (page: SpotlightPage) => isActive && !snapshot.seenPages.includes(page),
+    [isActive, snapshot.seenPages],
+  );
+
+  const dismissPage = useCallback(
+    (page: SpotlightPage) => {
+      dismissPageHint(page);
+    },
+    [],
+  );
+
+  const complete = useCallback(() => {
+    completeOnboarding();
+  }, []);
 
   return {
-    step,
-    isActive: step !== 'done',
-    advance: advanceSpotlightStep,
-    skip: skipSpotlightOnboarding,
+    isActive,
+    shouldShow,
+    dismissPage,
+    complete,
   };
 }
