@@ -68,7 +68,6 @@ function useTargetTooltipPos(
 
       const update = () => onStoreChange();
 
-      update();
       window.addEventListener('resize', update);
       window.addEventListener('scroll', update, true);
 
@@ -76,10 +75,12 @@ function useTargetTooltipPos(
       const attachObserver = () => {
         ro?.disconnect();
         ro = targetRef.current ? new ResizeObserver(update) : null;
-        if (targetRef.current) ro?.observe(targetRef.current);
+        if (targetRef.current) {
+          ro?.observe(targetRef.current);
+          update();
+        }
       };
 
-      attachObserver();
       const raf = requestAnimationFrame(attachObserver);
 
       return () => {

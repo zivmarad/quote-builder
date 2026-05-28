@@ -1,10 +1,11 @@
 'use client';
 
-import { useCallback, useSyncExternalStore } from 'react';
+import { useCallback, useMemo, useSyncExternalStore } from 'react';
 import {
   completeOnboarding,
   dismissPageHint,
-  getSpotlightSnapshot,
+  getSpotlightSeenKey,
+  isOnboardingComplete,
   subscribeSpotlight,
   type SpotlightPage,
 } from '@/lib/spotlight-onboarding';
@@ -19,27 +20,34 @@ function useIsClient(): boolean {
 
 export function useSpotlightOnboarding() {
   const mounted = useIsClient();
-  const snapshot = useSyncExternalStore(
+  const isComplete = useSyncExternalStore(
     subscribeSpotlight,
-    getSpotlightSnapshot,
-    () => ({ complete: true, seenPages: [] as SpotlightPage[] }),
+    isOnboardingComplete,
+    () => true,
+  );
+  const seenKey = useSyncExternalStore(
+    subscribeSpotlight,
+    getSpotlightSeenKey,
+    () => '',
   );
 
-  const isActive = mounted && !snapshot.complete;
+  const seenPages = useMemo((): SpotlightPage[] => {
+    if (!seenKey) return [];
+    return seenKey.split(',').filter(Boolean) as SpotlightPage[];
+  }, [seenKey]);
+
+  const isActive = mounted && !isComplete;
 
   const shouldShow = useCallback(
-    (page: SpotlightPage) => isActive && !snapshot.seenPages.includes(page),
-    [isActive, snapshot.seenPages],
+    (page: SpotlightPage) => isActive && !seenPages.includes(page),
+    [isActive, seenPages],
   );
 
-  const dismissPage = useCallback(
-    (page: SpotlightPage) => {
-      dismissPageHint(page);
-    },
-    [],
-  );
+  const dismissPage = useCallback((page: SpotlightPage) => {
+    dismissPageHint(page);
+  }, []);
 
-  const complete = useCallback(() => {
+  const finish = useCallback(() => {
     completeOnboarding();
   }, []);
 
@@ -47,6 +55,6 @@ export function useSpotlightOnboarding() {
     isActive,
     shouldShow,
     dismissPage,
-    complete,
+    complete: finish,
   };
 }

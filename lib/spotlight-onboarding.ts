@@ -7,30 +7,42 @@ const CHANGE_EVENT = 'spotlight_onboarding_change';
 /** קטגוריה מוצעת בדף הבית (המשתמש יכול לבחור כל קטגוריה) */
 export const SPOTLIGHT_SUGGESTED_HOME_CATEGORY_ID = 'plumbing';
 
+const EMPTY_SEEN: SpotlightPage[] = [];
+
 function notifySpotlightChange(): void {
   if (typeof window === 'undefined') return;
   window.dispatchEvent(new Event(CHANGE_EVENT));
 }
 
 function readSeenPages(): SpotlightPage[] {
-  if (typeof window === 'undefined') return [];
+  if (typeof window === 'undefined') return EMPTY_SEEN;
   try {
     const raw = localStorage.getItem(SEEN_PAGES_KEY);
-    if (!raw) return [];
+    if (!raw) return EMPTY_SEEN;
     const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) return [];
+    if (!Array.isArray(parsed)) return EMPTY_SEEN;
     return parsed.filter(
       (p): p is SpotlightPage =>
         p === 'home' || p === 'category' || p === 'service' || p === 'go-cart',
     );
   } catch {
-    return [];
+    return EMPTY_SEEN;
   }
 }
 
 function writeSeenPages(pages: SpotlightPage[]): void {
   try {
     localStorage.setItem(SEEN_PAGES_KEY, JSON.stringify(pages));
+  } catch {
+    /* ignore */
+  }
+}
+
+function clearLegacySpotlightKeys(): void {
+  try {
+    localStorage.removeItem('spotlight_onboarding_step');
+    localStorage.removeItem('spotlight_onboarding_category');
+    localStorage.removeItem('spotlight_onboarding_service');
   } catch {
     /* ignore */
   }
@@ -45,19 +57,13 @@ export function isOnboardingComplete(): boolean {
   }
 }
 
-function clearLegacySpotlightKeys(): void {
-  try {
-    localStorage.removeItem('spotlight_onboarding_step');
-    localStorage.removeItem('spotlight_onboarding_category');
-    localStorage.removeItem('spotlight_onboarding_service');
-  } catch {
-    /* ignore */
-  }
+/** מפתח יציב ל-useSyncExternalStore — מחרוזת, לא אובייקט */
+export function getSpotlightSeenKey(): string {
+  return readSeenPages().join(',');
 }
 
 export function shouldShowPageHint(page: SpotlightPage): boolean {
   if (typeof window === 'undefined') return false;
-  clearLegacySpotlightKeys();
   if (isOnboardingComplete()) return false;
   return !readSeenPages().includes(page);
 }
@@ -84,15 +90,9 @@ export function completeOnboarding(): void {
 
 export function subscribeSpotlight(onStoreChange: () => void): () => void {
   if (typeof window === 'undefined') return () => {};
+  clearLegacySpotlightKeys();
   window.addEventListener(CHANGE_EVENT, onStoreChange);
   return () => window.removeEventListener(CHANGE_EVENT, onStoreChange);
-}
-
-export function getSpotlightSnapshot(): { complete: boolean; seenPages: SpotlightPage[] } {
-  return {
-    complete: isOnboardingComplete(),
-    seenPages: readSeenPages(),
-  };
 }
 
 export const SPOTLIGHT_TARGET_CLASS =
