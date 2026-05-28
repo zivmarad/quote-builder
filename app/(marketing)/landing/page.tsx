@@ -11,7 +11,7 @@ import {
   Building2,
   Ruler,
 } from 'lucide-react';
-import { absoluteUrl, getSiteUrl } from '../../../lib/site-url';
+import { withSiteMetadata } from '@/lib/site-metadata';
 import { LandingImage } from './LandingImage';
 import { LandingVideo } from './LandingVideo';
 import { PhoneMockup } from './PhoneMockup';
@@ -19,28 +19,17 @@ import LandingFaq from './LandingFaq';
 import LandingSampleQuotes from './LandingSampleQuotes';
 import LandingJsonLd from './LandingJsonLd';
 
-const siteUrl = getSiteUrl();
-const landingCanonical = absoluteUrl('/landing') ?? '/landing';
-const ogImage = absoluteUrl('/landing/og-image.png') ?? '/landing/og-image.png';
-
-export const metadata: Metadata = {
+export const metadata: Metadata = withSiteMetadata('/landing', {
   title: 'מחולל הצעות מחיר לקבלנים ושיפוצניקים | הצעת מחיר לדוגמא',
   description:
     'מחולל הצעות מחיר לקבלנים ושיפוצניקים – צור PDF מקצועי וממותג ב-60 שניות מהשטח. תמחור דינמי, שליחה בוואטסאפ, הצעת מחיר לדוגמא בחינם.',
-  alternates: {
-    canonical: landingCanonical,
-  },
   openGraph: {
     title: 'מחולל הצעות מחיר לקבלנים ושיפוצניקים',
     description:
       'הצעת מחיר מקצועית ב-60 שניות. PDF ממותג, שליחה בוואטסאפ – נסה בחינם.',
-    locale: 'he_IL',
-    type: 'website',
-    url: landingCanonical,
-    images: [{ url: ogImage, width: 1200, height: 630, alt: 'מחולל הצעות מחיר – תצוגת PDF' }],
+    images: [{ url: '/landing/og-image.png', width: 1200, height: 630, alt: 'מחולל הצעות מחיר – תצוגת PDF' }],
   },
-  ...(siteUrl ? { metadataBase: new URL(siteUrl) } : {}),
-};
+});
 
 const steps = [
   {

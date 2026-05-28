@@ -1,6 +1,7 @@
 import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import { Heebo } from 'next/font/google';
+import { withSiteMetadata } from '@/lib/site-metadata';
 import { AuthProvider } from './contexts/AuthContext';
 import LanguageWrapper from './components/LanguageWrapper';
 import AppChrome from './components/AppChrome';
@@ -16,15 +17,21 @@ const heebo = Heebo({
   weight: ['300', '400', '500', '700', '900'],
 });
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSiteMetadata('/', {
   title: 'מחולל הצעות מחיר | תמחור והצעות מחיר מקצועיות',
   description:
     'מחולל הצעות מחיר לקבלנים ושיפוצניקים – PDF ממותג, שליחה בוואטסאפ והיסטוריה. מתאים לבעלי מקצוע בישראל.',
+  openGraph: {
+    title: 'מחולל הצעות מחיר | hatzaot.co.il',
+    description:
+      'מחולל הצעות מחיר לקבלנים ושיפוצניקים – PDF ממותג, שליחה בוואטסאפ והיסטוריה.',
+    images: [{ url: '/landing/og-image.png', width: 1200, height: 630, alt: 'מחולל הצעות מחיר' }],
+  },
   icons: {
     icon: '/icon.png',
     apple: '/icon.png',
   },
-};
+});
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

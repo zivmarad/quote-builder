@@ -28,6 +28,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 | משתנה | חובה | תיאור |
 |--------|------|--------|
 | `JWT_SECRET` | כן | מפתח לחתימת סשן (לפחות 32 תווים). ייחודי וסודי. |
+| `NEXT_PUBLIC_SITE_URL` | מומלץ | כתובת האתר ב-production (למשל `https://hatzaot.co.il`) – SEO, Open Graph ו-sitemap. ב-production ב-Vercel ברירת המחדל היא `https://hatzaot.co.il`. |
 | `NEXT_PUBLIC_SUPABASE_URL` | לסנכרון | כתובת פרויקט Supabase (Project Settings → API). |
 | `SUPABASE_SERVICE_ROLE_KEY` | לסנכרון | מפתח service_role מאותו מקום. **לא לחשוף בצד לקוח.** |
 | `EMAIL_USER` | לשליחת מייל | כתובת Gmail שממנה נשלחים קודי אימות וכו'. |

@@ -1,12 +1,13 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { Phone, MessageCircle, HelpCircle } from 'lucide-react';
+import { withSiteMetadata } from '@/lib/site-metadata';
 import { SUPPORT_PHONE, SUPPORT_PHONE_LINK, SUPPORT_WHATSAPP_LINK } from '../../lib/contact-links';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSiteMetadata('/contact', {
   title: 'צור קשר | בונה הצעות מחיר',
   description: 'צור קשר עם בונה הצעות מחיר – שאלות, תמיכה ועזרה.',
-};
+});
 
 const PHONE = SUPPORT_PHONE;
 const PHONE_LINK = SUPPORT_PHONE_LINK;

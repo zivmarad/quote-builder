@@ -19,7 +19,7 @@ function getTransporter() {
 }
 
 function uniqueMessageId(fromEmail: string): string {
-  const domain = fromEmail.split('@')[1] ?? 'quote-builder.local';
+  const domain = fromEmail.split('@')[1] ?? 'hatzaot.co.il';
   return `<${randomUUID()}@${domain}>`;
 }
 

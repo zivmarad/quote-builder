@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { withSiteMetadata } from '@/lib/site-metadata';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSiteMetadata('/privacy', {
   title: 'מדיניות פרטיות | בונה הצעות מחיר',
   description: 'מדיניות הפרטיות של בונה הצעות מחיר – אילו נתונים נשמרים ואיך.',
-};
+});
 
 export default function PrivacyPage() {
   return (
