@@ -1,6 +1,6 @@
 'use client';
 
-import { useLayoutEffect, useSyncExternalStore, type RefObject } from 'react';
+import { useLayoutEffect, useRef, useSyncExternalStore, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 
 type SpotlightOverlayProps = {
@@ -26,6 +26,12 @@ function computeTooltipPos(rect: DOMRect): TooltipPos {
   return { top, left, width: tooltipWidth, placement };
 }
 
+function posEqual(a: TooltipPos | null, b: TooltipPos | null): boolean {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  return a.top === b.top && a.left === b.left && a.width === b.width && a.placement === b.placement;
+}
+
 function useIsClient(): boolean {
   return useSyncExternalStore(
     () => () => {},
@@ -38,6 +44,8 @@ function useTargetTooltipPos(
   targetRef: RefObject<HTMLElement | null>,
   open: boolean,
 ): TooltipPos | null {
+  const cachedRef = useRef<TooltipPos | null>(null);
+
   return useSyncExternalStore(
     (onStoreChange) => {
       if (!open) return () => {};
@@ -66,8 +74,16 @@ function useTargetTooltipPos(
       };
     },
     () => {
-      if (!open || !targetRef.current) return null;
-      return computeTooltipPos(targetRef.current.getBoundingClientRect());
+      if (!open || !targetRef.current) {
+        cachedRef.current = null;
+        return null;
+      }
+      const next = computeTooltipPos(targetRef.current.getBoundingClientRect());
+      if (posEqual(cachedRef.current, next)) {
+        return cachedRef.current;
+      }
+      cachedRef.current = next;
+      return next;
     },
     () => null,
   );

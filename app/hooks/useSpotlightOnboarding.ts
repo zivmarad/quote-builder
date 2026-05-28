@@ -9,8 +9,22 @@ import {
   type SpotlightStep,
 } from '@/lib/spotlight-onboarding';
 
+function useIsClient(): boolean {
+  return useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+}
+
 export function useSpotlightOnboarding() {
-  const step = useSyncExternalStore(subscribeSpotlight, getSpotlightStep, (): SpotlightStep => 'done');
+  const mounted = useIsClient();
+  const storedStep = useSyncExternalStore(
+    subscribeSpotlight,
+    getSpotlightStep,
+    (): SpotlightStep => 'done',
+  );
+  const step = mounted ? storedStep : 'done';
 
   return {
     step,
