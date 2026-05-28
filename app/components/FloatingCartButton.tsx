@@ -6,7 +6,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { ShoppingCart } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useSpotlightOnboarding } from '../hooks/useSpotlightOnboarding';
-import { SPOTLIGHT_TARGET_CLASS } from '@/lib/spotlight-onboarding';
+import { SPOTLIGHT_RING_CLASS } from '@/lib/spotlight-onboarding';
 import SpotlightOverlay from './onboarding/SpotlightOverlay';
 
 const HIDE_PATHS = [
@@ -82,7 +82,7 @@ export default function FloatingCartButton() {
           }
           router.push('/cart');
         }}
-        className={`fixed flex items-center justify-between gap-3 sm:gap-4 bg-[#2563EB] text-white rounded-full shadow-xl hover:shadow-blue-500/40 active:scale-[0.98] sm:hover:scale-105 transition-all duration-300 group min-h-[64px] pl-5 pr-5 sm:pl-6 sm:pr-6 py-4 bottom-5 left-5 right-5 sm:left-auto sm:right-6 sm:min-w-[200px] ${showGoCartSpotlight ? 'z-[53]' : 'z-[52]'} ${bounce ? 'cart-bump' : ''} ${showGoCartSpotlight ? SPOTLIGHT_TARGET_CLASS : ''}`}
+        className={`fixed flex items-center justify-between gap-3 sm:gap-4 bg-[#2563EB] text-white rounded-full shadow-xl hover:shadow-blue-500/40 active:scale-[0.98] sm:hover:scale-105 transition-all duration-300 group min-h-[64px] pl-5 pr-5 sm:pl-6 sm:pr-6 py-4 bottom-5 left-5 right-5 sm:left-auto sm:right-6 sm:min-w-[200px] ${showGoCartSpotlight ? `z-[53] ${SPOTLIGHT_RING_CLASS}` : 'z-[52]'} ${bounce ? 'cart-bump' : ''}`}
         style={{ marginBottom: 'max(20px, env(safe-area-inset-bottom, 0px))' }}
       >
         <div className="text-right flex-1 min-w-0 flex flex-col items-end gap-0.5">
