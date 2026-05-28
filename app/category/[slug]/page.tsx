@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { categories } from '../../service/services';
 import { usePriceOverrides } from '../../contexts/PriceOverridesContext';
@@ -8,6 +8,13 @@ import { useCustomCatalog } from '../../contexts/CustomCatalogContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { getServiceDisplayName, isCustomServiceId } from '../../../lib/custom-catalog-types';
+import {
+  getSpotlightCategoryId,
+  setSpotlightServiceId,
+  SPOTLIGHT_TARGET_CLASS,
+} from '@/lib/spotlight-onboarding';
+import { useSpotlightOnboarding } from '../../hooks/useSpotlightOnboarding';
+import SpotlightOverlay from '../../components/onboarding/SpotlightOverlay';
 import AddCustomServiceModal from '../../components/AddCustomServiceModal';
 import { Search, Plus, Trash2 } from 'lucide-react';
 
@@ -18,8 +25,10 @@ export default function CategoryPage() {
   const { getBasePrice } = usePriceOverrides();
   const { getMergedServices, addCustomService, deleteCustomService } = useCustomCatalog();
   const { t, dir } = useLanguage();
+  const { step, advance, skip } = useSpotlightOnboarding();
   const [search, setSearch] = useState('');
   const [showAddService, setShowAddService] = useState(false);
+  const spotlightRef = useRef<HTMLDivElement>(null);
   const categoryId = Array.isArray(slug) ? slug[0] : slug;
   const category = categories.find((c) => c.id === categoryId);
 
@@ -37,6 +46,13 @@ export default function CategoryPage() {
     });
   }, [allServices, search, t]);
 
+  const spotlightServiceId =
+    step === 'category-service' &&
+    categoryId === getSpotlightCategoryId() &&
+    filteredServices[0]
+      ? filteredServices[0].id
+      : null;
+
   const handleAddServiceClick = () => {
     if (!user) {
       router.push(`/login?from=${encodeURIComponent(`/category/${categoryId}`)}`);
@@ -49,6 +65,14 @@ export default function CategoryPage() {
     e.stopPropagation();
     if (!category || !window.confirm(t('customCatalog.deleteServiceConfirm'))) return;
     await deleteCustomService(category.id, serviceId);
+  };
+
+  const navigateToService = (serviceId: string, isSpotlightTarget: boolean) => {
+    if (isSpotlightTarget) {
+      setSpotlightServiceId(serviceId);
+      advance('pricing-add');
+    }
+    router.push(`/category/${category!.id}/${serviceId}`);
   };
 
   if (!category) {
@@ -67,7 +91,9 @@ export default function CategoryPage() {
           className="mb-4 sm:mb-6 inline-flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 min-h-[44px] px-2 -mr-2 rounded-xl active:bg-slate-100"
         >
           <span>{t('common.back')}</span>
-          <span className="text-lg" aria-hidden="true">↩</span>
+          <span className="text-lg" aria-hidden="true">
+            ↩
+          </span>
         </button>
 
         <header className="mb-6 sm:mb-8">
@@ -77,9 +103,7 @@ export default function CategoryPage() {
               {category.icon}
             </span>
           </h1>
-          <p className="text-slate-500 mt-2 text-sm sm:text-base">
-            {t('category.chooseService')}
-          </p>
+          <p className="text-slate-500 mt-2 text-sm sm:text-base">{t('category.chooseService')}</p>
           <div className="mt-4">
             <label htmlFor="service-search" className="sr-only">
               {t('category.searchLabel')}
@@ -103,23 +127,25 @@ export default function CategoryPage() {
           {filteredServices.map((service) => {
             const isCustom = isCustomServiceId(service.id);
             const displayName = getServiceDisplayName(t, service);
+            const isSpotlight = spotlightServiceId === service.id;
             return (
               <div
                 key={service.id}
+                ref={isSpotlight ? spotlightRef : undefined}
                 role="button"
                 tabIndex={0}
-                onClick={() => router.push(`/category/${category.id}/${service.id}`)}
+                onClick={() => navigateToService(service.id, isSpotlight)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    router.push(`/category/${category.id}/${service.id}`);
+                    navigateToService(service.id, isSpotlight);
                   }
                 }}
                 className={`btn-hover-safe w-full text-right bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl shadow-sm border transition-all active:scale-[0.98] min-h-[72px] cursor-pointer ${
                   isCustom
                     ? 'border-violet-200 hover:border-violet-400 hover:shadow-md'
                     : 'border-slate-100 hover:border-blue-500 hover:shadow-md'
-                }`}
+                } ${isSpotlight ? SPOTLIGHT_TARGET_CLASS : ''}`}
               >
                 <div className="flex items-start gap-2 mb-1">
                   <div className="flex-1 flex items-center gap-2 justify-start flex-wrap min-w-0 text-right">
@@ -142,11 +168,10 @@ export default function CategoryPage() {
                   )}
                 </div>
                 <p className="text-sm text-slate-500 mb-2">
-                  {t('category.fromPrice')} ₪{getBasePrice(service.id, service.basePrice).toLocaleString('he-IL')} {t('category.perUnit')} {service.unit}
+                  {t('category.fromPrice')} ₪{getBasePrice(service.id, service.basePrice).toLocaleString('he-IL')}{' '}
+                  {t('category.perUnit')} {service.unit}
                 </p>
-                {service.isCounter && (
-                  <p className="text-xs text-slate-400">{t('category.quantityNote')}</p>
-                )}
+                {service.isCounter && <p className="text-xs text-slate-400">{t('category.quantityNote')}</p>}
               </div>
             );
           })}
@@ -161,12 +186,18 @@ export default function CategoryPage() {
           </button>
 
           {filteredServices.length === 0 && search.trim() && (
-            <p className="text-slate-400 text-sm col-span-full">
-              {t('category.noResults')}
-            </p>
+            <p className="text-slate-400 text-sm col-span-full">{t('category.noResults')}</p>
           )}
         </section>
       </div>
+
+      <SpotlightOverlay
+        open={!!spotlightServiceId}
+        targetRef={spotlightRef}
+        hint={t('spotlight.categoryService')}
+        skipLabel={t('spotlight.skip')}
+        onSkip={skip}
+      />
 
       <AddCustomServiceModal
         open={showAddService}

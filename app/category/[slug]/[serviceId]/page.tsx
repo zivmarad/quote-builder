@@ -1,18 +1,24 @@
 'use client';
 
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { categories } from '../../../service/services';
 import type { Question } from '../../../service/services';
 import { motion, AnimatePresence } from 'framer-motion';
 import AddToBasketButton from '../../../components/AddToBasketButton';
-import FirstVisitPricingHint from '../../../components/onboarding/FirstVisitPricingHint';
 import EditablePriceLabel from '../../../components/EditablePriceLabel';
 import AddCustomQuestionModal from '../../../components/AddCustomQuestionModal';
 import { usePriceOverrides } from '../../../contexts/PriceOverridesContext';
 import { useCustomCatalog } from '../../../contexts/CustomCatalogContext';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import {
+  getSpotlightCategoryId,
+  getSpotlightServiceId,
+  SPOTLIGHT_TARGET_CLASS,
+} from '@/lib/spotlight-onboarding';
+import { useSpotlightOnboarding } from '../../../hooks/useSpotlightOnboarding';
+import SpotlightOverlay from '../../../components/onboarding/SpotlightOverlay';
 import {
   getQuestionDisplayText,
   getServiceDisplayName,
@@ -28,6 +34,8 @@ export default function ServiceWizardPage() {
   const { getBasePrice, getImpactValue, setBasePrice, setQuestionImpact } = usePriceOverrides();
   const { getMergedServices, getMergedQuestions, addQuestion, deleteQuestion } = useCustomCatalog();
   const { t, dir } = useLanguage();
+  const { step, skip } = useSpotlightOnboarding();
+  const addButtonRef = useRef<HTMLDivElement>(null);
 
   const categoryId = Array.isArray(slug) ? slug[0] : slug;
   const svcId = Array.isArray(serviceId) ? serviceId[0] : serviceId;
@@ -127,6 +135,11 @@ export default function ServiceWizardPage() {
   const serviceName = getServiceDisplayName(t, service);
   const editHint = t('serviceWizard.tapToEditPrice');
 
+  const showAddSpotlight =
+    step === 'pricing-add' &&
+    categoryId === getSpotlightCategoryId() &&
+    svcId === getSpotlightServiceId();
+
   const handleToggle = (question: Question, value: boolean) => {
     setAnswers((prev) => ({ ...prev, [question.id]: value }));
   };
@@ -181,8 +194,6 @@ export default function ServiceWizardPage() {
           <span>{t('common.back')}</span>
           <span className="text-lg">↩</span>
         </button>
-
-        <FirstVisitPricingHint />
 
         <header className="mb-4 sm:mb-6">
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center justify-between gap-2 flex-wrap">
@@ -337,22 +348,33 @@ export default function ServiceWizardPage() {
                 ₪{total.toLocaleString('he-IL')}
               </span>
             </div>
-            <div className="w-36 sm:w-48 shrink-0 min-w-0">
-              <AddToBasketButton 
+            <div
+              ref={addButtonRef}
+              className={`w-36 sm:w-48 shrink-0 min-w-0 ${showAddSpotlight ? `${SPOTLIGHT_TARGET_CLASS} rounded-2xl` : ''}`}
+            >
+              <AddToBasketButton
                 service={{
                   name: serviceName,
                   category: category.id,
                   basePrice: baseTotal,
                   extras: selectedExtrasList,
-                  description: selectedExtrasList.map(e => e.text).join(', '),
+                  description: selectedExtrasList.map((e) => e.text).join(', '),
                   quantity: qty > 1 ? qty : undefined,
                   unit: qty > 1 ? service.unit : undefined,
-                }} 
+                }}
               />
             </div>
           </div>
         </div>
       </motion.div>
+
+      <SpotlightOverlay
+        open={showAddSpotlight}
+        targetRef={addButtonRef}
+        hint={t('spotlight.pricingAdd')}
+        skipLabel={t('spotlight.skip')}
+        onSkip={skip}
+      />
 
       <AddCustomQuestionModal
         open={showAddQuestion}

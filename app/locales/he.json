@@ -55,29 +55,12 @@
     "close": "סגור",
     "later": "אולי מאוחר יותר"
   },
-  "onboarding": {
-    "progressLabel": "מדריך הצעה ראשונה",
-    "bannerTitle": "בוא ניצור את ההצעה הראשונה שלך — 3 צעדים",
-    "skipGuide": "דלג על המדריך",
-    "step": {
-      "category": "בחר תחום",
-      "pricing": "תמחור",
-      "cart": "לסל"
-    },
-    "homeSubtitle": "בחר תחום או התחל עם דוגמה מוכנה — תוך דקה תראה הצעה בסל",
-    "quickStartBadge": "הכי מהיר",
-    "quickStartTitle": "התחל עם צביעת דירה 5 חדרים",
-    "quickStartSubtitle": "דוגמה מוכנה — עדכן מחיר ולחץ הוסף לסל",
-    "orChooseTrade": "או בחר תחום:",
-    "showAllCategories": "כל התחומים",
-    "pricingHintTitle": "סמן תוספות ועדכן מחירים",
-    "pricingHintSubtitle": "הסה\"כ מתעדכן בזמן אמת. כשמוכן — לחץ הוסף לסל למטה.",
-    "addedTitle": "נוסף לסל!",
-    "addedSubtitle": "ההצעה הראשונה שלך מוכנה — צפה בה בסל",
-    "viewCart": "ראה את ההצעה בסל",
-    "cartWelcomeTitle": "מעולה! זו ההצעה הראשונה שלך",
-    "cartWelcomeSubtitle": "כך נראית הצעת מחיר מקצועית — אפשר לערוך, להוסיף שורות ולייצא PDF",
-    "cartSignupCta": "הירשם בחינם לשמירה ושליחה ללקוח"
+  "spotlight": {
+    "homeCategory": "בחר תחום כדי להתחיל — לחץ על הקוביה המודגשת",
+    "categoryService": "בחר שירות מהרשימה",
+    "pricingAdd": "סמן תוספות ולחץ הוסף לסל",
+    "goCart": "מעולה! לחץ כאן כדי לראות את ההצעה בסל",
+    "skip": "דלג"
   },
   "header": {
     "appName": "בונה הצעות מחיר",

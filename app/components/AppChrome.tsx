@@ -11,9 +11,6 @@ import Footer from './Footer';
 import RegisterServiceWorker from './RegisterServiceWorker';
 import InAppBrowserBanner from './InAppBrowserBanner';
 import InstallAppPrompt from './InstallAppPrompt';
-import { FirstVisitOnboardingProvider } from '../contexts/FirstVisitOnboardingContext';
-import FirstVisitProgressBar from './onboarding/FirstVisitProgressBar';
-import FirstVisitCelebrationToast from './onboarding/FirstVisitCelebrationToast';
 
 function isMarketingLanding(pathname: string): boolean {
   return pathname === '/landing' || pathname.startsWith('/landing/');
@@ -28,23 +25,19 @@ export default function AppChrome({ children }: { children: React.ReactNode }) {
 
   return (
     <UserDataProviders>
-      <FirstVisitOnboardingProvider>
-        <QuoteBasketWithAuth>
-          <AppHeader />
-          <FirstVisitProgressBar />
-          <FirstVisitCelebrationToast />
-          <InAppBrowserBanner />
-          <div className="min-h-screen flex flex-col">
-            {children}
-            <Footer />
-          </div>
-          <FloatingCartButton />
-          <StorageQuotaAlert />
-          <SyncFailureBanner />
-          <RegisterServiceWorker />
-          <InstallAppPrompt />
-        </QuoteBasketWithAuth>
-      </FirstVisitOnboardingProvider>
+      <QuoteBasketWithAuth>
+        <AppHeader />
+        <InAppBrowserBanner />
+        <div className="min-h-screen flex flex-col">
+          {children}
+          <Footer />
+        </div>
+        <FloatingCartButton />
+        <StorageQuotaAlert />
+        <SyncFailureBanner />
+        <RegisterServiceWorker />
+        <InstallAppPrompt />
+      </QuoteBasketWithAuth>
     </UserDataProviders>
   );
 }

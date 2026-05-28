@@ -4,7 +4,6 @@ import React from 'react';
 import Cart from '../components/Cart';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import FirstVisitCartBanner from '../components/onboarding/FirstVisitCartBanner';
 
 export default function CartPage() {
   return (
@@ -18,9 +17,6 @@ export default function CartPage() {
           <span>חזרה לבחירת שירותים</span>
         </Link>
 
-        <FirstVisitCartBanner />
-
-        {/* קומפוננטת הסל שמרכזת את כל הלוגיקה */}
         <Cart />
       </div>
     </div>

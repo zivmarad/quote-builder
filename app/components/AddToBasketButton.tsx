@@ -4,7 +4,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuoteBasket, BasketExtra } from '../contexts/QuoteBasketContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { useFirstVisitOnboarding } from '../contexts/FirstVisitOnboardingContext';
+import { useSpotlightOnboarding } from '../hooks/useSpotlightOnboarding';
 import { ShoppingCart } from 'lucide-react';
 
 interface AddToBasketButtonProps {
@@ -23,7 +23,7 @@ export default function AddToBasketButton({ service }: AddToBasketButtonProps) {
   const router = useRouter();
   const { addItem } = useQuoteBasket();
   const { t } = useLanguage();
-  const { isActive, onFirstItemAdded } = useFirstVisitOnboarding();
+  const { step, advance } = useSpotlightOnboarding();
 
   const handleAdd = () => {
     addItem({
@@ -36,10 +36,8 @@ export default function AddToBasketButton({ service }: AddToBasketButtonProps) {
       unit: service.unit,
     });
 
-    if (isActive) {
-      onFirstItemAdded();
-      router.push('/cart');
-      return;
+    if (step === 'pricing-add') {
+      advance('go-cart');
     }
 
     router.back();

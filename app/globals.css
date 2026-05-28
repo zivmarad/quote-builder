@@ -134,16 +134,11 @@ body {
   animation: cart-bump 0.55s ease-out;
 }
 
-@keyframes onboarding-toast-in {
-  from {
-    opacity: 0;
-    transform: translateY(-12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+body.spotlight-onboarding-active * {
+  pointer-events: none;
 }
-.onboarding-toast-enter {
-  animation: onboarding-toast-in 0.35s ease-out;
+
+body.spotlight-onboarding-active .spotlight-target,
+body.spotlight-onboarding-active .spotlight-tooltip {
+  pointer-events: auto;
 }
