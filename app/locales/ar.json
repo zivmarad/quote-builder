@@ -55,6 +55,30 @@
     "close": "إغلاق",
     "later": "ربما لاحقاً"
   },
+  "onboarding": {
+    "progressLabel": "العرض الأول",
+    "bannerTitle": "لننشئ أول عرض سعر — 3 خطوات",
+    "skipGuide": "تخطي",
+    "step": {
+      "category": "مجال",
+      "pricing": "تسعير",
+      "cart": "السلة"
+    },
+    "homeSubtitle": "اختر مجالاً أو ابدأ بمثال جاهز — خلال دقيقة ترى عرضاً في السلة",
+    "quickStartBadge": "الأسرع",
+    "quickStartTitle": "طلاء شقة 5 غرف",
+    "quickStartSubtitle": "مثال جاهز — عدّل السعر واضغط أضف للسلة",
+    "orChooseTrade": "أو اختر مجالاً:",
+    "showAllCategories": "كل المجالات",
+    "pricingHintTitle": "حدد الإضافات وحدّث الأسعار",
+    "pricingHintSubtitle": "المجموع يتحدّث فوراً. عندما تكون جاهزاً — اضغط أضف للسلة.",
+    "addedTitle": "أُضيف للسلة!",
+    "addedSubtitle": "عرضك الأول جاهز — اعرضه في السلة",
+    "viewCart": "عرض في السلة",
+    "cartWelcomeTitle": "ممتاز! هذا أول عرض سعر لك",
+    "cartWelcomeSubtitle": "هكذا يبدو عرض احترافي — عدّل، أضف بنوداً، صدّر PDF",
+    "cartSignupCta": "سجّل مجاناً للحفظ والإرسال للعميل"
+  },
   "header": {
     "appName": "منشئ عروض الأسعار",
     "profile": "المساحة الشخصية",

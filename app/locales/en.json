@@ -55,6 +55,30 @@
     "close": "Close",
     "later": "Maybe later"
   },
+  "onboarding": {
+    "progressLabel": "First quote guide",
+    "bannerTitle": "Let's build your first quote — 3 steps",
+    "skipGuide": "Skip guide",
+    "step": {
+      "category": "Pick trade",
+      "pricing": "Pricing",
+      "cart": "Cart"
+    },
+    "homeSubtitle": "Pick a trade or start with a ready example — see a quote in your cart within a minute",
+    "quickStartBadge": "Fastest",
+    "quickStartTitle": "Start with 5-room apartment painting",
+    "quickStartSubtitle": "Ready example — adjust price and tap Add to cart",
+    "orChooseTrade": "Or choose a trade:",
+    "showAllCategories": "All trades",
+    "pricingHintTitle": "Mark extras and update prices",
+    "pricingHintSubtitle": "Total updates live. When ready — tap Add to cart below.",
+    "addedTitle": "Added to cart!",
+    "addedSubtitle": "Your first quote is ready — view it in the cart",
+    "viewCart": "View quote in cart",
+    "cartWelcomeTitle": "Great! This is your first quote",
+    "cartWelcomeSubtitle": "This is what a professional quote looks like — edit, add lines, export PDF",
+    "cartSignupCta": "Sign up free to save and send to clients"
+  },
   "header": {
     "appName": "Quote Builder",
     "profile": "Profile",

@@ -4,6 +4,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuoteBasket, BasketExtra } from '../contexts/QuoteBasketContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useFirstVisitOnboarding } from '../contexts/FirstVisitOnboardingContext';
 import { ShoppingCart } from 'lucide-react';
 
 interface AddToBasketButtonProps {
@@ -22,6 +23,7 @@ export default function AddToBasketButton({ service }: AddToBasketButtonProps) {
   const router = useRouter();
   const { addItem } = useQuoteBasket();
   const { t } = useLanguage();
+  const { isActive, onFirstItemAdded } = useFirstVisitOnboarding();
 
   const handleAdd = () => {
     addItem({
@@ -33,7 +35,13 @@ export default function AddToBasketButton({ service }: AddToBasketButtonProps) {
       quantity: service.quantity,
       unit: service.unit,
     });
-    // חזרה שלב אחד אחורה להמשיך לבחור (למשל מדף שירות חזרה לתיקיית הקטגוריה)
+
+    if (isActive) {
+      onFirstItemAdded();
+      router.push('/cart');
+      return;
+    }
+
     router.back();
   };
 

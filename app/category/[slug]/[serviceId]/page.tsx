@@ -6,6 +6,7 @@ import { categories } from '../../../service/services';
 import type { Question } from '../../../service/services';
 import { motion, AnimatePresence } from 'framer-motion';
 import AddToBasketButton from '../../../components/AddToBasketButton';
+import FirstVisitPricingHint from '../../../components/onboarding/FirstVisitPricingHint';
 import EditablePriceLabel from '../../../components/EditablePriceLabel';
 import AddCustomQuestionModal from '../../../components/AddCustomQuestionModal';
 import { usePriceOverrides } from '../../../contexts/PriceOverridesContext';
@@ -180,6 +181,8 @@ export default function ServiceWizardPage() {
           <span>{t('common.back')}</span>
           <span className="text-lg">↩</span>
         </button>
+
+        <FirstVisitPricingHint />
 
         <header className="mb-4 sm:mb-6">
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center justify-between gap-2 flex-wrap">
