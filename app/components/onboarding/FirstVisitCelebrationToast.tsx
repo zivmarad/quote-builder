@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { CheckCircle2, ShoppingCart, X } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';

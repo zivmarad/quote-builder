@@ -52,9 +52,43 @@ export function completeOnboarding(): void {
   try {
     localStorage.setItem(COMPLETED_KEY, '1');
     localStorage.removeItem(STEP_KEY);
+    window.dispatchEvent(new Event('quoteBuilder_onboardingChange'));
   } catch {
     /* ignore */
   }
+}
+
+export function subscribeOnboarding(onStoreChange: () => void): () => void {
+  if (typeof window === 'undefined') return () => {};
+  window.addEventListener('quoteBuilder_onboardingChange', onStoreChange);
+  return () => window.removeEventListener('quoteBuilder_onboardingChange', onStoreChange);
+}
+
+const CART_WELCOME_KEY = 'quoteBuilder_showCartWelcome';
+
+export function isCartWelcomeVisible(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    return sessionStorage.getItem(CART_WELCOME_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+export function markShowCartWelcome(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    sessionStorage.setItem(CART_WELCOME_KEY, '1');
+    window.dispatchEvent(new Event('quoteBuilder_cartWelcomeChange'));
+  } catch {
+    /* ignore */
+  }
+}
+
+export function subscribeCartWelcome(onStoreChange: () => void): () => void {
+  if (typeof window === 'undefined') return () => {};
+  window.addEventListener('quoteBuilder_cartWelcomeChange', onStoreChange);
+  return () => window.removeEventListener('quoteBuilder_cartWelcomeChange', onStoreChange);
 }
 
 export function isOnboardingActive(): boolean {

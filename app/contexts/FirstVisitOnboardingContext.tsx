@@ -7,18 +7,19 @@ import {
   useEffect,
   useMemo,
   useState,
+  useSyncExternalStore,
   type ReactNode,
 } from 'react';
 import { usePathname } from 'next/navigation';
 import {
   completeOnboarding,
-  getStoredOnboardingStep,
   isOnboardingActive,
+  markShowCartWelcome,
   persistOnboardingStep,
   resolveStepFromPathname,
+  subscribeOnboarding,
   type OnboardingStep,
 } from '@/lib/first-visit-onboarding';
-import { markShowCartWelcome } from '../components/onboarding/FirstVisitCartBanner';
 
 type FirstVisitOnboardingContextValue = {
   isActive: boolean;
@@ -35,43 +36,33 @@ const FirstVisitOnboardingContext = createContext<FirstVisitOnboardingContextVal
 
 export function FirstVisitOnboardingProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname() ?? '';
-  const [mounted, setMounted] = useState(false);
-  const [active, setActive] = useState(false);
-  const [step, setStep] = useState<OnboardingStep>('category');
+  const storageActive = useSyncExternalStore(
+    subscribeOnboarding,
+    isOnboardingActive,
+    () => false,
+  );
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-    const isActive = isOnboardingActive();
-    setActive(isActive);
-    if (isActive) {
-      setStep(getStoredOnboardingStep());
-    }
-  }, []);
+  const step = storageActive ? resolveStepFromPathname(pathname) : ('category' as OnboardingStep);
 
   useEffect(() => {
-    if (!mounted || !active) return;
-    const next = resolveStepFromPathname(pathname);
-    setStep(next);
-    persistOnboardingStep(next);
-  }, [pathname, mounted, active]);
+    if (!storageActive) return;
+    persistOnboardingStep(resolveStepFromPathname(pathname));
+  }, [pathname, storageActive]);
 
   const skipOnboarding = useCallback(() => {
     completeOnboarding();
-    setActive(false);
     setShowCelebration(false);
   }, []);
 
   const onFirstItemAdded = useCallback(() => {
-    if (!active) return;
+    if (!storageActive) return;
     markShowCartWelcome();
     setShowCelebration(true);
-    setStep('cart');
     persistOnboardingStep('cart');
     completeOnboarding();
-    setActive(false);
-  }, [active]);
+  }, [storageActive]);
 
   const dismissCelebration = useCallback(() => {
     setShowCelebration(false);
@@ -79,7 +70,7 @@ export function FirstVisitOnboardingProvider({ children }: { children: ReactNode
 
   const value = useMemo(
     () => ({
-      isActive: mounted && active,
+      isActive: storageActive,
       step,
       showAllCategories,
       setShowAllCategories,
@@ -89,8 +80,7 @@ export function FirstVisitOnboardingProvider({ children }: { children: ReactNode
       skipOnboarding,
     }),
     [
-      mounted,
-      active,
+      storageActive,
       step,
       showAllCategories,
       showCelebration,

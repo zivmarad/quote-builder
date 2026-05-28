@@ -23,8 +23,6 @@ export interface QuoteProfile {
   logo?: string; // https URL (Supabase Storage) or legacy base64 data URL
 }
 
-const formatPrice = (n: number) => '₪' + n.toLocaleString('he-IL');
-
 const escapeHtml = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
@@ -59,8 +57,6 @@ function buildQuoteContent(params: {
     month: '2-digit',
     day: '2-digit'
   });
-  const titleText = [quoteTitle?.trim() || 'הצעת מחיר', quoteNumber != null ? `#${quoteNumber}` : ''].filter(Boolean).join(' ');
-  const hasCustomer = customerName?.trim() || customerPhone?.trim() || customerEmail?.trim() || customerAddress?.trim() || customerCompanyId?.trim();
   const customerNameVal = customerName?.trim() ?? '—';
   const customerLines: string[] = [];
   if (customerCompanyId?.trim()) customerLines.push(`<span class="client-company-id">ח.פ ${escapeHtml(customerCompanyId.trim())}</span>`);
@@ -324,7 +320,7 @@ export const generateQuotePDF = (
     quoteNumber,
     validityDays,
   });
-  const { profileBlock, notesBlock, footerBlock, validityText, today, items: contentItems } = content;
+  const { profileBlock, notesBlock, footerBlock, today, items: contentItems } = content;
   const tableRows = contentItems.map((item) => {
     const extrasTotal = item.extras?.reduce((sum, extra) => sum + extra.price, 0) || 0;
     const calculatedPrice = item.basePrice + extrasTotal;

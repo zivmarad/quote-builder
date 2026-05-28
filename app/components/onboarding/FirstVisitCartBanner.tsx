@@ -1,26 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useSyncExternalStore } from 'react';
 import { PartyPopper } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuth } from '../../contexts/AuthContext';
-
-const CART_WELCOME_KEY = 'quoteBuilder_showCartWelcome';
+import { isCartWelcomeVisible, subscribeCartWelcome } from '@/lib/first-visit-onboarding';
 
 /** באנר חד-פעמי בסל – מוצג אחרי ההצעה הראשונה בסשן. */
 export default function FirstVisitCartBanner() {
   const { t } = useLanguage();
   const { user } = useAuth();
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    try {
-      setVisible(sessionStorage.getItem(CART_WELCOME_KEY) === '1');
-    } catch {
-      setVisible(false);
-    }
-  }, []);
+  const visible = useSyncExternalStore(subscribeCartWelcome, isCartWelcomeVisible, () => false);
 
   if (!visible) return null;
 
@@ -48,13 +39,4 @@ export default function FirstVisitCartBanner() {
       </div>
     </div>
   );
-}
-
-export function markShowCartWelcome(): void {
-  if (typeof window === 'undefined') return;
-  try {
-    sessionStorage.setItem(CART_WELCOME_KEY, '1');
-  } catch {
-    /* ignore */
-  }
 }
