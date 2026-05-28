@@ -27,7 +27,6 @@ export const metadata: Metadata = withSiteMetadata('/landing', {
     title: 'מחולל הצעות מחיר לקבלנים ושיפוצניקים',
     description:
       'הצעת מחיר מקצועית ב-60 שניות. PDF ממותג, שליחה בוואטסאפ – נסה בחינם.',
-    images: [{ url: '/landing/og-image.png', width: 1200, height: 630, alt: 'מחולל הצעות מחיר – תצוגת PDF' }],
   },
 });
 

@@ -25,7 +25,6 @@ export const metadata: Metadata = withSiteMetadata('/', {
     title: 'מחולל הצעות מחיר | hatzaot.co.il',
     description:
       'מחולל הצעות מחיר לקבלנים ושיפוצניקים – PDF ממותג, שליחה בוואטסאפ והיסטוריה.',
-    images: [{ url: '/landing/og-image.png', width: 1200, height: 630, alt: 'מחולל הצעות מחיר' }],
   },
   icons: {
     icon: '/icon.png',

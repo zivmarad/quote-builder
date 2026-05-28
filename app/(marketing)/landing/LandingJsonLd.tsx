@@ -3,7 +3,7 @@ import { absoluteUrl } from '../../../lib/site-url';
 
 export default function LandingJsonLd() {
   const landingUrl = absoluteUrl('/landing');
-  const ogImage = absoluteUrl('/landing/og-image.png');
+  const ogImage = absoluteUrl('/landing/opengraph-image');
 
   const faqPage = {
     '@context': 'https://schema.org',
