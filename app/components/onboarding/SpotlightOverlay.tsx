@@ -138,10 +138,11 @@ export default function SpotlightOverlay({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="relative rounded-2xl bg-white border border-slate-200/70 px-4 py-3 shadow-xl shadow-slate-900/[0.08] text-right">
+        <div className="relative overflow-hidden rounded-2xl bg-white border border-slate-200 ring-1 ring-slate-900/5 px-4 py-3 pr-5 shadow-2xl shadow-slate-900/[0.12] text-right">
+          <span aria-hidden className="absolute inset-y-0 right-0 w-1 bg-blue-600" />
           <span
             aria-hidden
-            className={`absolute w-2.5 h-2.5 bg-white border-slate-200/70 rotate-45 ${
+            className={`absolute w-2.5 h-2.5 bg-white border-slate-200 rotate-45 ${
               pos.placement === 'below'
                 ? '-top-[6px] border-t border-l'
                 : '-bottom-[6px] border-b border-r'
