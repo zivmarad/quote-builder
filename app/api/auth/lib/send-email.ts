@@ -1,38 +1,24 @@
-import { randomUUID } from 'crypto';
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
-function getFromEmail(): string {
-  const email = process.env.EMAIL_USER?.trim();
-  if (!email) throw new Error('EMAIL_USER לא מוגדר ב-.env');
-  return email;
+/** כתובת שולח רשמית מהדומיין המאומת ב-Resend. ניתן לעקוף עם EMAIL_FROM. */
+function getFromHeader(): string {
+  const custom = process.env.EMAIL_FROM?.trim();
+  if (custom) return custom;
+  return 'בונה הצעות מחיר <noreply@hatzaot.co.il>';
 }
 
-function getTransporter() {
-  const fromEmail = getFromEmail();
-  const raw = process.env.EMAIL_APP_PASSWORD?.trim() ?? '';
-  const appPassword = raw.replace(/\s/g, '');
-  if (!appPassword) throw new Error('EMAIL_APP_PASSWORD לא מוגדר ב-.env');
-  return nodemailer.createTransport({
-    service: 'gmail',
-    auth: { user: fromEmail, pass: appPassword },
-  });
-}
-
-function uniqueMessageId(fromEmail: string): string {
-  const domain = fromEmail.split('@')[1] ?? 'hatzaot.co.il';
-  return `<${randomUUID()}@${domain}>`;
+function getResend(): Resend {
+  const apiKey = process.env.RESEND_API_KEY?.trim();
+  if (!apiKey) throw new Error('RESEND_API_KEY לא מוגדר ב-.env');
+  return new Resend(apiKey);
 }
 
 export async function sendVerificationEmail(to: string, code: string): Promise<void> {
-  const transporter = getTransporter();
-  const fromEmail = getFromEmail();
-  await transporter.sendMail({
-    from: `בונה הצעות מחיר <${fromEmail}>`,
+  const resend = getResend();
+  const { error } = await resend.emails.send({
+    from: getFromHeader(),
     to,
     subject: `קוד אימות: ${code} – בונה הצעות מחיר`,
-    headers: {
-      'Message-ID': uniqueMessageId(fromEmail),
-    },
     text: `קוד האימות שלך: ${code}\n\nהקוד תקף ל־10 דקות.\nאם לא ביקשת קוד זה, התעלם מהמייל.`,
     html: `
       <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 400px;">
@@ -44,14 +30,14 @@ export async function sendVerificationEmail(to: string, code: string): Promise<v
       </div>
     `,
   });
+  if (error) throw new Error(error.message);
 }
 
 /** שליחת שם המשתמש למייל (שכחתי שם משתמש) */
 export async function sendUsernameToEmail(to: string, username: string): Promise<void> {
-  const transporter = getTransporter();
-  const fromEmail = getFromEmail();
-  await transporter.sendMail({
-    from: `בונה הצעות מחיר <${fromEmail}>`,
+  const resend = getResend();
+  const { error } = await resend.emails.send({
+    from: getFromHeader(),
     to,
     subject: 'שם המשתמש שלך – בונה הצעות מחיר',
     text: `שלום,\n\nשם המשתמש שלך: ${username}\n\nאם לא ביקשת מידע זה, התעלם מהמייל.`,
@@ -64,6 +50,7 @@ export async function sendUsernameToEmail(to: string, username: string): Promise
       </div>
     `,
   });
+  if (error) throw new Error(error.message);
 }
 
 /** מייל לאדמין על הרשמה חדשה – מקבל כתובת אחת או מערך (למשל מייל פרטי + אימייל-ל-SMS) */
@@ -71,13 +58,12 @@ export async function sendNewUserNotificationEmail(
   to: string | string[],
   data: { email: string; username: string; createdAt: string }
 ): Promise<void> {
-  const transporter = getTransporter();
-  const fromEmail = getFromEmail();
-  const dateStr = new Date(data.createdAt).toLocaleString('he-IL');
   const toList = Array.isArray(to) ? to : [to];
   if (toList.length === 0) return;
-  await transporter.sendMail({
-    from: `בונה הצעות מחיר <${fromEmail}>`,
+  const resend = getResend();
+  const dateStr = new Date(data.createdAt).toLocaleString('he-IL');
+  const { error } = await resend.emails.send({
+    from: getFromHeader(),
     to: toList,
     subject: 'הרשמה חדשה – בונה הצעות מחיר',
     text: `נרשם משתמש חדש.\nאימייל: ${data.email}\nשם משתמש: ${data.username}\nתאריך: ${dateStr}`,
@@ -90,4 +76,5 @@ export async function sendNewUserNotificationEmail(
       </div>
     `,
   });
+  if (error) throw new Error(error.message);
 }

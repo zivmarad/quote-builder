@@ -69,9 +69,9 @@ export async function POST(request: Request) {
     const err = e instanceof Error ? e : new Error('שגיאה בשרת');
     const msg = err.message;
     console.error('Send code error:', e);
-    if (msg.includes('EMAIL_APP_PASSWORD') || !process.env.EMAIL_APP_PASSWORD) {
+    if (msg.includes('RESEND_API_KEY') || !process.env.RESEND_API_KEY) {
       return NextResponse.json(
-        { ok: false, error: 'שליחת מייל לא מוגדרת. יש להגדיר EMAIL_APP_PASSWORD ב-.env.local' },
+        { ok: false, error: 'שליחת מייל לא מוגדרת. יש להגדיר RESEND_API_KEY בסביבת השרת' },
         { status: 503 }
       );
     }
