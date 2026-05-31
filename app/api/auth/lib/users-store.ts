@@ -206,7 +206,8 @@ export async function getUsersPage(params: {
   const safePageSize = Math.min(100, Math.max(1, Math.floor(params.pageSize || 25)));
   const from = (safePage - 1) * safePageSize;
   const to = from + safePageSize - 1;
-  const qText = (params.search ?? '').trim();
+  // ניקוי תווים בעלי משמעות בתחביר הפילטר של PostgREST (פסיק/סוגריים/וכו') למניעת filter injection
+  const qText = (params.search ?? '').trim().replace(/[,()*:\\%]/g, '');
 
   let query = supabaseAdmin
     .from('app_users')
