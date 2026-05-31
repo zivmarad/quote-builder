@@ -56,11 +56,11 @@
     "later": "אולי מאוחר יותר"
   },
   "spotlight": {
-    "homeCategory": "בחר תחום כדי להתחיל",
-    "categoryService": "בחר שירות מהרשימה",
-    "pricingAdd": "לחץ הוסף לסל כשמוכן",
-    "goCart": "צפה בהצעה שלך בסל",
-    "skip": "הבנתי, תודה"
+    "homeCategory": "בחירת תחום העבודה",
+    "categoryService": "בחירת השירות הרצוי",
+    "pricingAdd": "הוספה לסל כדי להמשיך",
+    "goCart": "צפייה בהצעת המחיר",
+    "skip": "דילוג על ההדרכה"
   },
   "header": {
     "appName": "בונה הצעות מחיר",

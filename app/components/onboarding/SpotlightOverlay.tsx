@@ -123,7 +123,7 @@ export default function SpotlightOverlay({
       <button
         type="button"
         aria-label={skipLabel}
-        className="fixed inset-0 z-[50] bg-slate-900/10 transition-opacity cursor-default"
+        className="fixed inset-0 z-[50] bg-slate-900/[0.07] transition-opacity cursor-default"
         onClick={onDismiss}
       />
       <div
@@ -138,25 +138,27 @@ export default function SpotlightOverlay({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="relative rounded-xl bg-slate-900 text-white px-3.5 py-2.5 shadow-lg shadow-slate-900/20">
-          {pos.placement === 'below' ? (
-            <span
-              aria-hidden
-              className="absolute -top-1.5 w-3 h-3 bg-slate-900 rotate-45"
-              style={{ left: pos.arrowLeft - 6 }}
-            />
-          ) : (
-            <span
-              aria-hidden
-              className="absolute -bottom-1.5 w-3 h-3 bg-slate-900 rotate-45"
-              style={{ left: pos.arrowLeft - 6 }}
-            />
-          )}
-          <p className="text-xs font-medium leading-relaxed text-white/95">{hint}</p>
+        <div className="relative rounded-2xl bg-white border border-slate-200/70 px-4 py-3 shadow-xl shadow-slate-900/[0.08] text-right">
+          <span
+            aria-hidden
+            className={`absolute w-2.5 h-2.5 bg-white border-slate-200/70 rotate-45 ${
+              pos.placement === 'below'
+                ? '-top-[6px] border-t border-l'
+                : '-bottom-[6px] border-b border-r'
+            }`}
+            style={{ left: pos.arrowLeft - 5 }}
+          />
+          <div className="flex items-center justify-end gap-2 mb-1.5">
+            <p className="text-[13px] font-semibold leading-snug text-slate-900">{hint}</p>
+            <span aria-hidden className="relative flex h-2 w-2 shrink-0">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-blue-500/40 spotlight-ping" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-600" />
+            </span>
+          </div>
           <button
             type="button"
             onClick={onDismiss}
-            className="mt-1.5 text-[11px] text-white/50 hover:text-white/80 transition-colors"
+            className="text-[11px] font-medium text-slate-400 hover:text-slate-600 transition-colors"
           >
             {skipLabel}
           </button>

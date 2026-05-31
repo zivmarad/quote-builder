@@ -56,11 +56,11 @@
     "later": "Maybe later"
   },
   "spotlight": {
-    "homeCategory": "Pick a trade to get started",
-    "categoryService": "Choose a service from the list",
-    "pricingAdd": "Tap Add to cart when ready",
-    "goCart": "View your quote in the cart",
-    "skip": "Got it"
+    "homeCategory": "Select a trade",
+    "categoryService": "Choose a service",
+    "pricingAdd": "Add to cart to continue",
+    "goCart": "View your quote",
+    "skip": "Skip tour"
   },
   "header": {
     "appName": "Quote Builder",
