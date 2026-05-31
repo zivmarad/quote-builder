@@ -14,22 +14,22 @@ export default function MarketingFooter() {
             <h3 className="font-bold text-slate-900 mb-3 text-sm">הצעת מחיר לפי ענף</h3>
             <ul className="space-y-2 text-sm text-slate-600">
               <li>
-                <Link href="/הצעת-מחיר/אינסטלציה" className="hover:text-slate-900 transition-colors">
+                <Link href="/price-quote/plumbing" className="hover:text-slate-900 transition-colors">
                   הצעת מחיר לאינסטלציה
                 </Link>
               </li>
               <li>
-                <Link href="/הצעת-מחיר/חשמל" className="hover:text-slate-900 transition-colors">
+                <Link href="/price-quote/electrical" className="hover:text-slate-900 transition-colors">
                   הצעת מחיר לחשמל
                 </Link>
               </li>
               <li>
-                <Link href="/הצעת-מחיר/צבע" className="hover:text-slate-900 transition-colors">
+                <Link href="/price-quote/painting" className="hover:text-slate-900 transition-colors">
                   הצעת מחיר לצביעת דירה
                 </Link>
               </li>
               <li>
-                <Link href="/הצעת-מחיר/ריצוף" className="hover:text-slate-900 transition-colors">
+                <Link href="/price-quote/tiling" className="hover:text-slate-900 transition-colors">
                   הצעת מחיר לריצוף
                 </Link>
               </li>
@@ -39,22 +39,22 @@ export default function MarketingFooter() {
             <h3 className="font-bold text-slate-900 mb-3 text-sm">מדריכים ומחירונים</h3>
             <ul className="space-y-2 text-sm text-slate-600">
               <li>
-                <Link href="/מדריכים/הצעת-מחיר-לשיפוץ" className="hover:text-slate-900 transition-colors">
+                <Link href="/guides/renovation-price-quote" className="hover:text-slate-900 transition-colors">
                   הצעת מחיר לשיפוץ – דוגמה
                 </Link>
               </li>
               <li>
-                <Link href="/מדריכים/טופס-הצעת-מחיר" className="hover:text-slate-900 transition-colors">
+                <Link href="/guides/price-quote-template" className="hover:text-slate-900 transition-colors">
                   טופס הצעת מחיר
                 </Link>
               </li>
               <li>
-                <Link href="/מחירון" className="hover:text-slate-900 transition-colors">
+                <Link href="/pricing" className="hover:text-slate-900 transition-colors">
                   מחירונים לפי ענף
                 </Link>
               </li>
               <li>
-                <Link href="/מדריכים" className="hover:text-slate-900 transition-colors">
+                <Link href="/guides" className="hover:text-slate-900 transition-colors">
                   כל המדריכים
                 </Link>
               </li>

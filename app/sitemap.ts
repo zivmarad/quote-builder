@@ -7,8 +7,8 @@ type Freq = MetadataRoute.Sitemap[number]['changeFrequency'];
 const PUBLIC_PATHS: Array<{ path: string; changeFrequency: Freq; priority: number }> = [
   { path: '/landing', changeFrequency: 'weekly', priority: 1 },
   { path: '/', changeFrequency: 'weekly', priority: 0.9 },
-  { path: '/מדריכים', changeFrequency: 'weekly', priority: 0.8 },
-  { path: '/מחירון', changeFrequency: 'weekly', priority: 0.8 },
+  { path: '/guides', changeFrequency: 'weekly', priority: 0.8 },
+  { path: '/pricing', changeFrequency: 'weekly', priority: 0.8 },
   { path: '/contact', changeFrequency: 'monthly', priority: 0.5 },
   { path: '/terms', changeFrequency: 'yearly', priority: 0.3 },
   { path: '/privacy', changeFrequency: 'yearly', priority: 0.3 },
@@ -18,17 +18,17 @@ const PUBLIC_PATHS: Array<{ path: string; changeFrequency: Freq; priority: numbe
 
 const SEO_PATHS: Array<{ path: string; changeFrequency: Freq; priority: number }> = [
   ...INDUSTRY_PAGES.map((p) => ({
-    path: `/הצעת-מחיר/${p.slug}`,
+    path: `/price-quote/${p.slug}`,
     changeFrequency: 'monthly' as Freq,
     priority: 0.8,
   })),
   ...PRICE_LIST_PAGES.map((p) => ({
-    path: `/מחירון/${p.slug}`,
+    path: `/pricing/${p.slug}`,
     changeFrequency: 'monthly' as Freq,
     priority: 0.7,
   })),
   ...GUIDE_PAGES.map((p) => ({
-    path: `/מדריכים/${p.slug}`,
+    path: `/guides/${p.slug}`,
     changeFrequency: 'monthly' as Freq,
     priority: 0.7,
   })),

@@ -6,7 +6,7 @@ import { absoluteUrl } from '@/lib/site-url';
 import { GUIDE_PAGES } from '@/lib/seo-content';
 import { Breadcrumbs, JsonLd, buildBreadcrumbJsonLd } from '../_seo/SeoComponents';
 
-export const metadata: Metadata = withSiteMetadata('/מדריכים', {
+export const metadata: Metadata = withSiteMetadata('/guides', {
   title: 'מדריכים להצעות מחיר לבעלי מקצוע | בונה הצעות מחיר',
   description:
     'מדריכים מעשיים לכתיבת הצעת מחיר מקצועית: הצעת מחיר לשיפוץ, טופס הצעת מחיר ואיך לתמחר נכון. כולל כלי חינמי לבניית הצעות.',
@@ -15,7 +15,7 @@ export const metadata: Metadata = withSiteMetadata('/מדריכים', {
 export default function GuidesHubPage() {
   const breadcrumbItems = [
     { label: 'דף הבית', url: absoluteUrl('/landing') ?? '/landing' },
-    { label: 'מדריכים', url: absoluteUrl('/מדריכים') ?? '/מדריכים' },
+    { label: 'מדריכים', url: absoluteUrl('/guides') ?? '/guides' },
   ];
 
   return (
@@ -37,7 +37,7 @@ export default function GuidesHubPage() {
             {GUIDE_PAGES.map((guide) => (
               <Link
                 key={guide.slug}
-                href={`/מדריכים/${guide.slug}`}
+                href={`/guides/${guide.slug}`}
                 className="group block rounded-2xl border border-slate-200 bg-white p-6 hover:border-blue-200 hover:shadow-md transition-all"
               >
                 <h2 className="text-xl font-bold text-[#0F172A] mb-2 group-hover:text-[#2563eb] transition-colors">

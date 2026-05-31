@@ -65,7 +65,7 @@ export interface PriceListPage {
 
 export const INDUSTRY_PAGES: IndustryPage[] = [
   {
-    slug: 'אינסטלציה',
+    slug: 'plumbing',
     categoryId: 'plumbing',
     label: 'אינסטלציה',
     h1: 'הצעת מחיר לאינסטלציה',
@@ -104,7 +104,7 @@ export const INDUSTRY_PAGES: IndustryPage[] = [
     ],
   },
   {
-    slug: 'חשמל',
+    slug: 'electrical',
     categoryId: 'electricity',
     label: 'חשמל',
     h1: 'הצעת מחיר לחשמל',
@@ -142,7 +142,7 @@ export const INDUSTRY_PAGES: IndustryPage[] = [
     ],
   },
   {
-    slug: 'צבע',
+    slug: 'painting',
     categoryId: 'paint',
     label: 'צבע',
     h1: 'הצעת מחיר לצביעת דירה',
@@ -180,7 +180,7 @@ export const INDUSTRY_PAGES: IndustryPage[] = [
     ],
   },
   {
-    slug: 'ריצוף',
+    slug: 'tiling',
     categoryId: 'tiling',
     label: 'ריצוף',
     h1: 'הצעת מחיר לריצוף וחיפוי',
@@ -218,7 +218,7 @@ export const INDUSTRY_PAGES: IndustryPage[] = [
     ],
   },
   {
-    slug: 'מיזוג-אוויר',
+    slug: 'air-conditioning',
     categoryId: 'ac',
     label: 'מיזוג אוויר',
     h1: 'הצעת מחיר למיזוג אוויר',
@@ -256,7 +256,7 @@ export const INDUSTRY_PAGES: IndustryPage[] = [
     ],
   },
   {
-    slug: 'גבס',
+    slug: 'drywall',
     categoryId: 'drywall',
     label: 'גבס',
     h1: 'הצעת מחיר לעבודות גבס',
@@ -294,7 +294,7 @@ export const INDUSTRY_PAGES: IndustryPage[] = [
     ],
   },
   {
-    slug: 'נגרות',
+    slug: 'carpentry',
     categoryId: 'carpentry',
     label: 'נגרות',
     h1: 'הצעת מחיר לנגרות',
@@ -339,7 +339,7 @@ export const INDUSTRY_PAGES: IndustryPage[] = [
 
 export const GUIDE_PAGES: GuidePage[] = [
   {
-    slug: 'הצעת-מחיר-לשיפוץ',
+    slug: 'renovation-price-quote',
     h1: 'הצעת מחיר לשיפוץ – מדריך + דוגמה מלאה',
     metaTitle: 'הצעת מחיר לשיפוץ – דוגמה ומדריך מלא (2026)',
     metaDescription:
@@ -401,7 +401,7 @@ export const GUIDE_PAGES: GuidePage[] = [
     ],
   },
   {
-    slug: 'איך-כותבים-הצעת-מחיר',
+    slug: 'how-to-write-price-quote',
     h1: 'איך כותבים הצעת מחיר מקצועית',
     metaTitle: 'איך כותבים הצעת מחיר מקצועית – מדריך לבעלי מקצוע',
     metaDescription:
@@ -454,7 +454,7 @@ export const GUIDE_PAGES: GuidePage[] = [
     ],
   },
   {
-    slug: 'טופס-הצעת-מחיר',
+    slug: 'price-quote-template',
     h1: 'טופס הצעת מחיר – להורדה או ליצירה אוטומטית',
     metaTitle: 'טופס הצעת מחיר לבעלי מקצוע – חינם ומקצועי',
     metaDescription:
@@ -508,7 +508,7 @@ export const GUIDE_PAGES: GuidePage[] = [
 
 export const PRICE_LIST_PAGES: PriceListPage[] = [
   {
-    slug: 'אינסטלציה',
+    slug: 'plumbing',
     h1: 'מחירון אינסטלציה 2026',
     metaTitle: 'מחירון אינסטלציה 2026 – מחירי עבודות אינסטלטור',
     metaDescription:
@@ -516,7 +516,7 @@ export const PRICE_LIST_PAGES: PriceListPage[] = [
     excerpt: 'טווחי מחירים מקובלים לעבודות אינסטלציה – נקודות מים, אסלות, סתימות ושיפוץ חדרי רחצה.',
     intro:
       'ריכזנו את טווחי המחירים המקובלים לעבודות אינסטלציה בישראל (2026). המחירים הם נקודת ייחוס ומשתנים לפי מצב הצנרת, חציבה ומורכבות. כדי לבנות הצעת מחיר מדויקת ללקוח, השתמש בבונה הצעות המחיר.',
-    relatedIndustrySlug: 'אינסטלציה',
+    relatedIndustrySlug: 'plumbing',
     prices: [
       { name: 'נקודת מים / דלוחין חדשה', price: 1100, unit: 'נקודה' },
       { name: 'החלפת אסלה (רגילה / מונובלוק)', price: 650, unit: 'אסלה' },
@@ -541,7 +541,7 @@ export const PRICE_LIST_PAGES: PriceListPage[] = [
     ],
   },
   {
-    slug: 'חשמל',
+    slug: 'electrical',
     h1: 'מחירון חשמל 2026',
     metaTitle: 'מחירון חשמל 2026 – מחירי עבודות חשמלאי',
     metaDescription:
@@ -549,7 +549,7 @@ export const PRICE_LIST_PAGES: PriceListPage[] = [
     excerpt: 'טווחי מחירים מקובלים לעבודות חשמל – נקודות, לוחות, תאורה ועמדות טעינה.',
     intro:
       'מחירון מעודכן לעבודות חשמל בישראל (2026). המחירים הם טווחי ייחוס ומשתנים לפי חיווט גלוי/סמוי, מספר מעגלים ומרחק מהלוח. לבניית הצעה מדויקת השתמש בבונה הצעות המחיר.',
-    relatedIndustrySlug: 'חשמל',
+    relatedIndustrySlug: 'electrical',
     prices: [
       { name: 'נקודת חשמל חדשה (מאור / שקע)', price: 350, unit: 'נקודה' },
       { name: 'נקודת כוח (ישירה מהלוח)', price: 650, unit: 'נקודה' },
@@ -573,7 +573,7 @@ export const PRICE_LIST_PAGES: PriceListPage[] = [
     ],
   },
   {
-    slug: 'צבע',
+    slug: 'painting',
     h1: 'מחירון צבע 2026',
     metaTitle: 'מחירון צבע 2026 – מחירי צביעת דירה וחדר',
     metaDescription:
@@ -581,7 +581,7 @@ export const PRICE_LIST_PAGES: PriceListPage[] = [
     excerpt: 'טווחי מחירים מקובלים לעבודות צבע – חדר, דירה שלמה, שפכטל וצביעת חוץ.',
     intro:
       'מחירון מעודכן לעבודות צבע בישראל (2026). המחירים הם טווחי ייחוס ומשתנים לפי מצב הקירות, צביעת תקרות וקילוף צבע ישן. לבניית הצעה מדויקת השתמש בבונה הצעות המחיר.',
-    relatedIndustrySlug: 'צבע',
+    relatedIndustrySlug: 'painting',
     prices: [
       { name: 'צביעת חדר סטנדרטי', price: 900, unit: 'חדר' },
       { name: 'צביעת דירה 3 חדרים', price: 3200, unit: 'דירה' },
@@ -605,7 +605,7 @@ export const PRICE_LIST_PAGES: PriceListPage[] = [
     ],
   },
   {
-    slug: 'שיפוץ-חדר-רחצה',
+    slug: 'bathroom-renovation',
     h1: 'מחירון שיפוץ חדר רחצה 2026',
     metaTitle: 'מחירון שיפוץ חדר רחצה 2026 – עלויות מפורטות',
     metaDescription:

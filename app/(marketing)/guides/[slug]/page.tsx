@@ -23,9 +23,9 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const page = getGuideBySlug(decodeURIComponent(slug));
+  const page = getGuideBySlug(slug);
   if (!page) return {};
-  return withSiteMetadata(`/מדריכים/${page.slug}`, {
+  return withSiteMetadata(`/guides/${page.slug}`, {
     title: page.metaTitle,
     description: page.metaDescription,
     openGraph: { title: page.h1, description: page.metaDescription, type: 'article' },
@@ -34,13 +34,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function GuidePage({ params }: PageProps) {
   const { slug } = await params;
-  const page = getGuideBySlug(decodeURIComponent(slug));
+  const page = getGuideBySlug(slug);
   if (!page) notFound();
 
-  const pageUrl = absoluteUrl(`/מדריכים/${page.slug}`) ?? '';
+  const pageUrl = absoluteUrl(`/guides/${page.slug}`) ?? '';
   const breadcrumbItems = [
     { label: 'דף הבית', url: absoluteUrl('/landing') ?? '/landing' },
-    { label: 'מדריכים', url: absoluteUrl('/מדריכים') ?? '/מדריכים' },
+    { label: 'מדריכים', url: absoluteUrl('/guides') ?? '/guides' },
     { label: page.h1, url: pageUrl },
   ];
 
@@ -67,7 +67,7 @@ export default async function GuidePage({ params }: PageProps) {
           <Breadcrumbs
             items={[
               { label: 'דף הבית', href: '/landing' },
-              { label: 'מדריכים', href: '/מדריכים' },
+              { label: 'מדריכים', href: '/guides' },
               { label: page.h1 },
             ]}
           />
@@ -108,13 +108,13 @@ export default async function GuidePage({ params }: PageProps) {
             <p className="text-slate-700 font-medium mb-4">מדריכים ומחירונים נוספים</p>
             <div className="flex flex-wrap justify-center gap-3 text-sm">
               <Link
-                href="/מדריכים"
+                href="/guides"
                 className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-medium hover:bg-slate-200 transition-colors"
               >
                 כל המדריכים
               </Link>
               <Link
-                href="/מחירון"
+                href="/pricing"
                 className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-medium hover:bg-slate-200 transition-colors"
               >
                 מחירונים לפי ענף

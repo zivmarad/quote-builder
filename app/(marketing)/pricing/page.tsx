@@ -6,7 +6,7 @@ import { absoluteUrl } from '@/lib/site-url';
 import { PRICE_LIST_PAGES } from '@/lib/seo-content';
 import { Breadcrumbs, JsonLd, buildBreadcrumbJsonLd } from '../_seo/SeoComponents';
 
-export const metadata: Metadata = withSiteMetadata('/מחירון', {
+export const metadata: Metadata = withSiteMetadata('/pricing', {
   title: 'מחירונים לבעלי מקצוע 2026 | אינסטלציה, חשמל, צבע ושיפוצים',
   description:
     'מחירונים מעודכנים 2026 לבעלי מקצוע: אינסטלציה, חשמל, צבע ושיפוץ חדר רחצה. טווחי מחירים מקובלים + כלי חינמי לבניית הצעת מחיר.',
@@ -15,7 +15,7 @@ export const metadata: Metadata = withSiteMetadata('/מחירון', {
 export default function PriceListHubPage() {
   const breadcrumbItems = [
     { label: 'דף הבית', url: absoluteUrl('/landing') ?? '/landing' },
-    { label: 'מחירונים', url: absoluteUrl('/מחירון') ?? '/מחירון' },
+    { label: 'מחירונים', url: absoluteUrl('/pricing') ?? '/pricing' },
   ];
 
   return (
@@ -37,7 +37,7 @@ export default function PriceListHubPage() {
             {PRICE_LIST_PAGES.map((list) => (
               <Link
                 key={list.slug}
-                href={`/מחירון/${list.slug}`}
+                href={`/pricing/${list.slug}`}
                 className="group block rounded-2xl border border-slate-200 bg-white p-6 hover:border-blue-200 hover:shadow-md transition-all"
               >
                 <h2 className="text-lg font-bold text-[#0F172A] mb-2 group-hover:text-[#2563eb] transition-colors">
