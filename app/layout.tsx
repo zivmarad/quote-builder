@@ -1,6 +1,7 @@
 import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import { Heebo } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/react';
 import { withSiteMetadata } from '@/lib/site-metadata';
 import { AuthProvider } from './contexts/AuthContext';
 import LanguageWrapper from './components/LanguageWrapper';
@@ -41,6 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <AppChrome>{children}</AppChrome>
           </LanguageWrapper>
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   );

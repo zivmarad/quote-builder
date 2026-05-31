@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useQuoteBasket, BasketExtra } from '../contexts/QuoteBasketContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useSpotlightOnboarding } from '../hooks/useSpotlightOnboarding';
+import { trackEvent, AnalyticsEvents } from '@/lib/analytics';
 import { ShoppingCart } from 'lucide-react';
 
 interface AddToBasketButtonProps {
@@ -35,6 +36,8 @@ export default function AddToBasketButton({ service }: AddToBasketButtonProps) {
       quantity: service.quantity,
       unit: service.unit,
     });
+
+    trackEvent(AnalyticsEvents.AddToCart, { category: service.category });
 
     if (shouldShow('service')) {
       dismissPage('service');

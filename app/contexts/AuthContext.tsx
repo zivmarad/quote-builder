@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { trackEvent, AnalyticsEvents } from '@/lib/analytics';
 
 /** הסשן נשמר ב-cookie (JWT) בצד שרת. טעינת "מי מחובר" דרך GET /api/auth/me. */
 export const SAVED_USERNAME_KEY = 'quoteBuilder_savedUsername';
@@ -176,6 +177,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const current: CurrentUser = { id: data.user.id, username: data.user.username, email: data.user.email };
         setUser(current);
         setImpersonating(false);
+        trackEvent(AnalyticsEvents.SignupCompleted, { method: 'username' });
         return { ok: true };
       }
       return { ok: false, error: 'שגיאה בהרשמה' };
@@ -260,6 +262,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const current: CurrentUser = { id: data.user.id, username: data.user.username, email: data.user.email };
         setUser(current);
         setImpersonating(false);
+        trackEvent(AnalyticsEvents.SignupCompleted, { method: 'email' });
         return { ok: true };
       }
       return { ok: false, error: data.error ?? 'שגיאה בהרשמה' };

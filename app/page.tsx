@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -36,6 +36,7 @@ import {
 } from '@/lib/spotlight-onboarding';
 import { useSpotlightOnboarding } from './hooks/useSpotlightOnboarding';
 import SpotlightOverlay from './components/onboarding/SpotlightOverlay';
+import { trackEvent, AnalyticsEvents } from '@/lib/analytics';
 
 const categoryIcons: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
   paint: Palette,
@@ -98,6 +99,19 @@ export default function HomePage() {
 
   const showCategorySpotlight = shouldShow('home');
   const suggestedCategoryId = SPOTLIGHT_SUGGESTED_HOME_CATEGORY_ID;
+
+  useEffect(() => {
+    // אורח שנכנס לאפליקציה (ללא סשן מחובר) — פעם אחת לכל session
+    const hasSession = document.cookie.includes('quoteBuilder_session=');
+    if (hasSession) return;
+    try {
+      if (sessionStorage.getItem('qb_guest_entry_tracked') === '1') return;
+      sessionStorage.setItem('qb_guest_entry_tracked', '1');
+    } catch {
+      /* ignore */
+    }
+    trackEvent(AnalyticsEvents.AppEnteredGuest);
+  }, []);
 
   const searchResults = useMemo((): SearchResult[] => {
     const q = search.trim().toLowerCase();
