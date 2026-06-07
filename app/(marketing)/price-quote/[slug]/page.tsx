@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { withSiteMetadata } from '@/lib/site-metadata';
 import { absoluteUrl } from '@/lib/site-url';
-import { INDUSTRY_PAGES, getIndustryBySlug } from '@/lib/seo-content';
+import { INDUSTRY_PAGES, getIndustryBySlug, getPriceListBySlug } from '@/lib/seo-content';
 import {
   Breadcrumbs,
   PriceTable,
@@ -39,6 +39,7 @@ export default async function IndustryPage({ params }: PageProps) {
   if (!page) notFound();
 
   const pageUrl = absoluteUrl(`/price-quote/${page.slug}`) ?? '';
+  const hasPriceList = Boolean(getPriceListBySlug(page.slug));
   const breadcrumbItems = [
     { label: 'דף הבית', url: absoluteUrl('/landing') ?? '/landing' },
     { label: page.h1, url: pageUrl },
@@ -73,7 +74,11 @@ export default async function IndustryPage({ params }: PageProps) {
           <p className="text-lg text-slate-600 leading-relaxed mb-4">{page.intro}</p>
           <p className="text-slate-600 leading-relaxed">{page.body}</p>
 
-          <SeoCta />
+          <SeoCta
+            title={`בנה הצעת מחיר ל${page.label} עכשיו`}
+            href={`/category/${page.categoryId}`}
+            cta={`בחר עבודות ל${page.label}`}
+          />
 
           <h2 className="text-2xl font-bold text-[#0F172A] mb-4">
             מחירון {page.label} – טווחי ייחוס
@@ -92,12 +97,14 @@ export default async function IndustryPage({ params }: PageProps) {
           <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center">
             <p className="text-slate-700 font-medium mb-4">רוצה לראות עוד מחירונים ומדריכים?</p>
             <div className="flex flex-wrap justify-center gap-3 text-sm">
-              <Link
-                href={`/pricing/${page.slug}`}
-                className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-medium hover:bg-slate-200 transition-colors"
-              >
-                מחירון {page.label}
-              </Link>
+              {hasPriceList && (
+                <Link
+                  href={`/pricing/${page.slug}`}
+                  className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-medium hover:bg-slate-200 transition-colors"
+                >
+                  מחירון {page.label}
+                </Link>
+              )}
               <Link
                 href="/guides"
                 className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-medium hover:bg-slate-200 transition-colors"

@@ -9,7 +9,7 @@ import { Breadcrumbs, JsonLd, buildBreadcrumbJsonLd } from '../_seo/SeoComponent
 export const metadata: Metadata = withSiteMetadata('/pricing', {
   title: 'מחירונים לבעלי מקצוע 2026 | אינסטלציה, חשמל, צבע ושיפוצים',
   description:
-    'מחירונים מעודכנים 2026 לבעלי מקצוע: אינסטלציה, חשמל, צבע ושיפוץ חדר רחצה. טווחי מחירים מקובלים + כלי חינמי לבניית הצעת מחיר.',
+    'מחירונים מעודכנים 2026 לבעלי מקצוע: שיפוץ דירה, שיפוץ מקלחת, אינסטלציה, חשמל, צבע, ריצוף, מיזוג, גבס ונגרות. טווחי מחירים מקובלים + כלי חינמי לבניית הצעת מחיר.',
 });
 
 export default function PriceListHubPage() {
