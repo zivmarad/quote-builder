@@ -45,10 +45,13 @@ export function ProfileProvider({ children, userId }: { children: React.ReactNod
   const [isLoaded, setIsLoaded] = useState(false);
   const [syncStatus, setSyncStatus] = useState<ProfileSyncStatus>('idle');
   const lastLoadedForUserIdRef = useRef<string | null | undefined>(undefined);
+  // נדרך רק אחרי שהפרופיל מהשרת נטען ומוזג – מונע שמירת לוגו/שדות ריקים במירוץ הטעינה
+  const serverSyncReadyRef = useRef(false);
   const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const key = getStorageKey(userId);
+    serverSyncReadyRef.current = false;
     const loadFromStorage = (): UserProfile => {
       let raw = localStorage.getItem(key);
       if (!raw) {
@@ -121,7 +124,11 @@ export function ProfileProvider({ children, userId }: { children: React.ReactNod
       setProfileState(initial);
       setIsLoaded(true);
 
-      if (!userId) return;
+      if (!userId) {
+        // אורח – אין סנכרון שרת, מותר לשמור מקומית מיד
+        serverSyncReadyRef.current = true;
+        return;
+      }
 
       const data = await fetchSync<{ profile: UserProfile }>('/profile', userId);
       if (cancelled) return;
@@ -191,6 +198,8 @@ export function ProfileProvider({ children, userId }: { children: React.ReactNod
       } else if (!fromApi) {
         void postSync('/profile', userId, { profile: merged });
       }
+      // מעכשיו מותר לשמירה אוטומטית לסנכרן – הפרופיל מהשרת כבר מוזג
+      serverSyncReadyRef.current = true;
     })();
     return () => {
       cancelled = true;
@@ -227,7 +236,7 @@ export function ProfileProvider({ children, userId }: { children: React.ReactNod
             /* keep in memory only */
           }
           // גם כש־localStorage מלא – שומרים את הפרופיל המלא (כולל לוגו) בשרת כדי שיסונכרן בין מכשירים
-          if (userId && lastLoadedForUserIdRef.current === userId) {
+          if (userId && lastLoadedForUserIdRef.current === userId && serverSyncReadyRef.current) {
             syncedInCatch = true;
             setSyncStatus('saving');
             postSync('/profile', userId, { profile: next }).then((ok) => {
@@ -237,7 +246,7 @@ export function ProfileProvider({ children, userId }: { children: React.ReactNod
             });
           }
         }
-        if (userId && lastLoadedForUserIdRef.current === userId && !syncedInCatch) {
+        if (userId && lastLoadedForUserIdRef.current === userId && !syncedInCatch && serverSyncReadyRef.current) {
           const nextForSync = next;
           setSyncStatus('saving');
           if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
