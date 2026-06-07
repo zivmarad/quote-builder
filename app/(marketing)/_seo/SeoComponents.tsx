@@ -1,6 +1,39 @@
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { formatShekel, type PriceRow, type SeoFaq } from '@/lib/seo-content';
+import {
+  formatShekel,
+  type ContentSection,
+  type PriceRow,
+  type SeoFaq,
+} from '@/lib/seo-content';
+
+/** סעיפי תוכן מעמיקים (H2 + פסקאות + רשימה אופציונלית). */
+export function ContentSections({ sections }: { sections: ContentSection[] }) {
+  return (
+    <div className="mt-12 space-y-10">
+      {sections.map((section) => (
+        <section key={section.heading}>
+          <h2 className="text-2xl font-bold text-[#0F172A] mb-4">{section.heading}</h2>
+          {section.paragraphs?.map((p, i) => (
+            <p key={i} className="text-slate-600 leading-relaxed mb-3">
+              {p}
+            </p>
+          ))}
+          {section.list && (
+            <ul className="mt-3 space-y-2">
+              {section.list.map((item, i) => (
+                <li key={i} className="flex gap-2 text-slate-600 leading-relaxed">
+                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#2563eb]" aria-hidden />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      ))}
+    </div>
+  );
+}
 
 /** פירורי לחם נגישים + ויזואליים (ה-JSON-LD נפרד). */
 export function Breadcrumbs({

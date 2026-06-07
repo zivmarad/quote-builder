@@ -6,6 +6,7 @@ import { absoluteUrl } from '@/lib/site-url';
 import { PRICE_LIST_PAGES, getPriceListBySlug, getIndustryBySlug } from '@/lib/seo-content';
 import {
   Breadcrumbs,
+  ContentSections,
   PriceTable,
   SeoFaqList,
   SeoCta,
@@ -78,6 +79,8 @@ export default async function PriceListPage({ params }: PageProps) {
           <SeoCta
             title={`בנה הצעת מחיר ${relatedIndustry ? `ל${relatedIndustry.label}` : ''} עכשיו`}
           />
+
+          {page.sections && <ContentSections sections={page.sections} />}
 
           <div className="my-12">
             <h2 className="text-2xl font-bold text-[#0F172A] mb-6">שאלות נפוצות</h2>

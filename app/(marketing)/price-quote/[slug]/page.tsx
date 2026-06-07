@@ -6,6 +6,7 @@ import { absoluteUrl } from '@/lib/site-url';
 import { INDUSTRY_PAGES, getIndustryBySlug, getPriceListBySlug } from '@/lib/seo-content';
 import {
   Breadcrumbs,
+  ContentSections,
   PriceTable,
   SeoFaqList,
   SeoCta,
@@ -88,6 +89,8 @@ export default async function IndustryPage({ params }: PageProps) {
             התוספות והסכום מתעדכן אוטומטית.
           </p>
           <PriceTable rows={page.prices} />
+
+          {page.sections && <ContentSections sections={page.sections} />}
 
           <div className="my-12">
             <h2 className="text-2xl font-bold text-[#0F172A] mb-6">שאלות נפוצות</h2>
