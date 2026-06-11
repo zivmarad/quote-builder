@@ -29,23 +29,38 @@ export default function MarketingFooter() {
                 </Link>
               </li>
               <li>
-                <Link href="/price-quote/tiling" className="hover:text-slate-900 transition-colors">
-                  הצעת מחיר לריצוף
+                <Link href="/price-quote/aluminum" className="hover:text-slate-900 transition-colors">
+                  הצעת מחיר לאלומיניום
+                </Link>
+              </li>
+              <li>
+                <Link href="/price-quote/welding" className="hover:text-slate-900 transition-colors">
+                  הצעת מחיר למסגרות
+                </Link>
+              </li>
+              <li>
+                <Link href="/price-quote/home-renovation" className="hover:text-slate-900 transition-colors">
+                  הצעת מחיר לשיפוץ דירה
                 </Link>
               </li>
             </ul>
           </div>
           <div>
-            <h3 className="font-bold text-slate-900 mb-3 text-sm">מדריכים ומחירונים</h3>
+            <h3 className="font-bold text-slate-900 mb-3 text-sm">מדריכים וטפסים</h3>
             <ul className="space-y-2 text-sm text-slate-600">
+              <li>
+                <Link href="/templates" className="hover:text-slate-900 transition-colors">
+                  טופס הצעת מחיר להורדה
+                </Link>
+              </li>
               <li>
                 <Link href="/guides/renovation-price-quote" className="hover:text-slate-900 transition-colors">
                   הצעת מחיר לשיפוץ – דוגמה
                 </Link>
               </li>
               <li>
-                <Link href="/guides/price-quote-template" className="hover:text-slate-900 transition-colors">
-                  טופס הצעת מחיר
+                <Link href="/guides/how-to-price-a-job" className="hover:text-slate-900 transition-colors">
+                  איך מתמחרים עבודה
                 </Link>
               </li>
               <li>

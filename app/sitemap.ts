@@ -9,6 +9,7 @@ const PUBLIC_PATHS: Array<{ path: string; changeFrequency: Freq; priority: numbe
   { path: '/', changeFrequency: 'weekly', priority: 0.9 },
   { path: '/guides', changeFrequency: 'weekly', priority: 0.8 },
   { path: '/pricing', changeFrequency: 'weekly', priority: 0.8 },
+  { path: '/templates', changeFrequency: 'monthly', priority: 0.8 },
   { path: '/contact', changeFrequency: 'monthly', priority: 0.5 },
   { path: '/terms', changeFrequency: 'yearly', priority: 0.3 },
   { path: '/privacy', changeFrequency: 'yearly', priority: 0.3 },
