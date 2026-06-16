@@ -27,7 +27,8 @@
     "noResults": "לא נמצאו תוצאות",
     "searchHint": "הקלד לחיפוש בכל התחומים והשירותים",
     "addProfessionTitle": "מקצוע נוסף?",
-    "addProfessionSubtitle": "בקש הוספת תחום"
+    "addProfessionSubtitle": "בקש הוספת תחום",
+    "installHint": "לגישה מהירה מהשטח"
   },
   "welcome": {
     "title": "ברוכים הבאים!",

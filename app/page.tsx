@@ -160,7 +160,7 @@ export default function HomePage() {
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#1E293B] leading-tight flex-1 min-w-0">
               {t('home.title')}
             </h1>
-            <InstallAppButton />
+            <InstallAppButton showHint />
           </div>
           <p className="text-slate-500 font-medium text-sm sm:text-base mb-4">{t('home.subtitle')}</p>
 
