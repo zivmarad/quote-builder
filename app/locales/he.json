@@ -70,7 +70,8 @@
     "logout": "התנתק",
     "signup": "הרשם",
     "hello": "שלום",
-    "customers": "לקוחות"
+    "customers": "לקוחות",
+    "installApp": "התקנת אפליקציה"
   },
   "login": {
     "title": "התחברות",

@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { useAuth } from '../contexts/AuthContext';
 import { useProfile } from '../contexts/ProfileContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { User, LogIn, UserPlus, LogOut, Globe, Home, ShieldAlert, Undo2 } from 'lucide-react';
+import { User, LogIn, UserPlus, LogOut, Globe, Home, ShieldAlert, Undo2, Download } from 'lucide-react';
+import { isStandaloneDisplay, requestOpenInstallPrompt } from '../../lib/first-quote-install';
 
 const LOCALE_LABELS: Record<string, string> = {
   he: 'עב',
@@ -21,6 +22,8 @@ export default function AppHeader() {
   const { t, locale, setLocale, dir } = useLanguage();
   const [langOpen, setLangOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  // מציגים כפתור התקנה רק כשגולשים בדפדפן (לא כשהאפליקציה כבר מותקנת)
+  const [showInstall, setShowInstall] = useState(false);
 
   const displayName = user
     ? (() => {
@@ -38,6 +41,18 @@ export default function AppHeader() {
     };
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    const update = () => setShowInstall(!isStandaloneDisplay());
+    update();
+    const mql = window.matchMedia?.('(display-mode: standalone)');
+    mql?.addEventListener?.('change', update);
+    window.addEventListener('appinstalled', update);
+    return () => {
+      mql?.removeEventListener?.('change', update);
+      window.removeEventListener('appinstalled', update);
+    };
   }, []);
 
   const locales = ['he', 'en', 'ru', 'ar'] as const;
@@ -94,6 +109,18 @@ export default function AppHeader() {
           <span className="hidden sm:inline truncate text-base sm:text-lg md:text-xl">{t('header.appName')}</span>
         </Link>
         <div className="flex items-center gap-1 sm:gap-2 shrink-0 min-w-0">
+          {showInstall && (
+            <button
+              type="button"
+              onClick={requestOpenInstallPrompt}
+              className="flex items-center justify-center gap-1.5 text-blue-600 hover:text-blue-700 font-bold text-xs sm:text-sm px-2.5 py-2 rounded-xl hover:bg-blue-50 transition-colors min-h-[44px] border border-blue-200/80 shrink-0"
+              aria-label={t('header.installApp')}
+              title={t('header.installApp')}
+            >
+              <Download size={18} className="shrink-0" />
+              <span className="hidden md:inline">{t('header.installApp')}</span>
+            </button>
+          )}
           <div className="relative" ref={dropdownRef}>
             <button
               type="button"

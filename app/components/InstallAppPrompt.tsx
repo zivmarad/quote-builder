@@ -7,6 +7,7 @@ import {
   clearInstallPromptSession,
   dismissInstallPrompt,
   shouldShowInstallPrompt,
+  OPEN_INSTALL_PROMPT_EVENT,
 } from '../../lib/first-quote-install';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -28,6 +29,13 @@ export default function InstallAppPrompt() {
 
   useEffect(() => {
     if (shouldShowInstallPrompt()) setOpen(true);
+  }, []);
+
+  // פתיחה ידנית מכפתור ההתקנה בהדר
+  useEffect(() => {
+    const openHandler = () => setOpen(true);
+    window.addEventListener(OPEN_INSTALL_PROMPT_EVENT, openHandler);
+    return () => window.removeEventListener(OPEN_INSTALL_PROMPT_EVENT, openHandler);
   }, []);
 
   useEffect(() => {

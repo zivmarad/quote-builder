@@ -2,6 +2,27 @@ const FIRST_QUOTE_KEY = 'quoteBuilder_firstQuoteCompleted';
 const SHOW_INSTALL_PROMPT_KEY = 'quoteBuilder_showInstallPrompt';
 const INSTALL_PROMPT_DISMISSED_KEY = 'quoteBuilder_installPromptDismissed';
 
+/** אירוע לפתיחה ידנית של חלון ההתקנה (למשל מכפתור בהדר). */
+export const OPEN_INSTALL_PROMPT_EVENT = 'quoteBuilder:openInstallPrompt';
+
+/** מבקש לפתוח את חלון ההתקנה ידנית (עוקף את לוגיקת ההצגה החד-פעמית). */
+export function requestOpenInstallPrompt(): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new Event(OPEN_INSTALL_PROMPT_EVENT));
+}
+
+/** האם האפליקציה כבר רצה במצב מותקן (standalone) ולכן אין צורך להציע התקנה. */
+export function isStandaloneDisplay(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    const mql = window.matchMedia?.('(display-mode: standalone)');
+    const iosStandalone = (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
+    return !!mql?.matches || iosStandalone;
+  } catch {
+    return false;
+  }
+}
+
 /** מסמן שהושלמה הצעה ראשונה; מפעיל הצגת חלון התקנה בכניסה הבאה לדף. */
 export function markFirstQuoteCompleted(): boolean {
   if (typeof window === 'undefined') return false;
