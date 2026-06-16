@@ -10,7 +10,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCustomers, type Customer } from '../contexts/CustomersContext';
 import { saveDraft } from '../../lib/drafts-storage';
-import { Trash2, Edit2, Check, X, ShoppingBag, Plus, FileText, Share2, Eye, Loader2, ChevronDown, ChevronUp, Save, GripVertical } from 'lucide-react';
+import { Trash2, Edit2, Check, X, ShoppingBag, Plus, FileText, Share2, Eye, Loader2, ChevronDown, ChevronUp, Save } from 'lucide-react';
 import { Reorder, useDragControls } from 'framer-motion';
 import { markFirstQuoteCompleted } from '../../lib/first-quote-install';
 import ConfirmDialog from './ConfirmDialog';
@@ -50,30 +50,72 @@ function CartItemRow({
   formatPrice,
 }: CartItemRowProps) {
   const dragControls = useDragControls();
+  const [isPickedUp, setIsPickedUp] = useState(false);
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pointerStart = useRef<{ x: number; y: number } | null>(null);
+
   const extrasTotal = item.extras?.reduce((sum, extra) => sum + extra.price, 0) || 0;
   const calculatedTotalPrice = item.basePrice + extrasTotal;
   const currentPrice = item.overridePrice !== undefined ? item.overridePrice : calculatedTotalPrice;
   const hasExtras = item.extras && item.extras.length > 0;
+
+  const cancelLongPress = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+    pointerStart.current = null;
+  };
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    // אל תתחיל גרירה מתוך כפתורים/שדות אינטראקטיביים
+    if ((e.target as HTMLElement).closest('button, input, a, textarea, select, [role="button"]')) {
+      return;
+    }
+    // בזמן עריכה לא מאפשרים גרירה כדי לא להפריע
+    if (isEditing) return;
+    pointerStart.current = { x: e.clientX, y: e.clientY };
+    const nativeEvent = e.nativeEvent;
+    longPressTimer.current = setTimeout(() => {
+      setIsPickedUp(true);
+      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+        try { navigator.vibrate(15); } catch { /* ignore */ }
+      }
+      dragControls.start(nativeEvent);
+    }, 300);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!pointerStart.current || !longPressTimer.current) return;
+    const dx = Math.abs(e.clientX - pointerStart.current.x);
+    const dy = Math.abs(e.clientY - pointerStart.current.y);
+    // תזוזה לפני שהלחיצה הארוכה הספיקה = כוונת גלילה, מבטלים
+    if (dx > 8 || dy > 8) cancelLongPress();
+  };
 
   return (
     <Reorder.Item
       value={item}
       dragListener={false}
       dragControls={dragControls}
-      className="p-4 sm:p-6 hover:bg-slate-50/50 transition-all bg-white"
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={cancelLongPress}
+      onPointerCancel={cancelLongPress}
+      onDragEnd={() => {
+        setIsPickedUp(false);
+        cancelLongPress();
+      }}
+      animate={{
+        scale: isPickedUp ? 1.02 : 1,
+        boxShadow: isPickedUp ? '0 12px 28px rgba(15, 23, 42, 0.18)' : '0 0 0 rgba(0,0,0,0)',
+      }}
+      transition={{ duration: 0.15 }}
+      style={{ position: 'relative', zIndex: isPickedUp ? 10 : 1, cursor: isPickedUp ? 'grabbing' : 'default' }}
+      className="p-4 sm:p-6 hover:bg-slate-50/50 transition-colors bg-white select-none"
     >
       <div className="flex flex-col gap-3">
-        <div className="flex items-start gap-2 sm:gap-3">
-          <button
-            type="button"
-            onPointerDown={(e) => dragControls.start(e)}
-            className="mt-1 p-1.5 -ml-1 text-slate-300 hover:text-slate-500 cursor-grab active:cursor-grabbing touch-none shrink-0 rounded-lg hover:bg-slate-100 transition-colors"
-            title="גרור כדי לשנות את הסדר"
-            aria-label="גרור כדי לשנות את הסדר"
-          >
-            <GripVertical size={20} />
-          </button>
-          <div className="flex flex-col gap-3 flex-1 min-w-0">
+        <div className="flex flex-col gap-3 flex-1 min-w-0">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
               <div className="flex-1 text-right min-w-0">
                 <span className={`text-[10px] font-bold uppercase tracking-wider mb-1 block ${item.category === 'פריט חופשי' ? 'text-emerald-600' : 'text-blue-600'}`}>{item.category}</span>
@@ -172,7 +214,6 @@ function CartItemRow({
             </div>
           </div>
         </div>
-      </div>
     </Reorder.Item>
   );
 }
@@ -934,6 +975,12 @@ export default function Cart() {
             נקה הכל
           </button>
         </div>
+
+        {items.length > 1 && (
+          <p className="px-4 sm:px-6 py-2 text-[11px] text-slate-400 text-center bg-slate-50/60 border-b border-slate-100">
+            לחיצה ארוכה על פריט מאפשרת לגרור ולסדר מחדש
+          </p>
+        )}
 
         <Reorder.Group
           axis="y"
