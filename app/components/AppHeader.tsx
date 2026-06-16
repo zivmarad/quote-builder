@@ -5,8 +5,7 @@ import Link from 'next/link';
 import { useAuth } from '../contexts/AuthContext';
 import { useProfile } from '../contexts/ProfileContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { User, LogIn, UserPlus, LogOut, Globe, Home, ShieldAlert, Undo2, Download } from 'lucide-react';
-import { isStandaloneDisplay, requestOpenInstallPrompt } from '../../lib/first-quote-install';
+import { User, LogIn, UserPlus, LogOut, Globe, Home, ShieldAlert, Undo2 } from 'lucide-react';
 
 const LOCALE_LABELS: Record<string, string> = {
   he: 'עב',
@@ -22,8 +21,6 @@ export default function AppHeader() {
   const { t, locale, setLocale, dir } = useLanguage();
   const [langOpen, setLangOpen] = useState(false);
   const langDropdownRef = useRef<HTMLDivElement>(null);
-  // מציגים כפתור התקנה רק כשגולשים בדפדפן (לא כשהאפליקציה כבר מותקנת)
-  const [showInstall, setShowInstall] = useState(false);
 
   const displayName = user
     ? (() => {
@@ -41,18 +38,6 @@ export default function AppHeader() {
     };
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
-  }, []);
-
-  useEffect(() => {
-    const update = () => setShowInstall(!isStandaloneDisplay());
-    update();
-    const mql = window.matchMedia?.('(display-mode: standalone)');
-    mql?.addEventListener?.('change', update);
-    window.addEventListener('appinstalled', update);
-    return () => {
-      mql?.removeEventListener?.('change', update);
-      window.removeEventListener('appinstalled', update);
-    };
   }, []);
 
   const locales = ['he', 'en', 'ru', 'ar'] as const;
@@ -98,29 +83,16 @@ export default function AppHeader() {
         </div>
       )}
       <div className="max-w-5xl mx-auto px-3 sm:px-4 md:px-8 py-2.5 sm:py-3 flex items-center justify-between gap-2 min-h-[52px] sm:min-h-0 min-w-0">
-        <div className="flex items-center gap-0.5 min-w-0 shrink">
-          <Link
-            href="/"
-            className="font-black text-slate-900 flex items-center gap-2 min-w-0 shrink-0"
-            aria-label={t('header.appName')}
-          >
-            <span className="sm:hidden flex items-center justify-center w-10 h-10 rounded-xl hover:bg-slate-100 text-slate-700">
-              <Home size={22} />
-            </span>
-            <span className="hidden sm:inline truncate text-base sm:text-lg md:text-xl">{t('header.appName')}</span>
-          </Link>
-          {showInstall && (
-            <button
-              type="button"
-              onClick={() => requestOpenInstallPrompt('manual')}
-              className="flex items-center justify-center w-10 h-10 rounded-xl text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors shrink-0"
-              aria-label={t('header.installApp')}
-              title={t('header.installApp')}
-            >
-              <Download size={20} />
-            </button>
-          )}
-        </div>
+        <Link
+          href="/"
+          className="font-black text-slate-900 flex items-center gap-2 min-w-0 shrink-0 sm:min-w-0"
+          aria-label={t('header.appName')}
+        >
+          <span className="sm:hidden flex items-center justify-center w-10 h-10 rounded-xl hover:bg-slate-100 text-slate-700">
+            <Home size={22} />
+          </span>
+          <span className="hidden sm:inline truncate text-base sm:text-lg md:text-xl">{t('header.appName')}</span>
+        </Link>
         <div className="flex items-center gap-1 sm:gap-2 shrink-0 min-w-0">
           <div className="relative" ref={langDropdownRef}>
             <button

@@ -36,6 +36,7 @@ import {
 } from '@/lib/spotlight-onboarding';
 import { useSpotlightOnboarding } from './hooks/useSpotlightOnboarding';
 import SpotlightOverlay from './components/onboarding/SpotlightOverlay';
+import InstallAppButton from './components/InstallAppButton';
 import { trackEvent, AnalyticsEvents } from '@/lib/analytics';
 
 const categoryIcons: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
@@ -155,9 +156,12 @@ export default function HomePage() {
     <main className="min-h-screen bg-[#F8FAFC] px-5 py-6 sm:p-6 md:p-12" dir={dir}>
       <div className="max-w-5xl mx-auto text-right">
         <header className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#1E293B] mb-2 leading-tight">
-            {t('home.title')}
-          </h1>
+          <div className="flex items-center gap-2 sm:gap-3 mb-2">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#1E293B] leading-tight flex-1 min-w-0">
+              {t('home.title')}
+            </h1>
+            <InstallAppButton />
+          </div>
           <p className="text-slate-500 font-medium text-sm sm:text-base mb-4">{t('home.subtitle')}</p>
 
           <div className="relative max-w-xl">
