@@ -130,11 +130,13 @@ function CartItemRow({
       }}
       animate={{
         scale: isPickedUp ? 1.02 : 1,
-        boxShadow: isPickedUp ? '0 12px 28px rgba(15, 23, 42, 0.18)' : '0 0 0 rgba(0,0,0,0)',
+        boxShadow: isPickedUp ? '0 12px 28px rgba(15, 23, 42, 0.18)' : '0 1px 2px rgba(15, 23, 42, 0.04)',
       }}
       transition={{ duration: 0.15 }}
       style={{ position: 'relative', zIndex: isPickedUp ? 10 : 1, cursor: isPickedUp ? 'grabbing' : 'default' }}
-      className="p-4 sm:p-6 hover:bg-slate-50/50 transition-colors bg-white select-none"
+      className={`rounded-2xl border bg-white p-4 sm:p-5 select-none transition-colors ${
+        isPickedUp ? 'border-blue-400' : 'border-slate-200 hover:border-slate-300'
+      }`}
     >
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-3 flex-1 min-w-0">
@@ -1008,7 +1010,7 @@ export default function Cart() {
           axis="y"
           values={items}
           onReorder={reorderItems}
-          className="divide-y divide-slate-100"
+          className="flex flex-col gap-3 p-3 sm:p-4"
         >
           {items.map((item) => (
             <CartItemRow
