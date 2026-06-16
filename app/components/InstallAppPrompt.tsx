@@ -3,13 +3,16 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Check, Plus, Smartphone, X } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import InstallManualGuide from './InstallManualGuide';
 import {
   clearInstallPromptSession,
   dismissInstallPrompt,
   shouldShowInstallPrompt,
   OPEN_INSTALL_PROMPT_EVENT,
+  markAppInstalled,
   type InstallPromptMode,
 } from '../../lib/first-quote-install';
+import { isAppMarkedInstalled } from '../../lib/install-utils';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -41,7 +44,6 @@ export default function InstallAppPrompt() {
     }
   }, []);
 
-  // פתיחה ידנית מתפריט בהדר
   useEffect(() => {
     const openHandler = (e: Event) => {
       const detail = (e as CustomEvent<{ mode?: InstallPromptMode }>).detail;
@@ -60,6 +62,7 @@ export default function InstallAppPrompt() {
     };
     window.addEventListener('beforeinstallprompt', handler);
     const onInstalled = () => {
+      markAppInstalled();
       setInstallSuccess(true);
       clearInstallPromptSession();
       dismissInstallPrompt();
@@ -78,6 +81,7 @@ export default function InstallAppPrompt() {
       await installPrompt.prompt();
       const { outcome } = await installPrompt.userChoice;
       if (outcome === 'accepted') {
+        markAppInstalled();
         setInstallSuccess(true);
         clearInstallPromptSession();
         dismissInstallPrompt();
@@ -91,6 +95,7 @@ export default function InstallAppPrompt() {
 
   const isCelebration = mode === 'celebration';
   const handleClose = isCelebration ? closeCelebration : close;
+  const showNativeInstall = !!installPrompt && !isAppMarkedInstalled();
 
   return (
     <div
@@ -133,7 +138,7 @@ export default function InstallAppPrompt() {
           <div className="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-green-50 border border-green-200 text-green-700 font-medium">
             <Check size={20} /> {t('profile.addedToHomeScreen')}
           </div>
-        ) : installPrompt ? (
+        ) : showNativeInstall ? (
           <button
             type="button"
             onClick={handleInstall}
@@ -144,17 +149,13 @@ export default function InstallAppPrompt() {
             {installLoading ? t('profile.installing') : t('profile.addToHomeScreen')}
           </button>
         ) : (
-          <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 space-y-3">
-            <p className="font-bold text-slate-700 text-sm">{t('profile.howToAddTitle')}</p>
-            <p className="text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-sm">
-              {t('profile.howToAddImportant')}
-            </p>
-            <ul className="text-sm text-slate-600 space-y-1.5">
-              <li><strong>{t('profile.howToAddAndroid')}</strong></li>
-              <li><strong>{t('profile.howToAddIos')}</strong></li>
-            </ul>
-            <p className="text-slate-500 text-xs">{t('profile.installFailedHint')}</p>
-          </div>
+          <InstallManualGuide />
+        )}
+
+        {!showNativeInstall && !installSuccess && (
+          <p className="text-xs text-slate-400 text-center -mt-2">
+            {t('profile.installFailedHint')}
+          </p>
         )}
 
         <button

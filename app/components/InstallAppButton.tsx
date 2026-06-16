@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { Download } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
-import { isStandaloneDisplay, requestOpenInstallPrompt } from '../../lib/first-quote-install';
+import { requestOpenInstallPrompt } from '../../lib/first-quote-install';
+import { shouldOfferInstall, markAppInstalled } from '../../lib/install-utils';
 
 interface InstallAppButtonProps {
   className?: string;
@@ -20,14 +21,19 @@ export default function InstallAppButton({
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    const update = () => setShow(!isStandaloneDisplay());
+    const update = () => setShow(shouldOfferInstall());
     update();
     const mql = window.matchMedia?.('(display-mode: standalone)');
     mql?.addEventListener?.('change', update);
-    window.addEventListener('appinstalled', update);
+    window.addEventListener('appinstalled', () => {
+      markAppInstalled();
+      update();
+    });
+    window.addEventListener('storage', update);
     return () => {
       mql?.removeEventListener?.('change', update);
       window.removeEventListener('appinstalled', update);
+      window.removeEventListener('storage', update);
     };
   }, []);
 

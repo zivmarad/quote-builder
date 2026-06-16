@@ -19,6 +19,8 @@ import { getServiceDisplayName, isCustomServiceId } from '../../lib/custom-catal
 import { getDrafts, deleteDraft, syncDraftsForLoggedInUser, type QuoteDraft } from '../../lib/drafts-storage';
 import { ArrowRight, UserCircle, Settings, FileText, ChevronLeft, Download, Trash2, Copy, DollarSign, KeyRound, Eye, ChevronDown, Check, Loader2, Smartphone, Plus, FileEdit, Users } from 'lucide-react';
 import ConfirmDialog from '../components/ConfirmDialog';
+import InstallManualGuide from '../components/InstallManualGuide';
+import { markAppInstalled } from '../../lib/install-utils';
 
 const PENDING_DRAFT_KEY = 'quoteBuilder_pendingDraft';
 
@@ -218,7 +220,10 @@ export default function ProfilePage() {
       setInstallPrompt(e as BeforeInstallPromptEvent);
     };
     window.addEventListener('beforeinstallprompt', handler);
-    const appInstalled = () => setInstallSuccess(true);
+    const appInstalled = () => {
+      markAppInstalled();
+      setInstallSuccess(true);
+    };
     window.addEventListener('appinstalled', appInstalled);
     return () => {
       window.removeEventListener('beforeinstallprompt', handler);
@@ -241,7 +246,10 @@ export default function ProfilePage() {
     try {
       await installPrompt.prompt();
       const { outcome } = await installPrompt.userChoice;
-      if (outcome === 'accepted') setInstallSuccess(true);
+      if (outcome === 'accepted') {
+        markAppInstalled();
+        setInstallSuccess(true);
+      }
     } finally {
       setInstallLoading(false);
     }
@@ -1053,16 +1061,8 @@ export default function ProfilePage() {
                         {installLoading ? t('profile.installing') : t('profile.addToHomeScreen')}
                       </button>
                     ) : (
-                      <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 space-y-3 max-w-md">
-                        <p className="font-bold text-slate-700 text-sm">{t('profile.howToAddTitle')}</p>
-                        <p className="text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-sm">
-                          {t('profile.howToAddImportant')}
-                        </p>
-                        <ul className="text-sm text-slate-600 space-y-1.5">
-                          <li><strong>{t('profile.howToAddAndroid')}</strong></li>
-                          <li><strong>{t('profile.howToAddIos')}</strong></li>
-                        </ul>
-                        <p className="text-slate-500 text-xs">{t('profile.installFailedHint')}</p>
+                      <div className="max-w-md">
+                        <InstallManualGuide />
                       </div>
                     )}
                   </div>
