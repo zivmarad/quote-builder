@@ -39,6 +39,8 @@ interface QuoteBasketContextType {
   clearBasket: () => void;
   /** טוען פריטים לסל (שכפול הצעה) – נותן לכל פריט id חדש */
   loadBasket: (items: BasketItem[]) => void;
+  /** מסדר מחדש את פריטי הסל (גרירה למעלה/למטה) */
+  reorderItems: (newItems: BasketItem[]) => void;
   totalBeforeVAT: number;
   VAT: number;
   totalWithVAT: number;
@@ -169,6 +171,10 @@ export const QuoteBasketProvider: React.FC<{ children: React.ReactNode; userId?:
     setItems([]);
   };
 
+  const reorderItems = (newItems: BasketItem[]) => {
+    setItems(newItems);
+  };
+
   const loadBasket = (newItems: BasketItem[]) => {
     setItems(
       newItems.map((item) => ({
@@ -202,6 +208,7 @@ export const QuoteBasketProvider: React.FC<{ children: React.ReactNode; userId?:
       clearItemPriceOverride,
       clearBasket,
       loadBasket,
+      reorderItems,
       totalBeforeVAT,
       VAT,
       totalWithVAT,

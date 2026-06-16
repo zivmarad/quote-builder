@@ -10,7 +10,8 @@ import { useSettings } from '../contexts/SettingsContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCustomers, type Customer } from '../contexts/CustomersContext';
 import { saveDraft } from '../../lib/drafts-storage';
-import { Trash2, Edit2, Check, X, ShoppingBag, Plus, FileText, Share2, Eye, Loader2, ChevronDown, ChevronUp, Save } from 'lucide-react';
+import { Trash2, Edit2, Check, X, ShoppingBag, Plus, FileText, Share2, Eye, Loader2, ChevronDown, ChevronUp, Save, GripVertical } from 'lucide-react';
+import { Reorder, useDragControls } from 'framer-motion';
 import { markFirstQuoteCompleted } from '../../lib/first-quote-install';
 import ConfirmDialog from './ConfirmDialog';
 
@@ -21,6 +22,160 @@ import {
   GUEST_PREVIEW_WATERMARK_BANNER,
   GUEST_PREVIEW_WATERMARK_LINE,
 } from '../../lib/guest-quote-preview';
+import type { BasketItem } from '../contexts/QuoteBasketContext';
+
+interface CartItemRowProps {
+  item: BasketItem;
+  isEditing: boolean;
+  editPrice: string;
+  setEditPrice: (value: string) => void;
+  onStartEdit: (id: string, currentPrice: number) => void;
+  onSaveEdit: (id: string) => void;
+  onCancelEdit: () => void;
+  onDelete: (id: string) => void;
+  onRemoveExtra: (itemId: string, extraIndex: number) => void;
+  formatPrice: (price: number) => string;
+}
+
+function CartItemRow({
+  item,
+  isEditing,
+  editPrice,
+  setEditPrice,
+  onStartEdit,
+  onSaveEdit,
+  onCancelEdit,
+  onDelete,
+  onRemoveExtra,
+  formatPrice,
+}: CartItemRowProps) {
+  const dragControls = useDragControls();
+  const extrasTotal = item.extras?.reduce((sum, extra) => sum + extra.price, 0) || 0;
+  const calculatedTotalPrice = item.basePrice + extrasTotal;
+  const currentPrice = item.overridePrice !== undefined ? item.overridePrice : calculatedTotalPrice;
+  const hasExtras = item.extras && item.extras.length > 0;
+
+  return (
+    <Reorder.Item
+      value={item}
+      dragListener={false}
+      dragControls={dragControls}
+      className="p-4 sm:p-6 hover:bg-slate-50/50 transition-all bg-white"
+    >
+      <div className="flex flex-col gap-3">
+        <div className="flex items-start gap-2 sm:gap-3">
+          <button
+            type="button"
+            onPointerDown={(e) => dragControls.start(e)}
+            className="mt-1 p-1.5 -ml-1 text-slate-300 hover:text-slate-500 cursor-grab active:cursor-grabbing touch-none shrink-0 rounded-lg hover:bg-slate-100 transition-colors"
+            title="גרור כדי לשנות את הסדר"
+            aria-label="גרור כדי לשנות את הסדר"
+          >
+            <GripVertical size={20} />
+          </button>
+          <div className="flex flex-col gap-3 flex-1 min-w-0">
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
+              <div className="flex-1 text-right min-w-0">
+                <span className={`text-[10px] font-bold uppercase tracking-wider mb-1 block ${item.category === 'פריט חופשי' ? 'text-emerald-600' : 'text-blue-600'}`}>{item.category}</span>
+                <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
+                  {item.name}
+                  {item.quantity != null && item.quantity > 1 && (
+                    <span className="mr-2 text-sm font-semibold text-slate-500">
+                      ×{item.quantity}{item.unit ? ` ${item.unit}` : ''}
+                    </span>
+                  )}
+                </h3>
+              </div>
+              <div className="flex items-center gap-2 shrink-0 justify-end sm:justify-start">
+                {isEditing ? (
+                  <div className="flex flex-wrap items-center gap-2 bg-blue-50 p-1.5 rounded-xl border border-blue-100">
+                    <input
+                      type="number"
+                      value={editPrice}
+                      onChange={(e) => setEditPrice(e.target.value)}
+                      min={0}
+                      placeholder={calculatedTotalPrice.toString()}
+                      className="w-24 px-3 py-1.5 bg-white border border-blue-200 rounded-lg text-left font-bold text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      autoFocus
+                      title="מחיר ידני. השאר ריק או הזן 0 ואשר = חישוב אוטומטי"
+                    />
+                    <span className="text-[10px] text-blue-700 hidden sm:inline">ריק או 0 + ✓ = חישוב אוטומטי</span>
+                    <button onClick={() => onSaveEdit(item.id)} className="p-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600" title="שמור מחיר"><Check size={18} /></button>
+                    <button onClick={onCancelEdit} className="p-1.5 bg-slate-200 text-slate-600 rounded-lg hover:bg-slate-300" title="סגור עריכה"><X size={18} /></button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-left min-w-[90px]">
+                      <div className="text-lg font-black text-slate-900">{formatPrice(currentPrice)}</div>
+                      {item.overridePrice !== undefined && <span className="text-[10px] text-orange-600 font-bold bg-orange-50 px-1.5 py-0.5 rounded block text-center mt-0.5">מחיר מותאם</span>}
+                    </div>
+                    <button onClick={() => onStartEdit(item.id, currentPrice)} className="p-2 text-slate-400 hover:text-blue-600 rounded-lg transition-colors" title="ערוך פריט"><Edit2 size={18} /></button>
+                    <button onClick={() => onDelete(item.id)} className="p-2 text-slate-400 hover:text-red-600 rounded-lg transition-colors" title="הסר שירות"><Trash2 size={18} /></button>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* עריכה: הסרת תת־שירות או הסרת שירות */}
+            {isEditing && (
+              <div className="bg-blue-50/80 rounded-xl p-4 border border-blue-100 text-right space-y-3">
+                <p className="text-xs font-bold text-blue-800 mb-2">מחיר ידני למעלה – השאר ריק או הזן 0 ולחץ ✓ לחישוב אוטומטי; להסרת תת־שירות או שירות – למטה.</p>
+                {hasExtras && (
+                  <div className="space-y-2">
+                    <span className="text-xs font-bold text-slate-600 block">הסר תת־שירות:</span>
+                    {item.extras!.map((extra, idx) => (
+                      <div key={idx} className="flex justify-between items-center gap-2 bg-white rounded-lg px-3 py-2 border border-slate-200">
+                        <span className="text-sm text-slate-700">+ {extra.text} — {formatPrice(extra.price)}</span>
+                        <button
+                          type="button"
+                          onClick={() => onRemoveExtra(item.id, idx)}
+                          className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors shrink-0"
+                          title="הסר תת־שירות"
+                          aria-label={`הסר ${extra.text}`}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => onDelete(item.id)}
+                  className="w-full sm:w-auto py-2.5 px-4 rounded-xl text-sm font-bold bg-red-100 text-red-700 hover:bg-red-200 transition-colors flex items-center justify-center gap-2"
+                  title="הסר שירות מהסל"
+                >
+                  <Trash2 size={18} />
+                  הסר שירות מהסל
+                </button>
+              </div>
+            )}
+
+            {/* פירוט מחירים */}
+            <div className="bg-slate-50/80 rounded-xl p-4 border border-slate-100 text-right">
+              <div className="space-y-1.5 text-sm">
+                <div className="flex justify-between items-center text-slate-700">
+                  <span>מחיר בסיס</span>
+                  <span className="font-semibold">{formatPrice(item.basePrice)}</span>
+                </div>
+                {hasExtras && item.extras!.map((extra, idx) => (
+                  <div key={idx} className="flex justify-between items-center text-slate-600">
+                    <span>+ {extra.text}</span>
+                    <span className="font-semibold">{formatPrice(extra.price)}</span>
+                  </div>
+                ))}
+                <div className="flex justify-between items-center pt-2 mt-2 border-t border-slate-200 font-bold text-slate-900">
+                  <span>{'סה"כ שורה'}</span>
+                  <span>{formatPrice(currentPrice)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Reorder.Item>
+  );
+}
 
 export default function Cart() {
   const router = useRouter();
@@ -33,6 +188,7 @@ export default function Cart() {
     updateItemPrice,
     clearItemPriceOverride,
     clearBasket,
+    reorderItems,
     totalBeforeVAT,
     VAT: contextVAT,
     totalWithVAT: contextTotalWithVAT,
@@ -779,118 +935,28 @@ export default function Cart() {
           </button>
         </div>
 
-        <div className="divide-y divide-slate-100">
-          {items.map((item) => {
-            const extrasTotal = item.extras?.reduce((sum, extra) => sum + extra.price, 0) || 0;
-            const calculatedTotalPrice = item.basePrice + extrasTotal;
-            const currentPrice = item.overridePrice !== undefined ? item.overridePrice : calculatedTotalPrice;
-            const isEditing = editingId === item.id;
-            const hasExtras = item.extras && item.extras.length > 0;
-
-            return (
-              <div key={item.id} className="p-4 sm:p-6 hover:bg-slate-50/50 transition-all">
-                <div className="flex flex-col gap-3">
-                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
-                    <div className="flex-1 text-right min-w-0">
-                      <span className={`text-[10px] font-bold uppercase tracking-wider mb-1 block ${item.category === 'פריט חופשי' ? 'text-emerald-600' : 'text-blue-600'}`}>{item.category}</span>
-                      <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
-                        {item.name}
-                        {item.quantity != null && item.quantity > 1 && (
-                          <span className="mr-2 text-sm font-semibold text-slate-500">
-                            ×{item.quantity}{item.unit ? ` ${item.unit}` : ''}
-                          </span>
-                        )}
-                      </h3>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0 justify-end sm:justify-start">
-                      {isEditing ? (
-                        <div className="flex flex-wrap items-center gap-2 bg-blue-50 p-1.5 rounded-xl border border-blue-100">
-                          <input
-                            type="number"
-                            value={editPrice}
-                            onChange={(e) => setEditPrice(e.target.value)}
-                            min={0}
-                            placeholder={calculatedTotalPrice.toString()}
-                            className="w-24 px-3 py-1.5 bg-white border border-blue-200 rounded-lg text-left font-bold text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            autoFocus
-                            title="מחיר ידני. השאר ריק או הזן 0 ואשר = חישוב אוטומטי"
-                          />
-                          <span className="text-[10px] text-blue-700 hidden sm:inline">ריק או 0 + ✓ = חישוב אוטומטי</span>
-                          <button onClick={() => handleSaveEdit(item.id)} className="p-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600" title="שמור מחיר"><Check size={18} /></button>
-                          <button onClick={() => setEditingId(null)} className="p-1.5 bg-slate-200 text-slate-600 rounded-lg hover:bg-slate-300" title="סגור עריכה"><X size={18} /></button>
-                        </div>
-                      ) : (
-                        <>
-                          <div className="text-left min-w-[90px]">
-                            <div className="text-lg font-black text-slate-900">{formatPrice(currentPrice)}</div>
-                            {item.overridePrice !== undefined && <span className="text-[10px] text-orange-600 font-bold bg-orange-50 px-1.5 py-0.5 rounded block text-center mt-0.5">מחיר מותאם</span>}
-                          </div>
-                          <button onClick={() => handleStartEdit(item.id, currentPrice)} className="p-2 text-slate-400 hover:text-blue-600 rounded-lg transition-colors" title="ערוך פריט"><Edit2 size={18} /></button>
-                          <button onClick={() => setDeleteItemId(item.id)} className="p-2 text-slate-400 hover:text-red-600 rounded-lg transition-colors" title="הסר שירות"><Trash2 size={18} /></button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* עריכה: הסרת תת־שירות או הסרת שירות */}
-                  {isEditing && (
-                    <div className="bg-blue-50/80 rounded-xl p-4 border border-blue-100 text-right space-y-3">
-                      <p className="text-xs font-bold text-blue-800 mb-2">מחיר ידני למעלה – השאר ריק או הזן 0 ולחץ ✓ לחישוב אוטומטי; להסרת תת־שירות או שירות – למטה.</p>
-                      {hasExtras && (
-                        <div className="space-y-2">
-                          <span className="text-xs font-bold text-slate-600 block">הסר תת־שירות:</span>
-                          {item.extras!.map((extra, idx) => (
-                            <div key={idx} className="flex justify-between items-center gap-2 bg-white rounded-lg px-3 py-2 border border-slate-200">
-                              <span className="text-sm text-slate-700">+ {extra.text} — {formatPrice(extra.price)}</span>
-                              <button
-                                type="button"
-                                onClick={() => removeExtraFromItem(item.id, idx)}
-                                className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors shrink-0"
-                                title="הסר תת־שירות"
-                                aria-label={`הסר ${extra.text}`}
-                              >
-                                <Trash2 size={16} />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => setDeleteItemId(item.id)}
-                        className="w-full sm:w-auto py-2.5 px-4 rounded-xl text-sm font-bold bg-red-100 text-red-700 hover:bg-red-200 transition-colors flex items-center justify-center gap-2"
-                        title="הסר שירות מהסל"
-                      >
-                        <Trash2 size={18} />
-                        הסר שירות מהסל
-                      </button>
-                    </div>
-                  )}
-
-                  {/* פירוט מחירים */}
-                  <div className="bg-slate-50/80 rounded-xl p-4 border border-slate-100 text-right">
-                    <div className="space-y-1.5 text-sm">
-                      <div className="flex justify-between items-center text-slate-700">
-                        <span>מחיר בסיס</span>
-                        <span className="font-semibold">{formatPrice(item.basePrice)}</span>
-                      </div>
-                      {hasExtras && item.extras!.map((extra, idx) => (
-                        <div key={idx} className="flex justify-between items-center text-slate-600">
-                          <span>+ {extra.text}</span>
-                          <span className="font-semibold">{formatPrice(extra.price)}</span>
-                        </div>
-                      ))}
-                      <div className="flex justify-between items-center pt-2 mt-2 border-t border-slate-200 font-bold text-slate-900">
-                        <span>{'סה"כ שורה'}</span>
-                        <span>{formatPrice(currentPrice)}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <Reorder.Group
+          axis="y"
+          values={items}
+          onReorder={reorderItems}
+          className="divide-y divide-slate-100"
+        >
+          {items.map((item) => (
+            <CartItemRow
+              key={item.id}
+              item={item}
+              isEditing={editingId === item.id}
+              editPrice={editPrice}
+              setEditPrice={setEditPrice}
+              onStartEdit={handleStartEdit}
+              onSaveEdit={handleSaveEdit}
+              onCancelEdit={() => setEditingId(null)}
+              onDelete={setDeleteItemId}
+              onRemoveExtra={removeExtraFromItem}
+              formatPrice={formatPrice}
+            />
+          ))}
+        </Reorder.Group>
 
         {/* הוסף פריט חופשי */}
         <div className="border-t border-slate-100">
