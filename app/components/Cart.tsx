@@ -53,11 +53,31 @@ function CartItemRow({
   const [isPickedUp, setIsPickedUp] = useState(false);
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pointerStart = useRef<{ x: number; y: number } | null>(null);
+  const itemRef = useRef<HTMLDivElement>(null);
+  // ref מקביל ל-state כדי שמאזין ה-touchmove (שנרשם פעם אחת) יקרא ערך עדכני
+  const isPickedUpRef = useRef(false);
 
   const extrasTotal = item.extras?.reduce((sum, extra) => sum + extra.price, 0) || 0;
   const calculatedTotalPrice = item.basePrice + extrasTotal;
   const currentPrice = item.overridePrice !== undefined ? item.overridePrice : calculatedTotalPrice;
   const hasExtras = item.extras && item.extras.length > 0;
+
+  const setPickedUp = (value: boolean) => {
+    isPickedUpRef.current = value;
+    setIsPickedUp(value);
+  };
+
+  // בזמן שהפריט "מורם" חוסמים גלילת מגע כדי שהאצבע תגרור במקום לגלול את העמוד.
+  // מאזין נייטיב עם passive:false נדרש כי React מצרף touchmove כ-passive.
+  useEffect(() => {
+    const el = itemRef.current;
+    if (!el) return;
+    const onTouchMove = (e: TouchEvent) => {
+      if (isPickedUpRef.current) e.preventDefault();
+    };
+    el.addEventListener('touchmove', onTouchMove, { passive: false });
+    return () => el.removeEventListener('touchmove', onTouchMove);
+  }, []);
 
   const cancelLongPress = () => {
     if (longPressTimer.current) {
@@ -77,7 +97,8 @@ function CartItemRow({
     pointerStart.current = { x: e.clientX, y: e.clientY };
     const nativeEvent = e.nativeEvent;
     longPressTimer.current = setTimeout(() => {
-      setIsPickedUp(true);
+      longPressTimer.current = null;
+      setPickedUp(true);
       if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
         try { navigator.vibrate(15); } catch { /* ignore */ }
       }
@@ -95,6 +116,7 @@ function CartItemRow({
 
   return (
     <Reorder.Item
+      ref={itemRef}
       value={item}
       dragListener={false}
       dragControls={dragControls}
@@ -103,7 +125,7 @@ function CartItemRow({
       onPointerUp={cancelLongPress}
       onPointerCancel={cancelLongPress}
       onDragEnd={() => {
-        setIsPickedUp(false);
+        setPickedUp(false);
         cancelLongPress();
       }}
       animate={{
