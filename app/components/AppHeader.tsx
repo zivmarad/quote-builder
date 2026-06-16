@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useAuth } from '../contexts/AuthContext';
 import { useProfile } from '../contexts/ProfileContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { User, LogIn, UserPlus, LogOut, Globe, Home, ShieldAlert, Undo2, Download } from 'lucide-react';
+import { User, LogIn, UserPlus, LogOut, Globe, Home, ShieldAlert, Undo2, MoreVertical, Smartphone } from 'lucide-react';
 import { isStandaloneDisplay, requestOpenInstallPrompt } from '../../lib/first-quote-install';
 
 const LOCALE_LABELS: Record<string, string> = {
@@ -21,8 +21,10 @@ export default function AppHeader() {
   const { profile } = useProfile();
   const { t, locale, setLocale, dir } = useLanguage();
   const [langOpen, setLangOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  // מציגים כפתור התקנה רק כשגולשים בדפדפן (לא כשהאפליקציה כבר מותקנת)
+  const [appMenuOpen, setAppMenuOpen] = useState(false);
+  const langDropdownRef = useRef<HTMLDivElement>(null);
+  const appMenuRef = useRef<HTMLDivElement>(null);
+  // מציגים תפריט התקנה רק כשגולשים בדפדפן (לא כשהאפליקציה כבר מותקנת)
   const [showInstall, setShowInstall] = useState(false);
 
   const displayName = user
@@ -35,8 +37,12 @@ export default function AppHeader() {
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (langDropdownRef.current && !langDropdownRef.current.contains(target)) {
         setLangOpen(false);
+      }
+      if (appMenuRef.current && !appMenuRef.current.contains(target)) {
+        setAppMenuOpen(false);
       }
     };
     document.addEventListener('click', handleClickOutside);
@@ -98,30 +104,57 @@ export default function AppHeader() {
         </div>
       )}
       <div className="max-w-5xl mx-auto px-3 sm:px-4 md:px-8 py-2.5 sm:py-3 flex items-center justify-between gap-2 min-h-[52px] sm:min-h-0 min-w-0">
-        <Link
-          href="/"
-          className="font-black text-slate-900 flex items-center gap-2 min-w-0 shrink-0 sm:min-w-0"
-          aria-label={t('header.appName')}
-        >
-          <span className="sm:hidden flex items-center justify-center w-10 h-10 rounded-xl hover:bg-slate-100 text-slate-700">
-            <Home size={22} />
-          </span>
-          <span className="hidden sm:inline truncate text-base sm:text-lg md:text-xl">{t('header.appName')}</span>
-        </Link>
-        <div className="flex items-center gap-1 sm:gap-2 shrink-0 min-w-0">
+        <div className="flex items-center gap-0.5 min-w-0 shrink">
+          <Link
+            href="/"
+            className="font-black text-slate-900 flex items-center gap-2 min-w-0 shrink-0"
+            aria-label={t('header.appName')}
+          >
+            <span className="sm:hidden flex items-center justify-center w-10 h-10 rounded-xl hover:bg-slate-100 text-slate-700">
+              <Home size={22} />
+            </span>
+            <span className="hidden sm:inline truncate text-base sm:text-lg md:text-xl">{t('header.appName')}</span>
+          </Link>
           {showInstall && (
-            <button
-              type="button"
-              onClick={requestOpenInstallPrompt}
-              className="flex items-center justify-center gap-1.5 text-blue-600 hover:text-blue-700 font-bold text-xs sm:text-sm px-2.5 py-2 rounded-xl hover:bg-blue-50 transition-colors min-h-[44px] border border-blue-200/80 shrink-0"
-              aria-label={t('header.installApp')}
-              title={t('header.installApp')}
-            >
-              <Download size={18} className="shrink-0" />
-              <span className="hidden md:inline">{t('header.installApp')}</span>
-            </button>
+            <div className="relative shrink-0" ref={appMenuRef}>
+              <button
+                type="button"
+                onClick={() => setAppMenuOpen((o) => !o)}
+                className="flex items-center justify-center w-10 h-10 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors"
+                aria-label={t('header.appMenu')}
+                aria-expanded={appMenuOpen}
+                aria-haspopup="menu"
+              >
+                <MoreVertical size={20} />
+              </button>
+              {appMenuOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" aria-hidden onClick={() => setAppMenuOpen(false)} />
+                  <div
+                    className="absolute top-full mt-1 right-0 z-50 min-w-[180px] py-1 bg-white rounded-xl shadow-lg border border-slate-200"
+                    dir={dir}
+                    role="menu"
+                  >
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setAppMenuOpen(false);
+                        requestOpenInstallPrompt('manual');
+                      }}
+                      className="flex w-full items-center gap-2.5 text-right px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                    >
+                      <Smartphone size={18} className="shrink-0 text-blue-600" />
+                      {t('header.installApp')}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           )}
-          <div className="relative" ref={dropdownRef}>
+        </div>
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0 min-w-0">
+          <div className="relative" ref={langDropdownRef}>
             <button
               type="button"
               onClick={() => setLangOpen((o) => !o)}

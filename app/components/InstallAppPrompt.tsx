@@ -8,6 +8,7 @@ import {
   dismissInstallPrompt,
   shouldShowInstallPrompt,
   OPEN_INSTALL_PROMPT_EVENT,
+  type InstallPromptMode,
 } from '../../lib/first-quote-install';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -18,22 +19,36 @@ interface BeforeInstallPromptEvent extends Event {
 export default function InstallAppPrompt() {
   const { t, dir } = useLanguage();
   const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState<InstallPromptMode>('celebration');
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [installSuccess, setInstallSuccess] = useState(false);
   const [installLoading, setInstallLoading] = useState(false);
 
   const close = useCallback(() => {
-    dismissInstallPrompt();
     setOpen(false);
+    setInstallSuccess(false);
   }, []);
 
+  const closeCelebration = useCallback(() => {
+    dismissInstallPrompt();
+    close();
+  }, [close]);
+
   useEffect(() => {
-    if (shouldShowInstallPrompt()) setOpen(true);
+    if (shouldShowInstallPrompt()) {
+      setMode('celebration');
+      setOpen(true);
+    }
   }, []);
 
-  // פתיחה ידנית מכפתור ההתקנה בהדר
+  // פתיחה ידנית מתפריט בהדר
   useEffect(() => {
-    const openHandler = () => setOpen(true);
+    const openHandler = (e: Event) => {
+      const detail = (e as CustomEvent<{ mode?: InstallPromptMode }>).detail;
+      setMode(detail?.mode ?? 'manual');
+      setInstallSuccess(false);
+      setOpen(true);
+    };
     window.addEventListener(OPEN_INSTALL_PROMPT_EVENT, openHandler);
     return () => window.removeEventListener(OPEN_INSTALL_PROMPT_EVENT, openHandler);
   }, []);
@@ -74,6 +89,9 @@ export default function InstallAppPrompt() {
 
   if (!open) return null;
 
+  const isCelebration = mode === 'celebration';
+  const handleClose = isCelebration ? closeCelebration : close;
+
   return (
     <div
       className="fixed inset-0 z-[200] bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4"
@@ -81,8 +99,12 @@ export default function InstallAppPrompt() {
       role="dialog"
       aria-labelledby="install-prompt-title"
       aria-modal="true"
+      onClick={handleClose}
     >
-      <div className="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl max-w-md w-full p-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto">
+      <div
+        className="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl max-w-md w-full p-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
@@ -92,12 +114,14 @@ export default function InstallAppPrompt() {
               <h2 id="install-prompt-title" className="text-xl font-black text-slate-900">
                 {t('installPrompt.title')}
               </h2>
-              <p className="text-slate-500 text-sm mt-1">{t('installPrompt.subtitle')}</p>
+              <p className="text-slate-500 text-sm mt-1">
+                {t(isCelebration ? 'installPrompt.subtitle' : 'installPrompt.subtitleManual')}
+              </p>
             </div>
           </div>
           <button
             type="button"
-            onClick={close}
+            onClick={handleClose}
             className="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 shrink-0"
             aria-label={t('installPrompt.close')}
           >
@@ -135,10 +159,10 @@ export default function InstallAppPrompt() {
 
         <button
           type="button"
-          onClick={close}
+          onClick={handleClose}
           className="w-full py-3 rounded-xl font-bold border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
         >
-          {t('installPrompt.later')}
+          {t(isCelebration ? 'installPrompt.later' : 'installPrompt.close')}
         </button>
       </div>
     </div>

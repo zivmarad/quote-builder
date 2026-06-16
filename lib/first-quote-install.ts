@@ -2,13 +2,15 @@ const FIRST_QUOTE_KEY = 'quoteBuilder_firstQuoteCompleted';
 const SHOW_INSTALL_PROMPT_KEY = 'quoteBuilder_showInstallPrompt';
 const INSTALL_PROMPT_DISMISSED_KEY = 'quoteBuilder_installPromptDismissed';
 
-/** אירוע לפתיחה ידנית של חלון ההתקנה (למשל מכפתור בהדר). */
+export type InstallPromptMode = 'celebration' | 'manual';
+
+/** אירוע לפתיחה ידנית של חלון ההתקנה (למשל מתפריט בהדר). */
 export const OPEN_INSTALL_PROMPT_EVENT = 'quoteBuilder:openInstallPrompt';
 
-/** מבקש לפתוח את חלון ההתקנה ידנית (עוקף את לוגיקת ההצגה החד-פעמית). */
-export function requestOpenInstallPrompt(): void {
+/** מבקש לפתוח את חלון ההתקנה (ידנית או אחרי הצעה ראשונה). */
+export function requestOpenInstallPrompt(mode: InstallPromptMode = 'manual'): void {
   if (typeof window === 'undefined') return;
-  window.dispatchEvent(new Event(OPEN_INSTALL_PROMPT_EVENT));
+  window.dispatchEvent(new CustomEvent(OPEN_INSTALL_PROMPT_EVENT, { detail: { mode } }));
 }
 
 /** האם האפליקציה כבר רצה במצב מותקן (standalone) ולכן אין צורך להציע התקנה. */
