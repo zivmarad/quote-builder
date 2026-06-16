@@ -229,19 +229,9 @@ export default function ServiceWizardPage() {
         )}
 
         <section className="space-y-4">
-          <div className="mb-2 flex items-start justify-between gap-3 flex-wrap">
-            <div>
-              <h2 className="text-sm font-semibold text-slate-700">{t('serviceWizard.customizeTitle')}</h2>
-              <p className="text-xs text-slate-500">{t('serviceWizard.customizeHint')}</p>
-            </div>
-            <button
-              type="button"
-              onClick={handleAddQuestionClick}
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 px-3 py-2 rounded-xl border border-blue-200 bg-blue-50 hover:bg-blue-100 transition-colors"
-            >
-              <Plus size={14} />
-              {t('customCatalog.addQuestionButton')}
-            </button>
+          <div className="mb-2">
+            <h2 className="text-sm font-semibold text-slate-700">{t('serviceWizard.customizeTitle')}</h2>
+            <p className="text-xs text-slate-500">{t('serviceWizard.customizeHint')}</p>
           </div>
 
           <AnimatePresence>
@@ -327,6 +317,17 @@ export default function ServiceWizardPage() {
             );
             })}
           </AnimatePresence>
+
+          <button
+            type="button"
+            onClick={handleAddQuestionClick}
+            className="group w-full flex items-center justify-center gap-2 px-4 py-4 rounded-3xl border-2 border-dashed border-slate-200 text-slate-500 font-bold text-sm hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50/40 transition-colors active:scale-[0.99]"
+          >
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-slate-500 group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors">
+              <Plus size={16} />
+            </span>
+            {t('customCatalog.addQuestionButton')}
+          </button>
         </section>
       </div>
 
