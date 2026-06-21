@@ -7,6 +7,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { SAVED_USERNAME_KEY, SAVED_PASSWORD_KEY } from '../contexts/AuthContext';
 import { resolvePostLoginRedirectPath } from '../../lib/post-login-redirect';
 import { LogIn, ArrowRight, UserPlus } from 'lucide-react';
+import { trackEvent, AnalyticsEvents } from '@/lib/analytics';
 
 export default function LoginPage() {
   const [from, setFrom] = useState('/');
@@ -23,7 +24,9 @@ export default function LoginPage() {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
     const f = params.get('from') || '/';
-    setFrom(f.startsWith('/') ? f : `/${f}`);
+    const fromPath = f.startsWith('/') ? f : `/${f}`;
+    setFrom(fromPath);
+    trackEvent(AnalyticsEvents.LoginPageViewed, { from: fromPath });
   }, []);
 
   useEffect(() => {
@@ -125,6 +128,7 @@ export default function LoginPage() {
                 className="w-full px-4 py-3 min-h-[48px] rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 autoComplete="current-password"
                 dir="ltr"
+                data-clarity-mask="true"
               />
             </div>
             <div className="flex flex-wrap gap-4">

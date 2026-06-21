@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next';
 import { Heebo } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
 import { withSiteMetadata } from '@/lib/site-metadata';
+import ClarityAnalytics from './components/ClarityAnalytics';
 import { AuthProvider } from './contexts/AuthContext';
 import LanguageWrapper from './components/LanguageWrapper';
 import AppChrome from './components/AppChrome';
@@ -39,6 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </LanguageWrapper>
         </AuthProvider>
         <Analytics />
+        <ClarityAnalytics />
       </body>
     </html>
   );

@@ -16,7 +16,7 @@ export default function PrivacyPage() {
         </Link>
         <article className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 text-right">
           <h1 className="text-2xl font-black text-slate-900 mb-6">מדיניות פרטיות</h1>
-          <p className="text-slate-500 text-sm mb-8">עדכון אחרון: פברואר 2025</p>
+          <p className="text-slate-500 text-sm mb-8">עדכון אחרון: יוני 2025</p>
 
           <section className="space-y-6 text-slate-700">
             <div>
@@ -46,8 +46,14 @@ export default function PrivacyPage() {
 
             <div>
               <h2 className="text-lg font-bold text-slate-900 mb-2">3. עוגיות וטכנולוגיות</h2>
+              <p className="mb-2">
+                האתר משתמש ב-localStorage ו־IndexedDB לשמירת הנתונים במכשיר, ובעוגיית סשן (cookie) מאובטחת לצורכי התחברות בלבד.
+              </p>
+              <p className="mb-2">
+                <strong>סטטיסטיקה:</strong> אנו משתמשים ב-Vercel Analytics לספירת ביקורים ואירועי שימוש כלליים (למשל כניסה לאפליקציה, הוספה לסל). הנתונים אנונימיים ברמת דפדפן ולא משמשים לפרסום מותאם.
+              </p>
               <p>
-                האתר משתמש ב-localStorage ו־IndexedDB לשמירת הנתונים במכשיר, ובעגינת סשן (cookie) מאובטחת לצורכי התחברות בלבד. אין שימוש בעוגיות מעקב או בפרסום מותאם.
+                <strong>Microsoft Clarity:</strong> לשיפור חוויית המשתמש אנו משתמשים ב-Clarity להקלטת סשנים (session recordings) ומפת חום. Clarity עשוי לקלוט תנועות עכבר, גלילה ולחיצות; שדות סיסמה מוסתרים אוטומטית. אין שימוש בפרסום מותאם אישית.
               </p>
             </div>
 

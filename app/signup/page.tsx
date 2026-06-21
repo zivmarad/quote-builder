@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { UserPlus, ArrowRight, Mail } from 'lucide-react';
+import { trackEvent, AnalyticsEvents } from '@/lib/analytics';
 
 type Step = 'email' | 'code' | 'details';
 
@@ -25,7 +26,9 @@ export default function SignupPage() {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
     const f = params.get('from') || '/';
-    setFrom(f.startsWith('/') ? f : `/${f}`);
+    const fromPath = f.startsWith('/') ? f : `/${f}`;
+    setFrom(fromPath);
+    trackEvent(AnalyticsEvents.SignupPageViewed, { from: fromPath });
   }, []);
 
   const goToWelcome = () => {
@@ -208,6 +211,7 @@ export default function SignupPage() {
                   className="w-full px-4 py-3 min-h-[48px] rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   autoComplete="new-password"
                   dir="ltr"
+                  data-clarity-mask="true"
                   required
                 />
               </div>
@@ -224,6 +228,7 @@ export default function SignupPage() {
                   className="w-full px-4 py-3 min-h-[48px] rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   autoComplete="new-password"
                   dir="ltr"
+                  data-clarity-mask="true"
                   required
                 />
               </div>

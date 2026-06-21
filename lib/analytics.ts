@@ -18,6 +18,10 @@ export function trackEvent(name: string, props?: EventProps): void {
 export const AnalyticsEvents = {
   AppEnteredGuest: 'app_entered_guest',
   AddToCart: 'add_to_cart',
+  CartViewed: 'cart_viewed',
+  LoginWallHit: 'login_wall_hit',
+  LoginPageViewed: 'login_page_viewed',
+  SignupPageViewed: 'signup_page_viewed',
   SignupCompleted: 'signup_completed',
   QuoteExported: 'quote_exported',
 } as const;

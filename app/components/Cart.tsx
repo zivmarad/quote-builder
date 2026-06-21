@@ -22,6 +22,7 @@ import {
   GUEST_PREVIEW_WATERMARK_BANNER,
   GUEST_PREVIEW_WATERMARK_LINE,
 } from '../../lib/guest-quote-preview';
+import { trackEvent, AnalyticsEvents } from '../../lib/analytics';
 import type { BasketItem } from '../contexts/QuoteBasketContext';
 
 interface CartItemRowProps {
@@ -635,7 +636,11 @@ export default function Cart() {
     );
   };
 
-  const completeQuoteExport = (toastMessage: string) => {
+  const completeQuoteExport = (
+    toastMessage: string,
+    exportMethod: 'download' | 'share' | 'fallback' = 'download'
+  ) => {
+    trackEvent(AnalyticsEvents.QuoteExported, { method: exportMethod });
     markFirstQuoteCompleted();
     clearBasket();
     setCustomerName('');
@@ -648,9 +653,14 @@ export default function Cart() {
     setTimeout(() => router.push('/'), 2500);
   };
 
+  const redirectGuestToLogin = (action: 'download_pdf' | 'share_whatsapp' | 'save_draft') => {
+    trackEvent(AnalyticsEvents.LoginWallHit, { action });
+    router.push('/login?from=' + encodeURIComponent('/cart'));
+  };
+
   const handleExportPDF = async () => {
     if (!user) {
-      router.push('/login?from=' + encodeURIComponent('/cart'));
+      redirectGuestToLogin('download_pdf');
       return;
     }
     const { customerPhone, customerEmail, customerAddress, customerCompanyId } = getCustomerContact();
@@ -685,7 +695,7 @@ export default function Cart() {
       a.href = url;
       a.download = `hatzaat-mechir-${new Date().toISOString().slice(0, 10)}.pdf`;
       a.click();
-      completeQuoteExport('ה-PDF הורד וההצעה נשמרה');
+      completeQuoteExport('ה-PDF הורד וההצעה נשמרה', 'download');
     } catch (e) {
       await updateExportJob(jobId, 'failed', e instanceof Error ? e.message : 'pdf_export_failed');
       try {
@@ -696,7 +706,7 @@ export default function Cart() {
         a.download = `hatzaat-mechir-${new Date().toISOString().slice(0, 10)}.pdf`;
         a.click();
         URL.revokeObjectURL(url);
-        completeQuoteExport('נוצר PDF בגיבוי מקומי');
+        completeQuoteExport('נוצר PDF בגיבוי מקומי', 'fallback');
       } catch {
         setToast('שגיאה בהפקת ה-PDF');
       }
@@ -708,7 +718,7 @@ export default function Cart() {
   /** שלב 1: הכנת PDF. שלב 2: במודל – לחיצה על "שתף עכשיו" קוראת ל-navigator.share() במחווה ישירה, כך שמסך השיתוף נפתח במובייל. */
   const handleShareToWhatsApp = async () => {
     if (!user) {
-      router.push('/login?from=' + encodeURIComponent('/cart'));
+      redirectGuestToLogin('share_whatsapp');
       return;
     }
     setIsSharing(true);
@@ -776,7 +786,7 @@ export default function Cart() {
       lastShareBlobRef.current = null;
       setShareError(null);
       setShowWhatsAppModal(false);
-      completeQuoteExport('ההצעה נשלחה בהצלחה');
+      completeQuoteExport('ההצעה נשלחה בהצלחה', 'share');
     } catch (err) {
       if ((err as Error)?.name === 'AbortError') return;
       setShareError('שיתוף ישיר זמין כשהאתר נטען בכתובת מאובטחת (https). בינתיים הורד את ה-PDF למטה ושלח אותו.');
@@ -799,7 +809,7 @@ export default function Cart() {
     lastShareBlobRef.current = null;
     setShareError(null);
     setShowWhatsAppModal(false);
-    completeQuoteExport('ה-PDF הורד וההצעה נשמרה');
+    completeQuoteExport('ה-PDF הורד וההצעה נשמרה', 'download');
   };
 
   const handleDownloadAndOpenWhatsAppWeb = () => {
@@ -816,7 +826,7 @@ export default function Cart() {
     window.open('https://web.whatsapp.com', '_blank');
     setShareError(null);
     setShowWhatsAppModal(false);
-    completeQuoteExport('ה-PDF הורד – אפשר לשלוח בוואטסאפ Web');
+    completeQuoteExport('ה-PDF הורד – אפשר לשלוח בוואטסאפ Web', 'download');
   };
 
   const formatPrice = (price: number) => {
@@ -1307,7 +1317,7 @@ export default function Cart() {
             type="button"
             onClick={() => {
               if (!user) {
-                router.push('/login?from=' + encodeURIComponent('/cart'));
+                redirectGuestToLogin('save_draft');
                 return;
               }
               setShowSaveDraftModal(true);
