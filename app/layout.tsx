@@ -27,10 +27,6 @@ export const metadata: Metadata = withSiteMetadata('/', {
     description:
       'בונה הצעות מחיר לקבלנים ושיפוצניקים – PDF ממותג, שליחה בוואטסאפ והיסטוריה.',
   },
-  icons: {
-    icon: '/icon.png',
-    apple: '/icon.png',
-  },
 });
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

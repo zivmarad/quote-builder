@@ -24,6 +24,9 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   turbopack: {},
+  async rewrites() {
+    return [{ source: '/favicon.ico', destination: '/icon.png' }];
+  },
   async headers() {
     return [
       {
