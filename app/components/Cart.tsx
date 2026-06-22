@@ -299,6 +299,7 @@ export default function Cart() {
   const [customerComboQuery, setCustomerComboQuery] = useState('');
   const [discountType, setDiscountType] = useState<'percent' | 'fixed'>(discount?.type ?? 'percent');
   const [discountInput, setDiscountInput] = useState(discount?.value ? String(discount.value) : '');
+  const [showDiscount, setShowDiscount] = useState(Boolean(discount?.value));
   const customerComboRef = useRef<HTMLDivElement>(null);
 
   const filteredCustomers = useMemo(() => {
@@ -358,6 +359,7 @@ export default function Cart() {
     if (discount) {
       setDiscountType(discount.type);
       setDiscountInput(String(discount.value));
+      setShowDiscount(true);
     } else {
       setDiscountInput('');
     }
@@ -1324,73 +1326,78 @@ export default function Cart() {
           />
         </div>
 
-        <div className="bg-slate-50 p-4 sm:p-8 border-t border-slate-100">
-          <div className="max-w-xs mr-auto space-y-3 text-right">
-            <div className="pb-3 border-b border-slate-200 space-y-2">
-              <span className="block text-sm font-bold text-slate-700">הנחה</span>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleDiscountTypeChange('percent')}
-                  className={`flex-1 py-2 px-3 rounded-lg text-sm font-bold transition-colors ${
-                    discountType === 'percent'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
-                  }`}
-                >
-                  אחוזים
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDiscountTypeChange('fixed')}
-                  className={`flex-1 py-2 px-3 rounded-lg text-sm font-bold transition-colors ${
-                    discountType === 'fixed'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
-                  }`}
-                >
-                  סכום
-                </button>
-              </div>
-              <div className="relative">
-                <input
-                  type="number"
-                  min="0"
-                  step={discountType === 'percent' ? '1' : '1'}
-                  max={discountType === 'percent' ? '100' : undefined}
-                  value={discountInput}
-                  onChange={(e) => applyDiscountInput(e.target.value, discountType)}
-                  placeholder={discountType === 'percent' ? 'למשל: 10' : 'למשל: 500'}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
-                />
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-bold pointer-events-none">
-                  {discountType === 'percent' ? '%' : '₪'}
-                </span>
-              </div>
-            </div>
+        <div className="bg-slate-50 px-4 py-3 sm:px-6 sm:py-4 border-t border-slate-100">
+          <div className="max-w-xs mr-auto space-y-1.5 text-right">
             <div className="flex justify-between text-sm font-medium">
               <span className="text-slate-500">סיכום ביניים</span>
               <span className="text-slate-900 font-bold">{formatPrice(subtotalBeforeDiscount)}</span>
             </div>
+            {!showDiscount ? (
+              <button
+                type="button"
+                onClick={() => setShowDiscount(true)}
+                className="text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors"
+              >
+                + הוסף הנחה
+              </button>
+            ) : (
+              <div className="flex items-center gap-1.5 justify-end py-0.5">
+                <span className="text-xs text-slate-500 shrink-0">הנחה</span>
+                <div className="flex rounded-md border border-slate-200 overflow-hidden shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => handleDiscountTypeChange('percent')}
+                    className={`px-2 py-0.5 text-xs font-bold transition-colors ${
+                      discountType === 'percent' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    %
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDiscountTypeChange('fixed')}
+                    className={`px-2 py-0.5 text-xs font-bold transition-colors border-r border-slate-200 ${
+                      discountType === 'fixed' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    ₪
+                  </button>
+                </div>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  max={discountType === 'percent' ? '100' : undefined}
+                  value={discountInput}
+                  onChange={(e) => applyDiscountInput(e.target.value, discountType)}
+                  placeholder={discountType === 'percent' ? '10' : '500'}
+                  className="w-16 sm:w-20 py-1 px-2 rounded-md border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500 text-right text-xs"
+                />
+                {!discountAmount && (
+                  <button
+                    type="button"
+                    onClick={() => setShowDiscount(false)}
+                    className="p-0.5 text-slate-400 hover:text-slate-600"
+                    aria-label="סגור הנחה"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+            )}
             {discountAmount > 0 && discount && (
               <div className="flex justify-between text-sm font-medium">
                 <span className="text-green-700">{formatDiscountLabel(discount)}</span>
                 <span className="text-green-700 font-bold">-{formatPrice(discountAmount)}</span>
               </div>
             )}
-            {discountAmount > 0 && (
-              <div className="flex justify-between text-sm font-medium">
-                <span className="text-slate-500">לפני מע&quot;מ</span>
-                <span className="text-slate-900 font-bold">{formatPrice(totalBeforeVAT)}</span>
-              </div>
-            )}
             <div className="flex justify-between text-sm font-medium">
               <span className="text-slate-500">{vatRate === 0 ? 'עוסק פטור' : `מע"מ (${Math.round(vatRate * 100)}%)`}</span>
               <span className="text-slate-900 font-bold">{formatPrice(VAT)}</span>
             </div>
-            <div className="flex justify-between items-center pt-4 border-t border-slate-200">
-              <span className="text-lg font-black text-slate-900">{'סה"כ לתשלום'}</span>
-              <span className="text-2xl font-black text-blue-600">{formatPrice(totalWithVAT)}</span>
+            <div className="flex justify-between items-center pt-2 mt-1 border-t border-slate-200">
+              <span className="text-base font-black text-slate-900">{'סה"כ לתשלום'}</span>
+              <span className="text-xl font-black text-blue-600">{formatPrice(totalWithVAT)}</span>
             </div>
           </div>
         </div>
