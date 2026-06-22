@@ -10,6 +10,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCustomers, type Customer } from '../contexts/CustomersContext';
 import { saveDraft } from '../../lib/drafts-storage';
+import { formatDiscountLabel } from '../../lib/quote-discount';
 import { Trash2, Edit2, Check, X, ShoppingBag, Plus, FileText, Share2, Eye, Loader2, ChevronDown, ChevronUp, Save } from 'lucide-react';
 import { Reorder, useDragControls } from 'framer-motion';
 import { markFirstQuoteCompleted } from '../../lib/first-quote-install';
@@ -255,6 +256,10 @@ export default function Cart() {
     clearItemPriceOverride,
     clearBasket,
     reorderItems,
+    subtotalBeforeDiscount,
+    discount,
+    setDiscount,
+    discountAmount,
     totalBeforeVAT,
     VAT: contextVAT,
     totalWithVAT: contextTotalWithVAT,
@@ -292,6 +297,8 @@ export default function Cart() {
   const [showClearBasketConfirm, setShowClearBasketConfirm] = useState(false);
   const [customerComboOpen, setCustomerComboOpen] = useState(false);
   const [customerComboQuery, setCustomerComboQuery] = useState('');
+  const [discountType, setDiscountType] = useState<'percent' | 'fixed'>(discount?.type ?? 'percent');
+  const [discountInput, setDiscountInput] = useState(discount?.value ? String(discount.value) : '');
   const customerComboRef = useRef<HTMLDivElement>(null);
 
   const filteredCustomers = useMemo(() => {
@@ -308,6 +315,9 @@ export default function Cart() {
   const cartPreviewHtml = useMemo(() => {
     const params = buildCartPreviewParams(!user, {
       items,
+      subtotalBeforeDiscount,
+      discountAmount,
+      discount,
       totalBeforeVAT,
       totalWithVAT: contextTotalWithVAT,
       profile,
@@ -326,6 +336,9 @@ export default function Cart() {
   }, [
     user,
     items,
+    subtotalBeforeDiscount,
+    discountAmount,
+    discount,
     totalBeforeVAT,
     contextTotalWithVAT,
     profile,
@@ -340,6 +353,37 @@ export default function Cart() {
     validityDays,
     vatRate,
   ]);
+
+  useEffect(() => {
+    if (discount) {
+      setDiscountType(discount.type);
+      setDiscountInput(String(discount.value));
+    } else {
+      setDiscountInput('');
+    }
+  }, [discount]);
+
+  const applyDiscountInput = (raw: string, type: 'percent' | 'fixed') => {
+    setDiscountInput(raw);
+    const trimmed = raw.trim();
+    if (!trimmed) {
+      setDiscount(null);
+      return;
+    }
+    const num = parseFloat(trimmed);
+    if (isNaN(num) || num <= 0) {
+      setDiscount(null);
+      return;
+    }
+    setDiscount({ type, value: num });
+  };
+
+  const handleDiscountTypeChange = (type: 'percent' | 'fixed') => {
+    setDiscountType(type);
+    if (discountInput.trim()) {
+      applyDiscountInput(discountInput, type);
+    }
+  };
 
   useEffect(() => {
     if (!customerComboOpen) return;
@@ -410,6 +454,13 @@ export default function Cart() {
       if (data.customerAddress !== undefined) setCustomerAddress(data.customerAddress || '');
       if (data.customerCompanyId !== undefined) setCustomerCompanyId(data.customerCompanyId || '');
       if (data.notes !== undefined) setNotes(data.notes || '');
+      if (data.discountType && data.discountValue) {
+        const type = data.discountType === 'fixed' ? 'fixed' : 'percent';
+        const value = parseFloat(data.discountValue);
+        if (!isNaN(value) && value > 0) {
+          setDiscount({ type, value });
+        }
+      }
     } catch {
       /* ignore */
     }
@@ -429,6 +480,7 @@ export default function Cart() {
         customerAddress,
         customerCompanyId,
         notes,
+        discount: discount && discount.value > 0 ? discount : undefined,
       });
       clearBasket();
       setCustomerName('');
@@ -559,6 +611,9 @@ export default function Cart() {
             notes: notes.trim() || undefined,
             items,
             totals: {
+              subtotalBeforeDiscount,
+              discountAmount,
+              discount: discount && discount.value > 0 ? discount : undefined,
               totalBeforeVAT,
               vat: VAT,
               totalWithVAT,
@@ -632,7 +687,10 @@ export default function Cart() {
       customerAddress,
       customerCompanyId,
       validityDays ?? undefined,
-      vatRate
+      vatRate,
+      subtotalBeforeDiscount,
+      discountAmount,
+      discount
     );
   };
 
@@ -674,6 +732,9 @@ export default function Cart() {
       jobId = await createExportJob('download', quoteNumber, quoteData);
       addQuote({
         items,
+        subtotalBeforeDiscount,
+        discountAmount,
+        discount: discount && discount.value > 0 ? discount : undefined,
         totalBeforeVAT,
         VAT,
         totalWithVAT,
@@ -728,6 +789,9 @@ export default function Cart() {
     let jobId: string | null = null;
     addQuote({
       items,
+      subtotalBeforeDiscount,
+      discountAmount,
+      discount: discount && discount.value > 0 ? discount : undefined,
       totalBeforeVAT,
       VAT,
       totalWithVAT,
@@ -1262,10 +1326,64 @@ export default function Cart() {
 
         <div className="bg-slate-50 p-4 sm:p-8 border-t border-slate-100">
           <div className="max-w-xs mr-auto space-y-3 text-right">
+            <div className="pb-3 border-b border-slate-200 space-y-2">
+              <span className="block text-sm font-bold text-slate-700">הנחה</span>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleDiscountTypeChange('percent')}
+                  className={`flex-1 py-2 px-3 rounded-lg text-sm font-bold transition-colors ${
+                    discountType === 'percent'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+                  }`}
+                >
+                  אחוזים
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDiscountTypeChange('fixed')}
+                  className={`flex-1 py-2 px-3 rounded-lg text-sm font-bold transition-colors ${
+                    discountType === 'fixed'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+                  }`}
+                >
+                  סכום
+                </button>
+              </div>
+              <div className="relative">
+                <input
+                  type="number"
+                  min="0"
+                  step={discountType === 'percent' ? '1' : '1'}
+                  max={discountType === 'percent' ? '100' : undefined}
+                  value={discountInput}
+                  onChange={(e) => applyDiscountInput(e.target.value, discountType)}
+                  placeholder={discountType === 'percent' ? 'למשל: 10' : 'למשל: 500'}
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
+                />
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-bold pointer-events-none">
+                  {discountType === 'percent' ? '%' : '₪'}
+                </span>
+              </div>
+            </div>
             <div className="flex justify-between text-sm font-medium">
               <span className="text-slate-500">סיכום ביניים</span>
-              <span className="text-slate-900 font-bold">{formatPrice(totalBeforeVAT)}</span>
+              <span className="text-slate-900 font-bold">{formatPrice(subtotalBeforeDiscount)}</span>
             </div>
+            {discountAmount > 0 && discount && (
+              <div className="flex justify-between text-sm font-medium">
+                <span className="text-green-700">{formatDiscountLabel(discount)}</span>
+                <span className="text-green-700 font-bold">-{formatPrice(discountAmount)}</span>
+              </div>
+            )}
+            {discountAmount > 0 && (
+              <div className="flex justify-between text-sm font-medium">
+                <span className="text-slate-500">לפני מע&quot;מ</span>
+                <span className="text-slate-900 font-bold">{formatPrice(totalBeforeVAT)}</span>
+              </div>
+            )}
             <div className="flex justify-between text-sm font-medium">
               <span className="text-slate-500">{vatRate === 0 ? 'עוסק פטור' : `מע"מ (${Math.round(vatRate * 100)}%)`}</span>
               <span className="text-slate-900 font-bold">{formatPrice(VAT)}</span>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Document, Page, Text, View, StyleSheet, renderToBuffer } from '@react-pdf/renderer';
+import { formatDiscountLabel, type QuoteDiscount } from './quote-discount';
 
 export interface ServerQuoteItem {
   name: string;
@@ -33,6 +34,9 @@ export interface ServerQuoteSnapshot {
   };
   items: ServerQuoteItem[];
   totals: {
+    subtotalBeforeDiscount?: number;
+    discountAmount?: number;
+    discount?: QuoteDiscount;
     totalBeforeVAT: number;
     vat: number;
     totalWithVAT: number;
@@ -113,6 +117,20 @@ export async function generateServerQuotePdf(snapshot: ServerQuoteSnapshot): Pro
         <View style={styles.divider} />
 
         <View style={styles.section}>
+          {(snapshot.totals.discountAmount ?? 0) > 0 && (
+            <>
+              <View style={styles.row}>
+                <Text style={styles.label}>סיכום ביניים:</Text>
+                <Text style={styles.value}>{money(snapshot.totals.subtotalBeforeDiscount ?? snapshot.totals.totalBeforeVAT + (snapshot.totals.discountAmount ?? 0))}</Text>
+              </View>
+              <View style={styles.row}>
+                <Text style={[styles.label, { color: '#15803d' }]}>
+                  {snapshot.totals.discount ? formatDiscountLabel(snapshot.totals.discount) : 'הנחה'}:
+                </Text>
+                <Text style={[styles.value, { color: '#15803d' }]}>-{money(snapshot.totals.discountAmount ?? 0)}</Text>
+              </View>
+            </>
+          )}
           <View style={styles.row}><Text style={styles.label}>סה״כ לפני מע״מ:</Text><Text style={styles.value}>{money(snapshot.totals.totalBeforeVAT)}</Text></View>
           <View style={styles.row}><Text style={styles.label}>{vatLabel}:</Text><Text style={styles.value}>{money(snapshot.totals.vat)}</Text></View>
           <View style={styles.row}><Text style={styles.label}>סה״כ לתשלום:</Text><Text style={styles.value}>{money(snapshot.totals.totalWithVAT)}</Text></View>

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import type { BasketItem } from './QuoteBasketContext';
+import type { BasketItem, QuoteDiscount } from './QuoteBasketContext';
 import { fetchSync, postSync } from '../../lib/sync';
 
 const getStorageKey = (userId: string | null | undefined) =>
@@ -76,6 +76,9 @@ export interface SavedQuote {
   customerCompanyId?: string;
   notes?: string;
   items: BasketItem[];
+  subtotalBeforeDiscount?: number;
+  discountAmount?: number;
+  discount?: QuoteDiscount;
   totalBeforeVAT: number;
   VAT: number;
   totalWithVAT: number;

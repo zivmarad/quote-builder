@@ -36,6 +36,9 @@ export const GUEST_PREVIEW_WATERMARK_BANNER =
 
 export type CartPreviewInput = {
   items: import('../app/components/utils/pdfExport').BasketItem[];
+  subtotalBeforeDiscount?: number;
+  discountAmount?: number;
+  discount?: import('./quote-discount').QuoteDiscount | null;
   totalBeforeVAT: number;
   totalWithVAT: number;
   profile?: QuoteProfile | null;

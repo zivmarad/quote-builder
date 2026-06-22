@@ -8,6 +8,41 @@ import {
   basketStorageRemove,
   getBasketWithMigration,
 } from '../../lib/basket-storage';
+import {
+  calculateQuoteTotals,
+  type QuoteDiscount,
+} from '../../lib/quote-discount';
+
+export type { QuoteDiscount } from '../../lib/quote-discount';
+
+interface BasketPersisted {
+  items: BasketItem[];
+  discount?: QuoteDiscount | null;
+}
+
+function parseBasketPersisted(raw: string | null): BasketPersisted {
+  if (!raw) return { items: [] };
+  try {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) return { items: parsed };
+    if (parsed && Array.isArray(parsed.items)) {
+      return {
+        items: parsed.items,
+        discount: parsed.discount ?? null,
+      };
+    }
+  } catch {
+    /* ignore */
+  }
+  return { items: [] };
+}
+
+function serializeBasket(items: BasketItem[], discount: QuoteDiscount | null): string {
+  if (!discount || discount.value <= 0) {
+    return JSON.stringify({ items });
+  }
+  return JSON.stringify({ items, discount });
+}
 
 // הגדרת מבנה התוספת (שם ומחיר)
 export interface BasketExtra {
@@ -38,9 +73,13 @@ interface QuoteBasketContextType {
   clearItemPriceOverride: (id: string) => void;
   clearBasket: () => void;
   /** טוען פריטים לסל (שכפול הצעה) – נותן לכל פריט id חדש */
-  loadBasket: (items: BasketItem[]) => void;
+  loadBasket: (items: BasketItem[], discount?: QuoteDiscount | null) => void;
   /** מסדר מחדש את פריטי הסל (גרירה למעלה/למטה) */
   reorderItems: (newItems: BasketItem[]) => void;
+  discount: QuoteDiscount | null;
+  setDiscount: (discount: QuoteDiscount | null) => void;
+  subtotalBeforeDiscount: number;
+  discountAmount: number;
   totalBeforeVAT: number;
   VAT: number;
   totalWithVAT: number;
@@ -59,6 +98,7 @@ export const STORAGE_QUOTA_EVENT = 'quoteBasketStorageQuotaExceeded';
 export const QuoteBasketProvider: React.FC<{ children: React.ReactNode; userId?: string | null }> = ({ children, userId }) => {
   const { vatRate } = useSettings();
   const [items, setItems] = useState<BasketItem[]>([]);
+  const [discount, setDiscountState] = useState<QuoteDiscount | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const lastLoadedForUserIdRef = useRef<string | null | undefined>(undefined);
 
@@ -80,20 +120,14 @@ export const QuoteBasketProvider: React.FC<{ children: React.ReactNode; userId?:
         ]);
         if (cancelled) return;
         const serverItems = serverData?.items != null && Array.isArray(serverData.items) ? serverData.items : [];
-        let guestItems: BasketItem[] = [];
-        if (guestSaved) {
-          try {
-            const parsed = JSON.parse(guestSaved);
-            guestItems = Array.isArray(parsed) ? parsed : [];
-          } catch {
-            /* ignore */
-          }
-        }
+        const guestParsed = parseBasketPersisted(guestSaved);
+        const guestItems = guestParsed.items;
         const merged = [...serverItems, ...guestItems];
         lastLoadedForUserIdRef.current = userId;
         setItems(merged);
+        setDiscountState(guestParsed.discount ?? null);
         if (merged.length > 0) {
-          void basketStorageSet(key, JSON.stringify(merged));
+          void basketStorageSet(key, serializeBasket(merged, guestParsed.discount ?? null));
           void postSync('/basket', userId, { items: merged });
         }
         void basketStorageRemove(guestKey);
@@ -103,12 +137,9 @@ export const QuoteBasketProvider: React.FC<{ children: React.ReactNode; userId?:
       const savedBasket = await getBasketWithMigration(key, userId ?? null);
       if (cancelled) return;
       lastLoadedForUserIdRef.current = userId;
-      try {
-        const parsed = savedBasket ? JSON.parse(savedBasket) : [];
-        setItems(Array.isArray(parsed) ? parsed : []);
-      } catch {
-        setItems([]);
-      }
+      const parsed = parseBasketPersisted(savedBasket);
+      setItems(parsed.items);
+      setDiscountState(parsed.discount ?? null);
       setIsLoaded(true);
     })();
     return () => {
@@ -121,13 +152,13 @@ export const QuoteBasketProvider: React.FC<{ children: React.ReactNode; userId?:
     if (typeof window === 'undefined' || !isLoaded) return;
     const key = getStorageKey(userId);
     if (items.length > 0) {
-      void basketStorageSet(key, JSON.stringify(items));
+      void basketStorageSet(key, serializeBasket(items, discount));
       if (userId && lastLoadedForUserIdRef.current === userId) void postSync('/basket', userId, { items });
     } else {
       void basketStorageRemove(key);
       if (userId && lastLoadedForUserIdRef.current === userId) void postSync('/basket', userId, { items: [] });
     }
-  }, [items, isLoaded, userId]);
+  }, [items, discount, isLoaded, userId]);
 
   const addItem = (item: Omit<BasketItem, 'id'>) => {
     const newItem: BasketItem = {
@@ -169,33 +200,42 @@ export const QuoteBasketProvider: React.FC<{ children: React.ReactNode; userId?:
 
   const clearBasket = () => {
     setItems([]);
+    setDiscountState(null);
+  };
+
+  const setDiscount = (next: QuoteDiscount | null) => {
+    if (!next || next.value <= 0) {
+      setDiscountState(null);
+      return;
+    }
+    setDiscountState(next);
   };
 
   const reorderItems = (newItems: BasketItem[]) => {
     setItems(newItems);
   };
 
-  const loadBasket = (newItems: BasketItem[]) => {
+  const loadBasket = (newItems: BasketItem[], nextDiscount?: QuoteDiscount | null) => {
     setItems(
       newItems.map((item) => ({
         ...item,
         id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
       }))
     );
+    setDiscountState(nextDiscount && nextDiscount.value > 0 ? nextDiscount : null);
   };
 
-  // חישוב מחירים שתומך בתוספות
-  const totalBeforeVAT = items.reduce((sum, item) => {
-    // אם יש מחיר ערוך ידנית, נשתמש בו
+  const subtotalBeforeDiscount = items.reduce((sum, item) => {
     if (item.overridePrice !== undefined) return sum + item.overridePrice;
-
-    // אחרת, נחבר את מחיר הבסיס + כל התוספות
     const extrasTotal = item.extras?.reduce((s, e) => s + (e.price || 0), 0) || 0;
     return sum + (item.basePrice || 0) + extrasTotal;
   }, 0);
 
-  const VAT = totalBeforeVAT * vatRate;
-  const totalWithVAT = totalBeforeVAT + VAT;
+  const { discountAmount, totalBeforeVAT, VAT, totalWithVAT } = calculateQuoteTotals(
+    subtotalBeforeDiscount,
+    vatRate,
+    discount
+  );
   const itemCount = items.length;
 
   const value = useMemo(
@@ -209,13 +249,27 @@ export const QuoteBasketProvider: React.FC<{ children: React.ReactNode; userId?:
       clearBasket,
       loadBasket,
       reorderItems,
+      discount,
+      setDiscount,
+      subtotalBeforeDiscount,
+      discountAmount,
       totalBeforeVAT,
       VAT,
       totalWithVAT,
       itemCount,
       isLoaded,
     }),
-    [items, totalBeforeVAT, VAT, totalWithVAT, itemCount, isLoaded]
+    [
+      items,
+      discount,
+      subtotalBeforeDiscount,
+      discountAmount,
+      totalBeforeVAT,
+      VAT,
+      totalWithVAT,
+      itemCount,
+      isLoaded,
+    ]
   );
 
   return (

@@ -3,6 +3,7 @@
  */
 
 import type { BasketItem } from '../app/contexts/QuoteBasketContext';
+import type { QuoteDiscount } from './quote-discount';
 import { basketStorageGet, basketStorageSet, basketStorageRemove } from './basket-storage';
 import { fetchSync, postSync } from './sync';
 
@@ -16,6 +17,7 @@ export interface QuoteDraft {
   customerAddress: string;
   customerCompanyId: string;
   notes: string;
+  discount?: QuoteDiscount;
   savedAt: string; // ISO
 }
 

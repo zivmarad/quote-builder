@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { formatDiscountLabel, type QuoteDiscount } from '../../../lib/quote-discount';
 
 export interface BasketItem {
   id: string;
@@ -33,6 +34,38 @@ const formatExtraForQuote = (text: string): string =>
 const hasProfile = (p?: QuoteProfile | null) =>
   p && (p.businessName || p.phone || p.logo || p.contactName || p.companyId || p.email || p.address);
 
+export interface QuoteTotalsDisplay {
+  subtotalBeforeDiscount?: number;
+  discountAmount?: number;
+  discount?: QuoteDiscount | null;
+  totalBeforeVAT: number;
+  VAT: number;
+  totalWithVAT: number;
+}
+
+function buildSummaryHtml(totals: QuoteTotalsDisplay, vatLabel: string): string {
+  const {
+    subtotalBeforeDiscount,
+    discountAmount = 0,
+    discount,
+    totalBeforeVAT,
+    VAT,
+    totalWithVAT,
+  } = totals;
+  const showDiscount = discountAmount > 0;
+  const subtotal = showDiscount ? (subtotalBeforeDiscount ?? totalBeforeVAT + discountAmount) : totalBeforeVAT;
+  const subtotalLabel = showDiscount ? 'סיכום ביניים' : 'סה"כ';
+  const discountLabel = discount ? formatDiscountLabel(discount) : 'הנחה';
+
+  return `
+    <div class="summary-row subtotal"><span>${subtotalLabel}</span><span class="amount">₪${subtotal.toLocaleString('he-IL')}</span></div>
+    ${showDiscount ? `<div class="summary-row discount"><span>${discountLabel}</span><span class="amount">-₪${discountAmount.toLocaleString('he-IL')}</span></div>` : ''}
+    ${showDiscount ? `<div class="summary-row subtotal"><span>לפני מע"מ</span><span class="amount">₪${totalBeforeVAT.toLocaleString('he-IL')}</span></div>` : ''}
+    <div class="summary-row vat"><span>${vatLabel}</span><span class="amount">₪${VAT.toLocaleString('he-IL')}</span></div>
+    <div class="summary-row total"><span>סה"כ לתשלום</span><span class="amount">₪${totalWithVAT.toLocaleString('he-IL')}</span></div>
+  `;
+}
+
 /** בונה את תוכן ההצעה (פרופיל, לקוח, טבלה, סיכום, הערות) – לשימוש בהדפסה ו-PDF */
 function buildQuoteContent(params: {
   items: BasketItem[];
@@ -49,8 +82,11 @@ function buildQuoteContent(params: {
   quoteNumber?: number | null;
   validityDays?: number | null;
   vatRate?: number;
+  subtotalBeforeDiscount?: number;
+  discountAmount?: number;
+  discount?: QuoteDiscount | null;
 }) {
-  const { items, totalBeforeVAT, totalWithVAT, profile, customerName, customerPhone, customerEmail, customerAddress, customerCompanyId, notes, quoteTitle, quoteNumber, validityDays, vatRate: rateParam } = params;
+  const { items, totalBeforeVAT, totalWithVAT, profile, customerName, customerPhone, customerEmail, customerAddress, customerCompanyId, notes, quoteTitle, quoteNumber, validityDays, vatRate: rateParam, subtotalBeforeDiscount, discountAmount, discount } = params;
   const vatRate = rateParam ?? 0.18;
   const today = new Date().toLocaleDateString('he-IL', {
     year: 'numeric',
@@ -115,6 +151,9 @@ function buildQuoteContent(params: {
     totalBeforeVAT,
     VAT,
     totalWithVAT,
+    subtotalBeforeDiscount,
+    discountAmount,
+    discount,
   };
 }
 
@@ -134,9 +173,12 @@ export function getQuotePreviewHtml(params: {
   quoteNumber?: number | null;
   validityDays?: number | null;
   vatRate?: number;
+  subtotalBeforeDiscount?: number;
+  discountAmount?: number;
+  discount?: QuoteDiscount | null;
 }): string {
   const content = buildQuoteContent(params);
-  const { profileBlock, notesBlock, footerBlock, items: contentItems, VAT } = content;
+  const { profileBlock, notesBlock, footerBlock, items: contentItems, VAT, subtotalBeforeDiscount, discountAmount, discount } = content;
   const { totalBeforeVAT, totalWithVAT } = params;
   const rate = params.vatRate ?? 0.18;
   const vatLabel = rate === 0 ? 'עוסק פטור' : `מע"מ (${Math.round(rate * 100)}%)`;
@@ -193,9 +235,10 @@ export function getQuotePreviewHtml(params: {
           </table>
           <div class="summary-below">
             <div class="summary">
-              <div class="summary-row subtotal"><span>סה"כ</span><span class="amount">₪${totalBeforeVAT.toLocaleString('he-IL')}</span></div>
-              <div class="summary-row vat"><span>${vatLabel}</span><span class="amount">₪${VAT.toLocaleString('he-IL')}</span></div>
-              <div class="summary-row total"><span>סה"כ לתשלום</span><span class="amount">₪${totalWithVAT.toLocaleString('he-IL')}</span></div>
+              ${buildSummaryHtml(
+                { subtotalBeforeDiscount, discountAmount, discount, totalBeforeVAT, VAT, totalWithVAT },
+                vatLabel
+              )}
             </div>
           </div>
         </div>
@@ -264,6 +307,7 @@ function getQuoteStyles(fontFamily = "'Heebo', 'Assistant', 'Segoe UI', Tahoma, 
     .summary { width: 180px; border: 1px solid #e5e5e5; font-size: 10px; }
     .summary-row { display: flex; justify-content: space-between; padding: 5px 8px; align-items: center; gap: 6px; }
     .summary-row.subtotal, .summary-row.vat { background: #fefde7; font-weight: 600; color: #1a1a1a; font-size: 10px; }
+    .summary-row.discount { background: #f0fdf4; font-weight: 600; color: #15803d; font-size: 10px; }
     .summary-row.total {
       background: #facc15; font-weight: 700; color: #1a1a1a; font-size: 11px; border-top: 1px solid #e5e5e5; padding: 6px 8px;
       -webkit-print-color-adjust: exact; print-color-adjust: exact;
@@ -303,7 +347,10 @@ export const generateQuotePDF = (
   customerEmail?: string | null,
   customerAddress?: string | null,
   customerCompanyId?: string | null,
-  validityDays?: number | null
+  validityDays?: number | null,
+  subtotalBeforeDiscount?: number,
+  discountAmount?: number,
+  discount?: QuoteDiscount | null
 ) => {
   const content = buildQuoteContent({
     items,
@@ -319,8 +366,16 @@ export const generateQuotePDF = (
     quoteTitle,
     quoteNumber,
     validityDays,
+    subtotalBeforeDiscount,
+    discountAmount,
+    discount,
   });
-  const { profileBlock, notesBlock, footerBlock, today, items: contentItems } = content;
+  const { profileBlock, notesBlock, footerBlock, today, items: contentItems, subtotalBeforeDiscount: sub, discountAmount: discAmt, discount: disc } = content;
+  const vatLabel = `מע"מ (18%)`;
+  const summaryInner = buildSummaryHtml(
+    { subtotalBeforeDiscount: sub, discountAmount: discAmt, discount: disc, totalBeforeVAT, VAT, totalWithVAT },
+    vatLabel
+  );
   const tableRows = contentItems.map((item) => {
     const extrasTotal = item.extras?.reduce((sum, extra) => sum + extra.price, 0) || 0;
     const calculatedPrice = item.basePrice + extrasTotal;
@@ -389,6 +444,7 @@ export const generateQuotePDF = (
     .summary { width: 180px; border: 1px solid #e5e5e5; font-size: 10px; }
     .summary-row { display: flex; justify-content: space-between; padding: 5px 8px; align-items: center; gap: 6px; }
     .summary-row.subtotal, .summary-row.vat { background: #fefde7; font-weight: 600; color: #1a1a1a; font-size: 10px; }
+    .summary-row.discount { background: #f0fdf4; font-weight: 600; color: #15803d; font-size: 10px; }
     .summary-row.total { background: #facc15; font-weight: 700; color: #1a1a1a; font-size: 11px; border-top: 1px solid #e5e5e5; padding: 6px 8px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .summary-row .amount { font-weight: 600; }
     .summary-row.total .amount { font-size: 12px; font-weight: 700; }
@@ -425,9 +481,7 @@ export const generateQuotePDF = (
       </table>
       <div class="summary-below">
         <div class="summary">
-          <div class="summary-row subtotal"><span>סה"כ</span><span class="amount">₪${totalBeforeVAT.toLocaleString('he-IL')}</span></div>
-          <div class="summary-row vat"><span>מע"מ (18%)</span><span class="amount">₪${VAT.toLocaleString('he-IL')}</span></div>
-          <div class="summary-row total"><span>סה"כ לתשלום</span><span class="amount">₪${totalWithVAT.toLocaleString('he-IL')}</span></div>
+          ${summaryInner}
         </div>
       </div>
     </div>
@@ -491,7 +545,10 @@ export async function generateQuotePDFAsBlob(
   customerAddress?: string | null,
   customerCompanyId?: string | null,
   validityDays?: number | null,
-  vatRate?: number
+  vatRate?: number,
+  subtotalBeforeDiscount?: number,
+  discountAmount?: number,
+  discount?: QuoteDiscount | null
 ): Promise<Blob> {
   const rate = vatRate ?? 0.18;
   const vatLabel = rate === 0 ? 'עוסק פטור' : `מע"מ (${Math.round(rate * 100)}%)`;
@@ -510,8 +567,11 @@ export async function generateQuotePDFAsBlob(
     quoteNumber,
     validityDays,
     vatRate: rate,
+    subtotalBeforeDiscount,
+    discountAmount,
+    discount,
   });
-  const { profileBlock, notesBlock, footerBlock, items: contentItems } = content;
+  const { profileBlock, notesBlock, footerBlock, items: contentItems, subtotalBeforeDiscount: sub, discountAmount: discAmt, discount: disc } = content;
 
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const pageW = 210;
@@ -531,9 +591,10 @@ export async function generateQuotePDFAsBlob(
   const summaryBlock = `
     <div class="summary-below">
       <div class="summary">
-        <div class="summary-row subtotal"><span>סה"כ</span><span class="amount">₪${totalBeforeVAT.toLocaleString('he-IL')}</span></div>
-        <div class="summary-row vat"><span>${vatLabel}</span><span class="amount">₪${VAT.toLocaleString('he-IL')}</span></div>
-        <div class="summary-row total"><span>סה"כ לתשלום</span><span class="amount">₪${totalWithVAT.toLocaleString('he-IL')}</span></div>
+        ${buildSummaryHtml(
+          { subtotalBeforeDiscount: sub, discountAmount: discAmt, discount: disc, totalBeforeVAT, VAT, totalWithVAT },
+          vatLabel
+        )}
       </div>
     </div>
   `;

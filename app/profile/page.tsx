@@ -270,8 +270,10 @@ export default function ProfilePage() {
       customerAddress: draft.customerAddress || '',
       customerCompanyId: draft.customerCompanyId || '',
       notes: draft.notes || '',
+      discountType: draft.discount?.type,
+      discountValue: draft.discount?.value != null ? String(draft.discount.value) : '',
     }));
-    loadBasket(draft.items);
+    loadBasket(draft.items, draft.discount);
     router.push('/cart');
   };
 
@@ -327,7 +329,10 @@ export default function ProfilePage() {
         quote.customerAddress ?? undefined,
         quote.customerCompanyId ?? undefined,
         snap?.validityDays ?? validityDays,
-        snap?.vatRate ?? vatRate
+        snap?.vatRate ?? vatRate,
+        quote.subtotalBeforeDiscount,
+        quote.discountAmount,
+        quote.discount
       );
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
