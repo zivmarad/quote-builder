@@ -1196,7 +1196,7 @@ export const categories: Category[] = [
       {
         id: 'plumbing-bathroom-complete',
         name: 'שיפוץ חדר רחצה קומפלט',
-        basePrice: 35000,
+        basePrice: 30000,
         unit: 'חדר',
         isCounter: false,
         questions: [
@@ -3087,3 +3087,22 @@ export const categories: Category[] = [
     ],
   },
 ];
+
+/** קטגוריות פרויקט – מוצגות אחרי בעלי המקצוע במסך הבית */
+const PROJECT_CATEGORY_IDS = new Set(['shower-renovation', 'home-renovation']);
+
+/** סדר תצוגה: בעלי מקצוע קודם, שיפוץ מקלחת/דירה בסוף */
+export function splitOrderedCategories(): { trades: Category[]; projects: Category[] } {
+  const trades: Category[] = [];
+  const projects: Category[] = [];
+  for (const cat of categories) {
+    if (PROJECT_CATEGORY_IDS.has(cat.id)) projects.push(cat);
+    else trades.push(cat);
+  }
+  return { trades, projects };
+}
+
+export function getOrderedCategories(): Category[] {
+  const { trades, projects } = splitOrderedCategories();
+  return [...trades, ...projects];
+}

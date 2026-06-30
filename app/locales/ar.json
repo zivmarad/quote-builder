@@ -27,7 +27,9 @@
     "noResults": "لم يتم العثور على نتائج",
     "searchHint": "اكتب للبحث في جميع المجالات والخدمات",
     "addProfessionTitle": "مجال إضافي؟",
-    "addProfessionSubtitle": "اطلب إضافة مجال"
+    "addProfessionSubtitle": "اطلب إضافة مجال",
+    "tradesSection": "أصحاب المهن",
+    "projectsSection": "مشاريع كبيرة"
   },
   "welcome": {
     "title": "مرحباً!",

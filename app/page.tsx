@@ -25,8 +25,11 @@ import {
   Plus,
   Mountain,
   Sofa,
+  Bath,
+  Home,
 } from 'lucide-react';
-import { categories } from './service/services';
+import { categories, splitOrderedCategories } from './service/services';
+import type { Category } from './service/services';
 import { useLanguage } from './contexts/LanguageContext';
 import { useCustomCatalog } from './contexts/CustomCatalogContext';
 import { getServiceDisplayName } from '../lib/custom-catalog-types';
@@ -58,6 +61,8 @@ const categoryIcons: Record<string, React.ComponentType<{ size?: number; classNa
   misc: Package,
   earthwork: Mountain,
   'sofa-cleaning': Sofa,
+  'shower-renovation': Bath,
+  'home-renovation': Home,
 };
 
 const categoryColors: Record<string, string> = {
@@ -79,6 +84,8 @@ const categoryColors: Record<string, string> = {
   misc: 'text-slate-500',
   earthwork: 'text-orange-700',
   'sofa-cleaning': 'text-teal-600',
+  'shower-renovation': 'text-cyan-600',
+  'home-renovation': 'text-indigo-600',
 };
 
 type SearchResult = {
@@ -113,6 +120,11 @@ export default function HomePage() {
     }
     trackEvent(AnalyticsEvents.AppEnteredGuest);
   }, []);
+
+  const { trades: tradeCategories, projects: projectCategories } = useMemo(
+    () => splitOrderedCategories(),
+    [],
+  );
 
   const searchResults = useMemo((): SearchResult[] => {
     const q = search.trim().toLowerCase();
@@ -151,6 +163,42 @@ export default function HomePage() {
   }, [search, t, getMergedServices]);
 
   const showResults = search.trim().length > 0;
+
+  const renderCategoryCard = (cat: Category) => {
+    const IconComponent = categoryIcons[cat.id] ?? Package;
+    const iconColor = categoryColors[cat.id] ?? 'text-slate-500';
+    const isSpotlight = showCategorySpotlight && cat.id === suggestedCategoryId;
+    return (
+      <Link
+        key={cat.id}
+        ref={isSpotlight ? spotlightRef : undefined}
+        href={`/category/${cat.id}`}
+        onClick={() => {
+          if (showCategorySpotlight) {
+            dismissPage('home');
+          }
+        }}
+        className={`card-hover-safe bg-white min-h-[120px] sm:aspect-square sm:min-h-0 rounded-2xl shadow-[0_4px_6px_-1px_rgb(0_0_0_/_0.1)] border border-[#E2E8F0] hover:border-blue-400 hover:shadow-lg transition-all flex flex-col items-center justify-center text-center group active:scale-[0.98] p-4 relative ${
+          isSpotlight ? SPOTLIGHT_TARGET_CLASS : ''
+        }`}
+      >
+        <IconComponent
+          size={28}
+          className={`${iconColor} group-hover:opacity-90 mb-2 sm:mb-3 transition-colors shrink-0`}
+        />
+        <span className="font-semibold text-[1.1rem] text-[#1E293B] leading-tight line-clamp-2">
+          {t(`categoryName.${cat.id}`, cat.name)}
+        </span>
+        <span className="mt-2 text-slate-400 text-xs group-hover:text-blue-600 transition-colors">
+          {t('common.enter')}
+        </span>
+        <ChevronRight
+          size={18}
+          className="absolute left-3 top-3 sm:left-4 sm:top-4 text-slate-300 group-hover:text-blue-500 transition-colors"
+        />
+      </Link>
+    );
+  };
 
   return (
     <main className="min-h-screen bg-[#F8FAFC] px-5 py-6 sm:p-6 md:p-12" dir={dir}>
@@ -218,56 +266,34 @@ export default function HomePage() {
           {!showResults && <p className="mt-2 text-xs text-slate-400">{t('home.searchHint')}</p>}
         </header>
 
-        <section className="home-categories-grid">
-          {categories.map((cat) => {
-            const IconComponent = categoryIcons[cat.id] ?? Package;
-            const iconColor = categoryColors[cat.id] ?? 'text-slate-500';
-            const isSpotlight = showCategorySpotlight && cat.id === suggestedCategoryId;
-            return (
-              <Link
-                key={cat.id}
-                ref={isSpotlight ? spotlightRef : undefined}
-                href={`/category/${cat.id}`}
-                onClick={() => {
-                  if (showCategorySpotlight) {
-                    dismissPage('home');
-                  }
-                }}
-                className={`card-hover-safe bg-white min-h-[120px] sm:aspect-square sm:min-h-0 rounded-2xl shadow-[0_4px_6px_-1px_rgb(0_0_0_/_0.1)] border border-[#E2E8F0] hover:border-blue-400 hover:shadow-lg transition-all flex flex-col items-center justify-center text-center group active:scale-[0.98] p-4 relative ${
-                  isSpotlight ? SPOTLIGHT_TARGET_CLASS : ''
-                }`}
-              >
-                <IconComponent
-                  size={28}
-                  className={`${iconColor} group-hover:opacity-90 mb-2 sm:mb-3 transition-colors shrink-0`}
-                />
-                <span className="font-semibold text-[1.1rem] text-[#1E293B] leading-tight line-clamp-2">
-                  {t(`categoryName.${cat.id}`, cat.name)}
-                </span>
-                <span className="mt-2 text-slate-400 text-xs group-hover:text-blue-600 transition-colors">
-                  {t('common.enter')}
-                </span>
-                <ChevronRight
-                  size={18}
-                  className="absolute left-3 top-3 sm:left-4 sm:top-4 text-slate-300 group-hover:text-blue-500 transition-colors"
-                />
-              </Link>
-            );
-          })}
-          <Link
-            href="/request-profession"
-            className="card-hover-safe bg-gradient-to-br from-slate-50 to-blue-50/50 min-h-[120px] sm:aspect-square sm:min-h-0 rounded-2xl shadow-[0_4px_6px_-1px_rgb(0_0_0_/_0.1)] border-2 border-dashed border-blue-200 hover:border-blue-400 hover:shadow-lg transition-all flex flex-col items-center justify-center text-center group active:scale-[0.98] p-4 relative"
-          >
-            <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center mb-2 sm:mb-3 group-hover:bg-blue-200 transition-colors">
-              <Plus size={24} className="text-blue-600" />
-            </div>
-            <span className="font-semibold text-[1.05rem] text-[#1E293B] leading-tight">
-              {t('home.addProfessionTitle')}
-            </span>
-            <span className="mt-2 text-blue-500 text-xs font-medium group-hover:text-blue-600 transition-colors">
-              {t('home.addProfessionSubtitle')}
-            </span>
-          </Link>
+        <section className="mb-8 sm:mb-10">
+          <h2 className="text-base sm:text-lg font-bold text-slate-700 mb-3 sm:mb-4">
+            {t('home.tradesSection')}
+          </h2>
+          <div className="home-categories-grid">
+            {tradeCategories.map(renderCategoryCard)}
+            <Link
+              href="/request-profession"
+              className="card-hover-safe bg-gradient-to-br from-slate-50 to-blue-50/50 min-h-[120px] sm:aspect-square sm:min-h-0 rounded-2xl shadow-[0_4px_6px_-1px_rgb(0_0_0_/_0.1)] border-2 border-dashed border-blue-200 hover:border-blue-400 hover:shadow-lg transition-all flex flex-col items-center justify-center text-center group active:scale-[0.98] p-4 relative"
+            >
+              <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center mb-2 sm:mb-3 group-hover:bg-blue-200 transition-colors">
+                <Plus size={24} className="text-blue-600" />
+              </div>
+              <span className="font-semibold text-[1.05rem] text-[#1E293B] leading-tight">
+                {t('home.addProfessionTitle')}
+              </span>
+              <span className="mt-2 text-blue-500 text-xs font-medium group-hover:text-blue-600 transition-colors">
+                {t('home.addProfessionSubtitle')}
+              </span>
+            </Link>
+          </div>
+        </section>
+
+        <section>
+          <h2 className="text-base sm:text-lg font-bold text-slate-700 mb-3 sm:mb-4">
+            {t('home.projectsSection')}
+          </h2>
+          <div className="home-categories-grid">{projectCategories.map(renderCategoryCard)}</div>
         </section>
       </div>
 

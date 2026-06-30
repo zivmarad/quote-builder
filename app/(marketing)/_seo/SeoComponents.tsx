@@ -117,26 +117,40 @@ export function SeoFaqList({ items }: { items: SeoFaq[] }) {
 /** בלוק קריאה לפעולה – מפנה לכלי / להרשמה. */
 export function SeoCta({
   title = 'בנה הצעת מחיר מקצועית עכשיו',
-  subtitle = 'חינם, בלי כרטיס אשראי. PDF ממותג ושליחה בוואטסאפ ב-60 שניות.',
+  subtitle = 'חינם, בלי כרטיס אשראי. הרשמה קצרה לייצוא PDF ושליחה בוואטסאפ.',
   href = '/?try=1',
   cta = 'נסה עכשיו בחינם',
+  secondaryHref,
+  secondaryCta,
 }: {
   title?: string;
   subtitle?: string;
   href?: string;
   cta?: string;
+  secondaryHref?: string;
+  secondaryCta?: string;
 }) {
   return (
     <section className="my-12 rounded-3xl bg-gradient-to-b from-blue-50 to-white border border-blue-100 px-6 py-10 text-center">
       <h2 className="text-xl sm:text-2xl font-bold text-[#0F172A] mb-2">{title}</h2>
       <p className="text-slate-600 mb-6 max-w-md mx-auto">{subtitle}</p>
-      <Link
-        href={href}
-        className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-white bg-[#2563eb] hover:bg-[#1d4ed8] transition-all text-lg shadow-lg shadow-blue-600/25 hover:shadow-xl"
-      >
-        {cta}
-        <ArrowLeft size={20} aria-hidden />
-      </Link>
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+        <Link
+          href={href}
+          className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-white bg-[#2563eb] hover:bg-[#1d4ed8] transition-all text-lg shadow-lg shadow-blue-600/25 hover:shadow-xl"
+        >
+          {cta}
+          <ArrowLeft size={20} aria-hidden />
+        </Link>
+        {secondaryHref && secondaryCta && (
+          <Link
+            href={secondaryHref}
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-[#2563eb] bg-white border border-blue-200 hover:bg-blue-50 transition-all"
+          >
+            {secondaryCta}
+          </Link>
+        )}
+      </div>
     </section>
   );
 }
@@ -176,6 +190,39 @@ export function buildFaqJsonLd(items: SeoFaq[]): Record<string, unknown> {
       '@type': 'Question',
       name: item.question,
       acceptedAnswer: { '@type': 'Answer', text: item.answer },
+    })),
+  };
+}
+
+/** בונה ItemList למחירון – מסייע לגוגל להציג rich snippets. */
+export function buildPriceListJsonLd(
+  pageName: string,
+  pageUrl: string,
+  rows: PriceRow[],
+): Record<string, unknown> {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: pageName,
+    ...(pageUrl ? { url: pageUrl } : {}),
+    itemListElement: rows.map((row, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      item: {
+        '@type': 'Service',
+        name: row.name,
+        offers: {
+          '@type': 'Offer',
+          price: row.price,
+          priceCurrency: 'ILS',
+          priceSpecification: {
+            '@type': 'UnitPriceSpecification',
+            price: row.price,
+            priceCurrency: 'ILS',
+            unitText: row.unit,
+          },
+        },
+      },
     })),
   };
 }

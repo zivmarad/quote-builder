@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { withSiteMetadata } from '@/lib/site-metadata';
 import { absoluteUrl } from '@/lib/site-url';
-import { PRICE_LIST_PAGES, getPriceListBySlug, getIndustryBySlug } from '@/lib/seo-content';
+import { PRICE_LIST_PAGES, getPriceListBySlug, getIndustryBySlug, formatShekel } from '@/lib/seo-content';
 import {
   Breadcrumbs,
   ContentSections,
@@ -13,6 +13,7 @@ import {
   JsonLd,
   buildBreadcrumbJsonLd,
   buildFaqJsonLd,
+  buildPriceListJsonLd,
 } from '../../_seo/SeoComponents';
 
 interface PageProps {
@@ -54,6 +55,7 @@ export default async function PriceListPage({ params }: PageProps) {
     <>
       <JsonLd data={buildBreadcrumbJsonLd(breadcrumbItems)} />
       <JsonLd data={buildFaqJsonLd(page.faq)} />
+      <JsonLd data={buildPriceListJsonLd(page.h1, pageUrl, page.prices)} />
 
       <main className="min-h-screen bg-[#F8FAFC]" dir="rtl">
         <article className="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
@@ -70,6 +72,24 @@ export default async function PriceListPage({ params }: PageProps) {
           </h1>
           <p className="text-lg text-slate-600 leading-relaxed mb-8">{page.intro}</p>
 
+          <div className="mb-6 rounded-2xl border border-blue-100 bg-blue-50/60 px-5 py-4">
+            <p className="text-sm font-bold text-[#0F172A] mb-1">מחירון מעודכן 2026</p>
+            <p className="text-sm text-slate-600">
+              הטבלה למטה מציגה טווחי מחיר מ-{' '}
+              <span className="font-bold text-[#2563eb]">{formatShekel(page.prices[0]?.price ?? 0)}</span>
+              {page.prices.length > 1 && (
+                <>
+                  {' '}
+                  ועד{' '}
+                  <span className="font-bold text-[#2563eb]">
+                    {formatShekel(Math.max(...page.prices.map((p) => p.price)))}
+                  </span>
+                </>
+              )}{' '}
+              – לפי סוג העבודה.
+            </p>
+          </div>
+
           <PriceTable rows={page.prices} />
           <p className="mt-3 text-xs text-slate-400">
             * המחירים הם טווחי ייחוס להמחשה (2026) ואינם מחיר מחייב. התמחור בפועל משתנה לפי תנאי
@@ -78,6 +98,16 @@ export default async function PriceListPage({ params }: PageProps) {
 
           <SeoCta
             title={`בנה הצעת מחיר ${relatedIndustry ? `ל${relatedIndustry.label}` : ''} עכשיו`}
+            href={
+              relatedIndustry
+                ? `/category/${relatedIndustry.categoryId}`
+                : '/?try=1'
+            }
+            cta={
+              relatedIndustry
+                ? `בחר עבודות ל${relatedIndustry.label}`
+                : 'נסה עכשיו בחינם'
+            }
           />
 
           {page.sections && <ContentSections sections={page.sections} />}

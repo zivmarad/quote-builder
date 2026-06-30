@@ -73,13 +73,7 @@ export default async function IndustryPage({ params }: PageProps) {
             {page.h1}
           </h1>
           <p className="text-lg text-slate-600 leading-relaxed mb-4">{page.intro}</p>
-          <p className="text-slate-600 leading-relaxed">{page.body}</p>
-
-          <SeoCta
-            title={`בנה הצעת מחיר ל${page.label} עכשיו`}
-            href={`/category/${page.categoryId}`}
-            cta={`בחר עבודות ל${page.label}`}
-          />
+          <p className="text-slate-600 leading-relaxed mb-8">{page.body}</p>
 
           <h2 className="text-2xl font-bold text-[#0F172A] mb-4">
             מחירון {page.label} – טווחי ייחוס
@@ -91,6 +85,12 @@ export default async function IndustryPage({ params }: PageProps) {
           <PriceTable rows={page.prices} />
 
           {page.sections && <ContentSections sections={page.sections} />}
+
+          <SeoCta
+            title={`בנה הצעת מחיר ל${page.label} עכשיו`}
+            href={`/category/${page.categoryId}`}
+            cta={`בחר עבודות ל${page.label}`}
+          />
 
           <div className="my-12">
             <h2 className="text-2xl font-bold text-[#0F172A] mb-6">שאלות נפוצות</h2>

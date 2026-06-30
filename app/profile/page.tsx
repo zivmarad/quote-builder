@@ -14,7 +14,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { usePriceOverrides } from '../contexts/PriceOverridesContext';
 import { useCustomCatalog } from '../contexts/CustomCatalogContext';
-import { categories } from '../service/services';
+import { getOrderedCategories } from '../service/services';
 import { getServiceDisplayName, isCustomServiceId } from '../../lib/custom-catalog-types';
 import { getDrafts, deleteDraft, syncDraftsForLoggedInUser, type QuoteDraft } from '../../lib/drafts-storage';
 import { ArrowRight, UserCircle, Settings, FileText, ChevronLeft, Download, Trash2, Copy, DollarSign, KeyRound, Eye, ChevronDown, Check, Loader2, Smartphone, Plus, FileEdit, Users } from 'lucide-react';
@@ -1142,7 +1142,7 @@ export default function ProfilePage() {
                     </h2>
                     <p className="text-slate-500 text-sm mb-4">{t('profile.basePricesDesc')}</p>
                     <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
-                      {categories.map((cat) => {
+                      {getOrderedCategories().map((cat) => {
                         const services = getMergedServices(cat.id, cat.services);
                         if (services.length === 0) return null;
                         return (

@@ -27,7 +27,9 @@
     "noResults": "No results found",
     "searchHint": "Type to search all trades and services",
     "addProfessionTitle": "Another trade?",
-    "addProfessionSubtitle": "Request a new category"
+    "addProfessionSubtitle": "Request a new category",
+    "tradesSection": "Trades",
+    "projectsSection": "Large projects"
   },
   "welcome": {
     "title": "Welcome!",

@@ -27,7 +27,9 @@
     "noResults": "Ничего не найдено",
     "searchHint": "Введите текст для поиска по всем видам работ и услугам",
     "addProfessionTitle": "Другая специальность?",
-    "addProfessionSubtitle": "Запросить добавление"
+    "addProfessionSubtitle": "Запросить добавление",
+    "tradesSection": "Специальности",
+    "projectsSection": "Крупные проекты"
   },
   "welcome": {
     "title": "Добро пожаловать!",

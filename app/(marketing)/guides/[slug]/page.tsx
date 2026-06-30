@@ -97,7 +97,20 @@ export default async function GuidePage({ params }: PageProps) {
             </section>
           ))}
 
-          <SeoCta />
+          <SeoCta
+            {...(page.slug === 'price-quote-template' || page.slug === 'price-quote-word'
+              ? {
+                  title:
+                    page.slug === 'price-quote-word'
+                      ? 'רוצה הצעת מחיר וורד מוכנה?'
+                      : 'רוצה טופס הצעת מחיר מוכן?',
+                  subtitle:
+                    'הורד תבנית Word/Excel חינם, או בנה הצעה חכמה עם מחירון מובנה – הרשמה חינמית לייצוא PDF.',
+                  secondaryHref: '/templates',
+                  secondaryCta: 'הורד תבנית Word / Excel',
+                }
+              : {})}
+          />
 
           <div className="my-12">
             <h2 className="text-2xl font-bold text-[#0F172A] mb-6">שאלות נפוצות</h2>

@@ -91,7 +91,7 @@ export default function TemplatesPage() {
 
           <div className="grid sm:grid-cols-3 gap-4 mb-4">
             {templateCards.map(({ href, download, icon: Icon, title, desc, cta }) => (
-              <a
+              <Link
                 key={href}
                 href={href}
                 {...(download ? { download: '' } : {})}
@@ -106,13 +106,13 @@ export default function TemplatesPage() {
                   {cta}
                   <ArrowLeft size={16} aria-hidden />
                 </span>
-              </a>
+              </Link>
             ))}
           </div>
 
           <SeoCta
             title="עדיף על כל תבנית: בנה הצעת מחיר חכמה"
-            subtitle="מחירון מובנה לכל ענף, חישוב סכומים ומע&quot;מ אוטומטי, ו-PDF ממותג בוואטסאפ – בחינם."
+            subtitle="מחירון מובנה לכל ענף, חישוב סכומים ומע&quot;מ אוטומטי – הרשמה חינמית לייצוא PDF ושליחה בוואטסאפ."
           />
 
           <section className="mt-4">
