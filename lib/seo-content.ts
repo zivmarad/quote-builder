@@ -9,6 +9,8 @@ export interface PriceRow {
   /** מחיר ייחוס (₪) – נקודת פתיחה מקובלת */
   price: number;
   unit: string;
+  /** מזהה שירות באפליקציה – אם לא מוגדר, ננסה התאמה אוטומטית לפי שם */
+  serviceId?: string;
 }
 
 export interface SeoFaq {

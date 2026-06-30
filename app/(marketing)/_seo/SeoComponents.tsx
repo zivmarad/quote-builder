@@ -6,6 +6,7 @@ import {
   type PriceRow,
   type SeoFaq,
 } from '@/lib/seo-content';
+import { resolvePriceRowHref } from '@/lib/seo-price-links';
 
 /** סעיפי תוכן מעמיקים (H2 + פסקאות + רשימה אופציונלית). */
 export function ContentSections({ sections }: { sections: ContentSection[] }) {
@@ -61,33 +62,68 @@ export function Breadcrumbs({
   );
 }
 
-/** טבלת מחירי ייחוס. */
-export function PriceTable({ rows }: { rows: PriceRow[] }) {
+/** טבלת מחירי ייחוס – שם העבודה מקשר לאשף בניית ההצעה; המחיר עצמו סטטי. */
+export function PriceTable({
+  rows,
+  categoryId,
+}: {
+  rows: PriceRow[];
+  categoryId?: string;
+}) {
+  const hasLinks = Boolean(categoryId);
+
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-      <table className="w-full text-right">
-        <thead>
-          <tr className="bg-slate-50 text-slate-500 text-sm">
-            <th className="px-4 py-3 font-semibold">סוג עבודה</th>
-            <th className="px-4 py-3 font-semibold whitespace-nowrap">מחיר מ-</th>
-            <th className="px-4 py-3 font-semibold">יחידה</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, i) => (
-            <tr
-              key={row.name}
-              className={i % 2 === 1 ? 'bg-slate-50/50' : 'bg-white'}
-            >
-              <td className="px-4 py-3 text-slate-800 font-medium">{row.name}</td>
-              <td className="px-4 py-3 text-[#2563eb] font-bold whitespace-nowrap">
-                {formatShekel(row.price)}
-              </td>
-              <td className="px-4 py-3 text-slate-500 text-sm whitespace-nowrap">{row.unit}</td>
+    <div>
+      {hasLinks && (
+        <p className="text-sm text-slate-500 mb-3">
+          המחירים לייחוס בלבד. לבניית הצעה — לחצו על{' '}
+          <span className="font-medium text-slate-700">סוג העבודה</span>.
+        </p>
+      )}
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+        <table className="w-full text-right">
+          <thead>
+            <tr className="bg-slate-50 text-slate-500 text-sm">
+              <th className="px-4 py-3 font-semibold">סוג עבודה</th>
+              <th className="px-4 py-3 font-semibold whitespace-nowrap">מחיר מ-</th>
+              <th className="px-4 py-3 font-semibold">יחידה</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {rows.map((row, i) => {
+              const href = resolvePriceRowHref(categoryId, row);
+              return (
+                <tr
+                  key={row.name}
+                  className={i % 2 === 1 ? 'bg-slate-50/50' : 'bg-white'}
+                >
+                  <td className="px-4 py-3 font-medium">
+                    {href ? (
+                      <Link
+                        href={href}
+                        className="group inline-flex items-center gap-1.5 text-[#2563eb] hover:text-[#1d4ed8] hover:underline underline-offset-2"
+                      >
+                        <span>{row.name}</span>
+                        <ArrowLeft
+                          size={14}
+                          className="opacity-0 -translate-x-0.5 group-hover:opacity-100 group-hover:translate-x-0 transition-all shrink-0"
+                          aria-hidden
+                        />
+                      </Link>
+                    ) : (
+                      <span className="text-slate-800">{row.name}</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-slate-900 font-bold whitespace-nowrap tabular-nums">
+                    {formatShekel(row.price)}
+                  </td>
+                  <td className="px-4 py-3 text-slate-500 text-sm whitespace-nowrap">{row.unit}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

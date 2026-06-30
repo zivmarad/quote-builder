@@ -82,7 +82,7 @@ export default async function IndustryPage({ params }: PageProps) {
             המחירים הם נקודת פתיחה מקובלת בישראל ומשתנים לפי תנאי השטח. בכלי מסמנים את
             התוספות והסכום מתעדכן אוטומטית.
           </p>
-          <PriceTable rows={page.prices} />
+          <PriceTable rows={page.prices} categoryId={page.categoryId} />
 
           {page.sections && <ContentSections sections={page.sections} />}
 

@@ -76,12 +76,12 @@ export default async function PriceListPage({ params }: PageProps) {
             <p className="text-sm font-bold text-[#0F172A] mb-1">מחירון מעודכן 2026</p>
             <p className="text-sm text-slate-600">
               הטבלה למטה מציגה טווחי מחיר מ-{' '}
-              <span className="font-bold text-[#2563eb]">{formatShekel(page.prices[0]?.price ?? 0)}</span>
+              <span className="font-bold text-slate-900">{formatShekel(page.prices[0]?.price ?? 0)}</span>
               {page.prices.length > 1 && (
                 <>
                   {' '}
                   ועד{' '}
-                  <span className="font-bold text-[#2563eb]">
+                  <span className="font-bold text-slate-900">
                     {formatShekel(Math.max(...page.prices.map((p) => p.price)))}
                   </span>
                 </>
@@ -90,7 +90,10 @@ export default async function PriceListPage({ params }: PageProps) {
             </p>
           </div>
 
-          <PriceTable rows={page.prices} />
+          <PriceTable
+            rows={page.prices}
+            categoryId={relatedIndustry?.categoryId}
+          />
           <p className="mt-3 text-xs text-slate-400">
             * המחירים הם טווחי ייחוס להמחשה (2026) ואינם מחיר מחייב. התמחור בפועל משתנה לפי תנאי
             השטח.
