@@ -17,7 +17,7 @@ import { markFirstQuoteCompleted } from '../../lib/first-quote-install';
 import ConfirmDialog from './ConfirmDialog';
 
 const PENDING_DRAFT_KEY = 'quoteBuilder_pendingDraft';
-import { generateQuotePDFAsBlob, getQuotePreviewHtml } from './utils/pdfExport';
+import { getQuotePreviewHtml } from './utils/quotePreview';
 import {
   buildCartPreviewParams,
   GUEST_PREVIEW_WATERMARK_BANNER,
@@ -674,6 +674,7 @@ export default function Cart() {
 
   const generateClientPdfFallback = async (quoteNumber: number): Promise<Blob> => {
     const { customerPhone, customerEmail, customerAddress, customerCompanyId } = getCustomerContact();
+    const { generateQuotePDFAsBlob } = await import('./utils/pdfExport');
     return generateQuotePDFAsBlob(
       items,
       totalBeforeVAT,

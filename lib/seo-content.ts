@@ -2941,5 +2941,25 @@ export const getGuideBySlug = (slug: string): GuidePage | undefined =>
 export const getPriceListBySlug = (slug: string): PriceListPage | undefined =>
   PRICE_LIST_PAGES.find((p) => p.slug === slug);
 
+/** כל המחירונים המשויכים לענף מסוים – לפי slug זהה או לפי relatedIndustrySlug (לקישור פנימי דו-כיווני) */
+export const getPriceListsForIndustry = (industrySlug: string): PriceListPage[] =>
+  PRICE_LIST_PAGES.filter(
+    (p) => p.slug === industrySlug || p.relatedIndustrySlug === industrySlug,
+  );
+
+/** מחירונים פופולריים – לקישור פנימי מדפי המדריכים לחיזוק הדפים המבוקשים */
+export const POPULAR_PRICE_LIST_SLUGS = [
+  'home-renovation',
+  'electrical',
+  'painting',
+  'doors',
+  'plumbing',
+] as const;
+
+export const getPopularPriceLists = (): PriceListPage[] =>
+  POPULAR_PRICE_LIST_SLUGS.map((slug) => getPriceListBySlug(slug)).filter(
+    (p): p is PriceListPage => Boolean(p),
+  );
+
 export const formatShekel = (value: number): string =>
   `${value.toLocaleString('he-IL')} ₪`;

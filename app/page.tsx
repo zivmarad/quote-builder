@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -103,6 +103,7 @@ export default function HomePage() {
   const { getMergedServices } = useCustomCatalog();
   const { shouldShow, dismissPage } = useSpotlightOnboarding();
   const [search, setSearch] = useState('');
+  const deferredSearch = useDeferredValue(search);
   const spotlightRef = useRef<HTMLAnchorElement>(null);
 
   const showCategorySpotlight = shouldShow('home');
@@ -127,7 +128,7 @@ export default function HomePage() {
   );
 
   const searchResults = useMemo((): SearchResult[] => {
-    const q = search.trim().toLowerCase();
+    const q = deferredSearch.trim().toLowerCase();
     if (!q) return [];
 
     const results: SearchResult[] = [];
@@ -160,7 +161,7 @@ export default function HomePage() {
     }
 
     return results.slice(0, 12);
-  }, [search, t, getMergedServices]);
+  }, [deferredSearch, t, getMergedServices]);
 
   const showResults = search.trim().length > 0;
 

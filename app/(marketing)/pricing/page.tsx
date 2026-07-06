@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { ArrowLeft } from 'lucide-react';
 import { withSiteMetadata } from '@/lib/site-metadata';
 import { absoluteUrl } from '@/lib/site-url';
-import { PRICE_LIST_PAGES } from '@/lib/seo-content';
+import { PRICE_LIST_PAGES, INDUSTRY_PAGES } from '@/lib/seo-content';
 import { Breadcrumbs, JsonLd, buildBreadcrumbJsonLd } from '../_seo/SeoComponents';
 
 export const metadata: Metadata = withSiteMetadata('/pricing', {
@@ -51,6 +51,25 @@ export default function PriceListHubPage() {
               </Link>
             ))}
           </div>
+
+          <section className="mt-14">
+            <h2 className="text-2xl font-bold text-[#0F172A] mb-3">בנה הצעת מחיר לפי ענף</h2>
+            <p className="text-slate-600 leading-relaxed mb-6">
+              רוצה מעבר למחירון? בחר ענף וקבל דף ייעודי עם מחירון וכלי חינמי לבניית הצעת מחיר
+              מסודרת ללקוח.
+            </p>
+            <div className="flex flex-wrap gap-2.5">
+              {INDUSTRY_PAGES.map((industry) => (
+                <Link
+                  key={industry.slug}
+                  href={`/price-quote/${industry.slug}`}
+                  className="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 text-sm font-medium hover:border-blue-300 hover:text-[#2563eb] transition-colors"
+                >
+                  הצעת מחיר ל{industry.label}
+                </Link>
+              ))}
+            </div>
+          </section>
         </div>
       </main>
     </>

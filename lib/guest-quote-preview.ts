@@ -1,4 +1,4 @@
-import type { QuoteProfile } from '../app/components/utils/pdfExport';
+import type { QuoteProfile } from '../app/components/utils/quotePreview';
 
 const trim = (s?: string | null) => s?.trim() ?? '';
 
@@ -35,7 +35,7 @@ export const GUEST_PREVIEW_WATERMARK_BANNER =
   'תצוגה לדוגמה — הירשם כדי לקבל הצעה נקייה לשליחה ללקוח';
 
 export type CartPreviewInput = {
-  items: import('../app/components/utils/pdfExport').BasketItem[];
+  items: import('../app/components/utils/quotePreview').BasketItem[];
   subtotalBeforeDiscount?: number;
   discountAmount?: number;
   discount?: import('./quote-discount').QuoteDiscount | null;

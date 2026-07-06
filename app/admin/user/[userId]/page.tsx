@@ -20,9 +20,9 @@ import {
 } from 'lucide-react';
 import ConfirmDialog from '../../../components/ConfirmDialog';
 import { isAdminWireKeyHeaderSafe } from '../../../../lib/admin-header-key-safe';
-import { getQuotePreviewHtml } from '../../../components/utils/pdfExport';
+import { getQuotePreviewHtml } from '../../../components/utils/quotePreview';
 import type { BasketItem } from '../../../contexts/QuoteBasketContext';
-import type { QuoteProfile } from '../../../components/utils/pdfExport';
+import type { QuoteProfile } from '../../../components/utils/quotePreview';
 
 const ADMIN_KEY_STORAGE = 'quoteBuilder_adminKey';
 

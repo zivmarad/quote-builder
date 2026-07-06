@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useDeferredValue, useMemo, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { categories } from '../../service/services';
 import { usePriceOverrides } from '../../contexts/PriceOverridesContext';
@@ -23,6 +23,7 @@ export default function CategoryPage() {
   const { t, dir } = useLanguage();
   const { shouldShow, dismissPage } = useSpotlightOnboarding();
   const [search, setSearch] = useState('');
+  const deferredSearch = useDeferredValue(search);
   const [showAddService, setShowAddService] = useState(false);
   const spotlightRef = useRef<HTMLDivElement>(null);
   const categoryId = Array.isArray(slug) ? slug[0] : slug;
@@ -34,13 +35,13 @@ export default function CategoryPage() {
   }, [category, getMergedServices]);
 
   const filteredServices = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = deferredSearch.trim().toLowerCase();
     if (!q) return allServices;
     return allServices.filter((s) => {
       const display = getServiceDisplayName(t, s);
       return display.toLowerCase().includes(q) || s.name.toLowerCase().includes(q);
     });
-  }, [allServices, search, t]);
+  }, [allServices, deferredSearch, t]);
 
   const showServiceSpotlight = shouldShow('category');
   const spotlightServiceId =

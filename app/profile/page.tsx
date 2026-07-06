@@ -8,7 +8,7 @@ import { useQuoteHistory, type QuoteWorkflowStatus, type SavedQuote } from '../c
 import { getQuoteListBadge } from '../../lib/quote-badge';
 import { useQuoteBasket } from '../contexts/QuoteBasketContext';
 import { useSettings } from '../contexts/SettingsContext';
-import { generateQuotePDFAsBlob, getQuotePreviewHtml } from '../components/utils/pdfExport';
+import { getQuotePreviewHtml } from '../components/utils/quotePreview';
 import RequireAuth from '../components/RequireAuth';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -314,6 +314,7 @@ export default function ProfilePage() {
     const snap = getQuoteSnapshot(quote);
     setDownloadingId(quoteId);
     try {
+      const { generateQuotePDFAsBlob } = await import('../components/utils/pdfExport');
       const blob = await generateQuotePDFAsBlob(
         quote.items,
         quote.totalBeforeVAT,

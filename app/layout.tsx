@@ -16,7 +16,7 @@ export const viewport: Viewport = {
 
 const heebo = Heebo({
   subsets: ['hebrew', 'latin'],
-  weight: ['300', '400', '500', '700', '900'],
+  weight: ['400', '500', '600', '700', '900'],
 });
 
 export const metadata: Metadata = withSiteMetadata('/', {
