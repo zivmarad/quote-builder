@@ -2,6 +2,7 @@ import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import { Heebo } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import { withSiteMetadata } from '@/lib/site-metadata';
 import ClarityAnalytics from './components/ClarityAnalytics';
 import { AuthProvider } from './contexts/AuthContext';
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </LanguageWrapper>
         </AuthProvider>
         <Analytics />
+        <SpeedInsights />
         <ClarityAnalytics />
       </body>
     </html>
