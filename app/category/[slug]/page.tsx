@@ -7,7 +7,7 @@ import { usePriceOverrides } from '../../contexts/PriceOverridesContext';
 import { useCustomCatalog } from '../../contexts/CustomCatalogContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { getServiceDisplayName, isCustomServiceId } from '../../../lib/custom-catalog-types';
+import { getServiceDisplayName, isCustomCategoryId, isCustomServiceId } from '../../../lib/custom-catalog-types';
 import { SPOTLIGHT_TARGET_CLASS } from '@/lib/spotlight-onboarding';
 import { useSpotlightOnboarding } from '../../hooks/useSpotlightOnboarding';
 import SpotlightOverlay from '../../components/onboarding/SpotlightOverlay';
@@ -19,16 +19,23 @@ export default function CategoryPage() {
   const router = useRouter();
   const { user } = useAuth();
   const { getBasePrice } = usePriceOverrides();
-  const { getMergedServices, addCustomService, deleteCustomService, getCategoryById } =
-    useCustomCatalog();
+  const {
+    getMergedServices,
+    addCustomService,
+    deleteCustomService,
+    deleteCustomCategory,
+    getCategoryById,
+  } = useCustomCatalog();
   const { t, dir } = useLanguage();
   const { shouldShow, dismissPage } = useSpotlightOnboarding();
   const [search, setSearch] = useState('');
   const deferredSearch = useDeferredValue(search);
   const [showAddService, setShowAddService] = useState(false);
+  const [deletingProfession, setDeletingProfession] = useState(false);
   const spotlightRef = useRef<HTMLDivElement>(null);
   const categoryId = Array.isArray(slug) ? slug[0] : slug;
   const category = getCategoryById(categoryId ?? '', categories);
+  const isCustomProfession = Boolean(category && isCustomCategoryId(category.id));
 
   const allServices = useMemo(() => {
     if (!category) return [];
@@ -60,6 +67,21 @@ export default function CategoryPage() {
     e.stopPropagation();
     if (!category || !window.confirm(t('customCatalog.deleteServiceConfirm'))) return;
     await deleteCustomService(category.id, serviceId);
+  };
+
+  const handleDeleteProfession = async () => {
+    if (!category || !isCustomProfession) return;
+    const ok = window.confirm(
+      t('requestProfession.deleteConfirm', `למחוק את המקצוע "${category.name}" ואת כל השירותים שלו?`)
+    );
+    if (!ok) return;
+    setDeletingProfession(true);
+    try {
+      const deleted = await deleteCustomCategory(category.id);
+      if (deleted) router.push('/');
+    } finally {
+      setDeletingProfession(false);
+    }
   };
 
   const navigateToService = (serviceId: string) => {
@@ -98,6 +120,24 @@ export default function CategoryPage() {
             </span>
           </h1>
           <p className="text-slate-500 mt-2 text-sm sm:text-base">{t('category.chooseService')}</p>
+          {isCustomProfession && (
+            <div className="mt-3 flex flex-wrap items-center gap-2 justify-end">
+              <span className="text-[11px] font-bold text-violet-700 bg-violet-50 px-2.5 py-1 rounded-full">
+                {t('customCatalog.myProfession', 'מקצוע שלי')}
+              </span>
+              <button
+                type="button"
+                onClick={handleDeleteProfession}
+                disabled={deletingProfession}
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-1.5 rounded-xl transition-colors disabled:opacity-60"
+              >
+                <Trash2 size={16} />
+                {deletingProfession
+                  ? t('requestProfession.saving', 'מוחק...')
+                  : t('requestProfession.delete', 'מחק מקצוע')}
+              </button>
+            </div>
+          )}
           <div className="mt-4">
             <label htmlFor="service-search" className="sr-only">
               {t('category.searchLabel')}
