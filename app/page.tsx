@@ -32,7 +32,7 @@ import { categories, splitOrderedCategories } from './service/services';
 import type { Category } from './service/services';
 import { useLanguage } from './contexts/LanguageContext';
 import { useCustomCatalog } from './contexts/CustomCatalogContext';
-import { getServiceDisplayName } from '../lib/custom-catalog-types';
+import { getServiceDisplayName, isCustomCategoryId } from '../lib/custom-catalog-types';
 import {
   SPOTLIGHT_SUGGESTED_HOME_CATEGORY_ID,
   SPOTLIGHT_TARGET_CLASS,
@@ -100,7 +100,7 @@ type SearchResult = {
 export default function HomePage() {
   const router = useRouter();
   const { t, dir } = useLanguage();
-  const { getMergedServices } = useCustomCatalog();
+  const { getMergedServices, customCategories } = useCustomCatalog();
   const { shouldShow, dismissPage } = useSpotlightOnboarding();
   const [search, setSearch] = useState('');
   const deferredSearch = useDeferredValue(search);
@@ -127,14 +127,28 @@ export default function HomePage() {
     [],
   );
 
+  const myProfessionCategories = useMemo(
+    () =>
+      customCategories.map((c) => ({
+        id: c.id,
+        name: c.name,
+        icon: c.icon,
+        services: [] as Category['services'],
+      })),
+    [customCategories],
+  );
+
   const searchResults = useMemo((): SearchResult[] => {
     const q = deferredSearch.trim().toLowerCase();
     if (!q) return [];
 
     const results: SearchResult[] = [];
+    const allCats: Category[] = [...categories, ...myProfessionCategories];
 
-    for (const cat of categories) {
-      const categoryName = t(`categoryName.${cat.id}`, cat.name);
+    for (const cat of allCats) {
+      const categoryName = isCustomCategoryId(cat.id)
+        ? cat.name
+        : t(`categoryName.${cat.id}`, cat.name);
       if (categoryName.toLowerCase().includes(q) || cat.name.toLowerCase().includes(q)) {
         results.push({
           type: 'category',
@@ -161,14 +175,15 @@ export default function HomePage() {
     }
 
     return results.slice(0, 12);
-  }, [deferredSearch, t, getMergedServices]);
+  }, [deferredSearch, t, getMergedServices, myProfessionCategories]);
 
   const showResults = search.trim().length > 0;
 
-  const renderCategoryCard = (cat: Category) => {
+  const renderCategoryCard = (cat: Category, opts?: { emoji?: string }) => {
     const IconComponent = categoryIcons[cat.id] ?? Package;
     const iconColor = categoryColors[cat.id] ?? 'text-slate-500';
     const isSpotlight = showCategorySpotlight && cat.id === suggestedCategoryId;
+    const displayName = isCustomCategoryId(cat.id) ? cat.name : t(`categoryName.${cat.id}`, cat.name);
     return (
       <Link
         key={cat.id}
@@ -183,12 +198,18 @@ export default function HomePage() {
           isSpotlight ? SPOTLIGHT_TARGET_CLASS : ''
         }`}
       >
-        <IconComponent
-          size={28}
-          className={`${iconColor} group-hover:opacity-90 mb-2 sm:mb-3 transition-colors shrink-0`}
-        />
+        {opts?.emoji ? (
+          <span className="text-3xl mb-2 sm:mb-3" aria-hidden>
+            {opts.emoji}
+          </span>
+        ) : (
+          <IconComponent
+            size={28}
+            className={`${iconColor} group-hover:opacity-90 mb-2 sm:mb-3 transition-colors shrink-0`}
+          />
+        )}
         <span className="font-semibold text-[1.1rem] text-[#1E293B] leading-tight line-clamp-2">
-          {t(`categoryName.${cat.id}`, cat.name)}
+          {displayName}
         </span>
         <span className="mt-2 text-slate-400 text-xs group-hover:text-blue-600 transition-colors">
           {t('common.enter')}
@@ -272,7 +293,10 @@ export default function HomePage() {
             {t('home.tradesSection')}
           </h2>
           <div className="home-categories-grid">
-            {tradeCategories.map(renderCategoryCard)}
+            {tradeCategories.map((cat) => renderCategoryCard(cat))}
+            {myProfessionCategories.map((cat) =>
+              renderCategoryCard(cat, { emoji: cat.icon || '🧰' })
+            )}
             <Link
               href="/request-profession"
               className="card-hover-safe bg-gradient-to-br from-slate-50 to-blue-50/50 min-h-[120px] sm:aspect-square sm:min-h-0 rounded-2xl shadow-[0_4px_6px_-1px_rgb(0_0_0_/_0.1)] border-2 border-dashed border-blue-200 hover:border-blue-400 hover:shadow-lg transition-all flex flex-col items-center justify-center text-center group active:scale-[0.98] p-4 relative"
@@ -294,7 +318,7 @@ export default function HomePage() {
           <h2 className="text-base sm:text-lg font-bold text-slate-700 mb-3 sm:mb-4">
             {t('home.projectsSection')}
           </h2>
-          <div className="home-categories-grid">{projectCategories.map(renderCategoryCard)}</div>
+          <div className="home-categories-grid">{projectCategories.map((cat) => renderCategoryCard(cat))}</div>
         </section>
       </div>
 

@@ -19,7 +19,8 @@ export default function CategoryPage() {
   const router = useRouter();
   const { user } = useAuth();
   const { getBasePrice } = usePriceOverrides();
-  const { getMergedServices, addCustomService, deleteCustomService } = useCustomCatalog();
+  const { getMergedServices, addCustomService, deleteCustomService, getCategoryById } =
+    useCustomCatalog();
   const { t, dir } = useLanguage();
   const { shouldShow, dismissPage } = useSpotlightOnboarding();
   const [search, setSearch] = useState('');
@@ -27,7 +28,7 @@ export default function CategoryPage() {
   const [showAddService, setShowAddService] = useState(false);
   const spotlightRef = useRef<HTMLDivElement>(null);
   const categoryId = Array.isArray(slug) ? slug[0] : slug;
-  const category = categories.find((c) => c.id === categoryId);
+  const category = getCategoryById(categoryId ?? '', categories);
 
   const allServices = useMemo(() => {
     if (!category) return [];

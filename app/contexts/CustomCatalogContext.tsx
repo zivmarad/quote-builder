@@ -2,32 +2,44 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { fetchSync, postSync } from '../../lib/sync';
-import type { Question, Service } from '../service/services';
+import type { Category, Question, Service } from '../service/services';
 import {
   type CustomCatalogData,
+  type CustomCategory,
   EMPTY_CUSTOM_CATALOG,
+  customCategoryToCategory,
+  generateCustomCategoryId,
   generateCustomQuestionId,
   generateCustomServiceId,
+  isCustomCatalogEmpty,
+  isCustomCategoryId,
   isCustomServiceId,
   mergeCategoryServices,
   mergeServiceQuestions,
   parseCustomCatalog,
   type NewCustomServiceInput,
   type NewCustomQuestionInput,
+  type NewCustomCategoryInput,
 } from '../../lib/custom-catalog-types';
 
-export type { NewCustomServiceInput, NewCustomQuestionInput };
+export type { NewCustomServiceInput, NewCustomQuestionInput, NewCustomCategoryInput };
 
 const getStorageKey = (userId: string | null | undefined) =>
   `quoteBuilder_customCatalog_${userId ?? 'guest'}`;
 
 interface CustomCatalogContextType {
   isLoaded: boolean;
+  customCategories: CustomCategory[];
+  getCustomCategory: (categoryId: string) => CustomCategory | undefined;
+  getCategoryById: (categoryId: string, builtIn: Category[]) => Category | undefined;
   getCustomServices: (categoryId: string) => Service[];
   getMergedServices: (categoryId: string, builtIn: Service[]) => Service[];
   getExtraQuestions: (serviceId: string) => Question[];
   getMergedQuestions: (serviceId: string, builtIn: Question[]) => Question[];
   getAllCustomServices: () => Service[];
+  addCustomCategory: (input: NewCustomCategoryInput) => Promise<CustomCategory | null>;
+  renameCustomCategory: (categoryId: string, name: string) => Promise<boolean>;
+  deleteCustomCategory: (categoryId: string) => Promise<boolean>;
   addCustomService: (categoryId: string, input: NewCustomServiceInput) => Promise<boolean>;
   deleteCustomService: (categoryId: string, serviceId: string) => Promise<boolean>;
   addQuestion: (
@@ -62,7 +74,10 @@ export function CustomCatalogProvider({
   children: React.ReactNode;
   userId?: string | null;
 }) {
-  const [catalog, setCatalog] = useState<CustomCatalogData>(EMPTY_CUSTOM_CATALOG);
+  const [catalog, setCatalog] = useState<CustomCatalogData>({
+    ...EMPTY_CUSTOM_CATALOG,
+    customCategories: [],
+  });
   const [isLoaded, setIsLoaded] = useState(false);
   const lastLoadedForUserIdRef = useRef<string | null | undefined>(undefined);
 
@@ -89,10 +104,10 @@ export function CustomCatalogProvider({
     const loadFromStorage = (): CustomCatalogData => {
       try {
         const raw = localStorage.getItem(key);
-        if (!raw) return { ...EMPTY_CUSTOM_CATALOG };
+        if (!raw) return { ...EMPTY_CUSTOM_CATALOG, customCategories: [] };
         return parseCustomCatalog(JSON.parse(raw));
       } catch {
-        return { ...EMPTY_CUSTOM_CATALOG };
+        return { ...EMPTY_CUSTOM_CATALOG, customCategories: [] };
       }
     };
 
@@ -104,29 +119,40 @@ export function CustomCatalogProvider({
 
       if (!userId) {
         lastLoadedForUserIdRef.current = userId;
-        setCatalog(EMPTY_CUSTOM_CATALOG);
+        setCatalog({ ...EMPTY_CUSTOM_CATALOG, customCategories: [] });
         setIsLoaded(true);
         return;
       }
 
+      const local = loadFromStorage();
       const data = await fetchSync<{ catalog: unknown }>('/custom-catalog', userId);
-      if (!cancelled && data?.catalog) {
+      if (cancelled) return;
+
+      if (data?.catalog != null) {
         const parsed = parseCustomCatalog(data.catalog);
+        // אל תדרוס נתונים מקומיים עם קטלוג שרת ריק (מניעת אובדן מידע)
+        const useServer = !isCustomCatalogEmpty(parsed) || isCustomCatalogEmpty(local);
+        const chosen = useServer ? parsed : local;
         lastLoadedForUserIdRef.current = userId;
-        setCatalog(parsed);
+        setCatalog(chosen);
         try {
-          localStorage.setItem(key, JSON.stringify(parsed));
+          localStorage.setItem(key, JSON.stringify(chosen));
         } catch {
           /* ignore */
+        }
+        // אם השתמשנו בלוקאלי כי השרת היה ריק – סנכרן חזרה לשרת
+        if (!useServer && !isCustomCatalogEmpty(local)) {
+          await postSync('/custom-catalog', userId, { catalog: local });
         }
         setIsLoaded(true);
         return;
       }
 
-      if (!cancelled) {
-        lastLoadedForUserIdRef.current = userId;
-        setCatalog(loadFromStorage());
-        setIsLoaded(true);
+      lastLoadedForUserIdRef.current = userId;
+      setCatalog(local);
+      setIsLoaded(true);
+      if (!isCustomCatalogEmpty(local)) {
+        await postSync('/custom-catalog', userId, { catalog: local });
       }
     })();
 
@@ -134,6 +160,21 @@ export function CustomCatalogProvider({
       cancelled = true;
     };
   }, [userId]);
+
+  const getCustomCategory = useCallback(
+    (categoryId: string) => catalog.customCategories.find((c) => c.id === categoryId),
+    [catalog.customCategories]
+  );
+
+  const getCategoryById = useCallback(
+    (categoryId: string, builtIn: Category[]): Category | undefined => {
+      const fromBuiltIn = builtIn.find((c) => c.id === categoryId);
+      if (fromBuiltIn) return fromBuiltIn;
+      const custom = catalog.customCategories.find((c) => c.id === categoryId);
+      return custom ? customCategoryToCategory(custom) : undefined;
+    },
+    [catalog.customCategories]
+  );
 
   const getCustomServices = useCallback(
     (categoryId: string) => catalog.servicesByCategory[categoryId] ?? [],
@@ -164,6 +205,60 @@ export function CustomCatalogProvider({
     }
     return all;
   }, [catalog]);
+
+  const addCustomCategory = useCallback(
+    async (input: NewCustomCategoryInput): Promise<CustomCategory | null> => {
+      if (!userId || !input.name.trim()) return null;
+      const category: CustomCategory = {
+        id: generateCustomCategoryId(),
+        name: input.name.trim(),
+        icon: (input.icon?.trim() || '🧰').slice(0, 8),
+        createdAt: new Date().toISOString(),
+      };
+      const next: CustomCatalogData = {
+        ...catalog,
+        customCategories: [...catalog.customCategories, category],
+      };
+      await persist(next);
+      return category;
+    },
+    [catalog, persist, userId]
+  );
+
+  const renameCustomCategory = useCallback(
+    async (categoryId: string, name: string): Promise<boolean> => {
+      if (!userId || !isCustomCategoryId(categoryId) || !name.trim()) return false;
+      const idx = catalog.customCategories.findIndex((c) => c.id === categoryId);
+      if (idx === -1) return false;
+      const updated = [...catalog.customCategories];
+      updated[idx] = { ...updated[idx], name: name.trim() };
+      await persist({ ...catalog, customCategories: updated });
+      return true;
+    },
+    [catalog, persist, userId]
+  );
+
+  const deleteCustomCategory = useCallback(
+    async (categoryId: string): Promise<boolean> => {
+      if (!userId || !isCustomCategoryId(categoryId)) return false;
+      const nextServicesByCategory = { ...catalog.servicesByCategory };
+      const removedServices = nextServicesByCategory[categoryId] ?? [];
+      delete nextServicesByCategory[categoryId];
+
+      const nextExtra = { ...catalog.extraQuestions };
+      for (const svc of removedServices) {
+        delete nextExtra[svc.id];
+      }
+
+      await persist({
+        servicesByCategory: nextServicesByCategory,
+        extraQuestions: nextExtra,
+        customCategories: catalog.customCategories.filter((c) => c.id !== categoryId),
+      });
+      return true;
+    },
+    [catalog, persist, userId]
+  );
 
   const addCustomService = useCallback(
     async (categoryId: string, input: NewCustomServiceInput): Promise<boolean> => {
@@ -202,6 +297,7 @@ export function CustomCatalogProvider({
       delete nextExtra[serviceId];
 
       await persist({
+        ...catalog,
         servicesByCategory: nextServicesByCategory,
         extraQuestions: nextExtra,
       });
@@ -283,11 +379,17 @@ export function CustomCatalogProvider({
     <CustomCatalogContext.Provider
       value={{
         isLoaded,
+        customCategories: catalog.customCategories,
+        getCustomCategory,
+        getCategoryById,
         getCustomServices,
         getMergedServices,
         getExtraQuestions,
         getMergedQuestions,
         getAllCustomServices,
+        addCustomCategory,
+        renameCustomCategory,
+        deleteCustomCategory,
         addCustomService,
         deleteCustomService,
         addQuestion,

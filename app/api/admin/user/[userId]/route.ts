@@ -37,12 +37,14 @@ export async function GET(
     let basketItems: unknown[] = [];
     let settings: Record<string, unknown> = {};
     let overrides: Record<string, number> = {};
+    let customCatalog: Record<string, unknown> = {};
     let totalQuotes = 0;
 
     if (supabaseAdmin) {
       const from = (quotesPage - 1) * quotesPageSize;
       const to = from + quotesPageSize - 1;
-      const [profileRes, countRes, quoteRowsRes, basketRes, settingsRes, overridesRes] = await Promise.all([
+      const [profileRes, countRes, quoteRowsRes, basketRes, settingsRes, overridesRes, catalogRes] =
+        await Promise.all([
         supabaseAdmin.from('user_profile').select('profile').eq('user_id', userId).maybeSingle(),
         supabaseAdmin.from('quotes').select('id', { count: 'exact', head: true }).eq('user_id', userId),
         supabaseAdmin
@@ -54,6 +56,7 @@ export async function GET(
         supabaseAdmin.from('quote_basket').select('items').eq('user_id', userId).maybeSingle(),
         supabaseAdmin.from('user_settings').select('settings').eq('user_id', userId).maybeSingle(),
         supabaseAdmin.from('price_overrides').select('overrides').eq('user_id', userId).maybeSingle(),
+        supabaseAdmin.from('user_custom_catalog').select('catalog').eq('user_id', userId).maybeSingle(),
       ]);
       profile = (profileRes.data?.profile as Record<string, unknown>) ?? {};
       quotes = (quoteRowsRes.data ?? [])
@@ -64,6 +67,7 @@ export async function GET(
       settings = (settingsRes.data?.settings as Record<string, unknown>) ?? {};
       overrides = (overridesRes.data?.overrides as Record<string, number>) ?? {};
       totalQuotes = typeof countRes.count === 'number' ? countRes.count : quotes.length;
+      customCatalog = (catalogRes.data?.catalog as Record<string, unknown>) ?? {};
     }
     const quotesTotalPages = Math.max(1, Math.ceil(totalQuotes / quotesPageSize));
     const pagedQuotes = quotes;
@@ -86,6 +90,7 @@ export async function GET(
       basketItems,
       settings,
       overrides,
+      customCatalog,
     });
   } catch (e) {
     console.error('Admin user detail error:', e);

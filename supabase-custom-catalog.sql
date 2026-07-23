@@ -3,7 +3,7 @@
 
 CREATE TABLE IF NOT EXISTS user_custom_catalog (
   user_id TEXT NOT NULL REFERENCES app_users (id) ON DELETE CASCADE,
-  catalog JSONB NOT NULL DEFAULT '{"servicesByCategory":{},"extraQuestions":{}}'::jsonb,
+  catalog JSONB NOT NULL DEFAULT '{"servicesByCategory":{},"extraQuestions":{},"customCategories":[]}'::jsonb,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   PRIMARY KEY (user_id)
 );

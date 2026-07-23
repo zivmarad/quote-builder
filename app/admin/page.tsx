@@ -25,6 +25,7 @@ import {
   ExternalLink,
   Menu,
   X,
+  Briefcase,
 } from 'lucide-react';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { isAdminWireKeyHeaderSafe } from '../../lib/admin-header-key-safe';
@@ -59,6 +60,18 @@ type UserRow = {
   quoteCount: number;
 };
 
+type ProfessionEvent = {
+  id: number;
+  user_id: string;
+  username: string | null;
+  email: string | null;
+  category_id: string;
+  category_name: string;
+  icon: string;
+  services_snapshot: unknown;
+  created_at: string;
+};
+
 export default function AdminPage() {
   const router = useRouter();
   const [savedKey, setSavedKey] = useState<string | null>(null);
@@ -81,6 +94,9 @@ export default function AdminPage() {
   const [installSuccess, setInstallSuccess] = useState(false);
   const [installLoading, setInstallLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [professionEvents, setProfessionEvents] = useState<ProfessionEvent[]>([]);
+  const [professionsTotal, setProfessionsTotal] = useState(0);
+  const [professionsTableMissing, setProfessionsTableMissing] = useState(false);
 
   const PAGE_SIZE = 25;
 
@@ -125,8 +141,11 @@ export default function AdminPage() {
     Promise.all([
       fetch('/api/admin/stats', { headers: { 'X-Admin-Key': key } }),
       fetch(usersUrl.toString(), { headers: { 'X-Admin-Key': key } }),
+      fetch('/api/admin/custom-professions?page=1&pageSize=20', {
+        headers: { 'X-Admin-Key': key },
+      }),
     ])
-      .then(async ([statsRes, usersRes]) => {
+      .then(async ([statsRes, usersRes, professionsRes]) => {
         if (statsRes.status === 401 || usersRes.status === 401) {
           sessionStorage.removeItem(ADMIN_KEY_STORAGE);
           setSavedKey(null);
@@ -135,11 +154,20 @@ export default function AdminPage() {
         }
         if (!statsRes.ok) throw new Error('שגיאה בטעינת סטטיסטיקות');
         if (!usersRes.ok) throw new Error('שגיאה בטעינת משתמשים');
-        const [statsData, usersData] = await Promise.all([statsRes.json(), usersRes.json()]);
+        const [statsData, usersData, professionsData] = await Promise.all([
+          statsRes.json(),
+          usersRes.json(),
+          professionsRes.ok ? professionsRes.json() : Promise.resolve(null),
+        ]);
         setStats(statsData);
         if (Array.isArray(usersData?.users)) setUsers(usersData.users);
         setTotalFiltered(typeof usersData?.total === 'number' ? usersData.total : 0);
         setTotalPages(typeof usersData?.totalPages === 'number' ? usersData.totalPages : 1);
+        if (professionsData?.ok) {
+          setProfessionEvents(Array.isArray(professionsData.events) ? professionsData.events : []);
+          setProfessionsTotal(typeof professionsData.total === 'number' ? professionsData.total : 0);
+          setProfessionsTableMissing(Boolean(professionsData.tableMissing));
+        }
       })
       .catch((e) => setListError(e.message ?? 'שגיאה'))
       .finally(() => {
@@ -617,6 +645,70 @@ export default function AdminPage() {
                     </div>
                   </div>
                 </div>
+              </section>
+
+              {/* מקצועות מותאמים שמשתמשים יצרו */}
+              <section className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-6 md:mb-8">
+                <div className="px-4 sm:px-6 py-4 border-b border-slate-200 flex items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                      <Briefcase size={20} className="text-blue-600" />
+                      מקצועות שנוספו ע״י משתמשים
+                    </h3>
+                    <p className="text-sm text-slate-500 mt-0.5">
+                      {professionsTotal} אירועים · מעקב לאורך זמן + מייל בכל יצירה
+                    </p>
+                  </div>
+                </div>
+                {professionsTableMissing ? (
+                  <div className="p-5 text-sm text-amber-800 bg-amber-50">
+                    טבלת המעקב עדיין לא הוגדרה ב־Supabase. הרץ את{' '}
+                    <code className="font-mono text-xs">supabase-custom-professions.sql</code> ואז רענן.
+                  </div>
+                ) : professionEvents.length === 0 ? (
+                  <div className="p-8 text-center text-slate-500 text-sm">עדיין לא נוצרו מקצועות מותאמים</div>
+                ) : (
+                  <ul className="divide-y divide-slate-100">
+                    {professionEvents.map((ev) => {
+                      const services = Array.isArray(ev.services_snapshot)
+                        ? ev.services_snapshot
+                        : [];
+                      return (
+                        <li key={ev.id} className="px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-start gap-3">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-slate-900">
+                              <span className="me-1">{ev.icon || '🧰'}</span>
+                              {ev.category_name}
+                            </p>
+                            <p className="text-sm text-slate-600 mt-1">
+                              {ev.username || '—'}
+                              {ev.email ? ` · ${ev.email}` : ''}
+                            </p>
+                            <p className="text-xs text-slate-400 mt-1">
+                              {new Date(ev.created_at).toLocaleString('he-IL')}
+                              {' · '}
+                              {services.length} שירותים בעת היצירה
+                            </p>
+                            {services.length > 0 && (
+                              <p className="text-xs text-slate-500 mt-2 line-clamp-2">
+                                {(services as Array<{ name?: string }>)
+                                  .map((s) => s.name)
+                                  .filter(Boolean)
+                                  .join(' · ')}
+                              </p>
+                            )}
+                          </div>
+                          <Link
+                            href={`/admin/user/${ev.user_id}`}
+                            className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 shrink-0"
+                          >
+                            למשתמש <ExternalLink size={14} />
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
               </section>
 
               {/* רשימת משתמשים + Breadcrumb */}

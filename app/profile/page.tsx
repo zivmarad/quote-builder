@@ -57,7 +57,7 @@ export default function ProfilePage() {
   const { loadBasket } = useQuoteBasket();
   const { defaultQuoteTitle, nextQuoteNumber, validityDays, vatRate, setDefaultQuoteTitle, setNextQuoteNumber, setValidityDays, setVatRate } = useSettings();
   const { getBasePrice, setBasePrice } = usePriceOverrides();
-  const { getMergedServices } = useCustomCatalog();
+  const { getMergedServices, customCategories } = useCustomCatalog();
   const { user: authUser, changePassword } = useAuth();
   const { t, dir } = useLanguage();
   const quoteStatusLabels: Record<QuoteWorkflowStatus, string> = { draft: t(quoteStatusKeys.draft), sent: t(quoteStatusKeys.sent), approved: t(quoteStatusKeys.approved), paid: t(quoteStatusKeys.paid) };
@@ -1143,7 +1143,15 @@ export default function ProfilePage() {
                     </h2>
                     <p className="text-slate-500 text-sm mb-4">{t('profile.basePricesDesc')}</p>
                     <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
-                      {getOrderedCategories().map((cat) => {
+                      {[
+                        ...getOrderedCategories(),
+                        ...customCategories.map((c) => ({
+                          id: c.id,
+                          name: c.name,
+                          icon: c.icon,
+                          services: [] as import('../service/services').Service[],
+                        })),
+                      ].map((cat) => {
                         const services = getMergedServices(cat.id, cat.services);
                         if (services.length === 0) return null;
                         return (

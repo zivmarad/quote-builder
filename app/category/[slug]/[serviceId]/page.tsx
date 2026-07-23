@@ -151,7 +151,8 @@ export default function ServiceWizardPage() {
   const router = useRouter();
   const { user } = useAuth();
   const { getBasePrice, getImpactValue, setBasePrice, setQuestionImpact } = usePriceOverrides();
-  const { getMergedServices, getMergedQuestions, addQuestion, deleteQuestion } = useCustomCatalog();
+  const { getMergedServices, getMergedQuestions, addQuestion, deleteQuestion, getCategoryById } =
+    useCustomCatalog();
   const { t, dir } = useLanguage();
   const { shouldShow, dismissPage } = useSpotlightOnboarding();
   const addButtonRef = useRef<HTMLDivElement>(null);
@@ -159,7 +160,7 @@ export default function ServiceWizardPage() {
   const categoryId = Array.isArray(slug) ? slug[0] : slug;
   const svcId = Array.isArray(serviceId) ? serviceId[0] : serviceId;
 
-  const category = categories.find((c) => c.id === categoryId);
+  const category = getCategoryById(categoryId ?? '', categories);
   const service = useMemo(() => {
     if (!category) return undefined;
     return getMergedServices(category.id, category.services).find((s) => s.id === svcId);

@@ -78,3 +78,105 @@ export async function sendNewUserNotificationEmail(
   });
   if (error) throw new Error(error.message);
 }
+
+export type CustomProfessionNotifyPayload = {
+  userId: string;
+  username: string;
+  email: string | null;
+  categoryId: string;
+  categoryName: string;
+  icon: string;
+  services: Array<{
+    name: string;
+    basePrice: number;
+    unit: string;
+    isCounter: boolean;
+    questions: Array<{ text: string; impactType: string; impactValue: number }>;
+  }>;
+  createdAt: string;
+};
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/** מייל לאדמין על מקצוע מותאם חדש שמשתמש יצר */
+export async function sendCustomProfessionNotificationEmail(
+  to: string | string[],
+  data: CustomProfessionNotifyPayload
+): Promise<void> {
+  const toList = Array.isArray(to) ? to : [to];
+  if (toList.length === 0) return;
+  const resend = getResend();
+  const dateStr = new Date(data.createdAt).toLocaleString('he-IL');
+  const servicesText =
+    data.services.length === 0
+      ? '(עדיין ללא שירותים)'
+      : data.services
+          .map((s, i) => {
+            const qs =
+              s.questions.length === 0
+                ? '    ללא שאלות'
+                : s.questions
+                    .map((q) => `    • ${q.text} (${q.impactType}: ${q.impactValue})`)
+                    .join('\n');
+            return `${i + 1}. ${s.name} — ${s.basePrice} ₪ / ${s.unit}${s.isCounter ? ' (כמות)' : ''}\n${qs}`;
+          })
+          .join('\n\n');
+
+  const servicesHtml =
+    data.services.length === 0
+      ? '<p style="color:#666;">עדיין ללא שירותים</p>'
+      : `<ol style="padding-right:20px;">${data.services
+          .map((s) => {
+            const qs =
+              s.questions.length === 0
+                ? '<li style="color:#888;">ללא שאלות</li>'
+                : s.questions
+                    .map(
+                      (q) =>
+                        `<li>${escapeHtml(q.text)} <span style="color:#666;">(${escapeHtml(q.impactType)}: ${q.impactValue})</span></li>`
+                    )
+                    .join('');
+            return `<li style="margin-bottom:12px;"><strong>${escapeHtml(s.name)}</strong> — ${s.basePrice} ₪ / ${escapeHtml(s.unit)}${s.isCounter ? ' (כמות)' : ''}<ul style="margin:6px 0 0;padding-right:18px;">${qs}</ul></li>`;
+          })
+          .join('')}</ol>`;
+
+  const { error } = await resend.emails.send({
+    from: getFromHeader(),
+    to: toList,
+    subject: `מקצוע חדש: ${data.categoryName} – בונה הצעות מחיר`,
+    text: [
+      'נוסף מקצוע מותאם חדש.',
+      '',
+      `מקצוע: ${data.icon} ${data.categoryName}`,
+      `מזהה: ${data.categoryId}`,
+      `משתמש: ${data.username}`,
+      `אימייל: ${data.email ?? '—'}`,
+      `מזהה משתמש: ${data.userId}`,
+      `תאריך: ${dateStr}`,
+      '',
+      'שירותים:',
+      servicesText,
+    ].join('\n'),
+    html: `
+      <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 560px; color:#0f172a;">
+        <h2 style="margin:0 0 12px;">מקצוע מותאם חדש</h2>
+        <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:16px;">
+          <tr><td style="padding:6px 0;color:#64748b;">מקצוע</td><td style="padding:6px 0;font-weight:bold;">${escapeHtml(data.icon)} ${escapeHtml(data.categoryName)}</td></tr>
+          <tr><td style="padding:6px 0;color:#64748b;">משתמש</td><td style="padding:6px 0;">${escapeHtml(data.username)}</td></tr>
+          <tr><td style="padding:6px 0;color:#64748b;">אימייל</td><td style="padding:6px 0;">${escapeHtml(data.email ?? '—')}</td></tr>
+          <tr><td style="padding:6px 0;color:#64748b;">תאריך</td><td style="padding:6px 0;">${escapeHtml(dateStr)}</td></tr>
+          <tr><td style="padding:6px 0;color:#64748b;">מזהה מקצוע</td><td style="padding:6px 0;font-size:12px;color:#64748b;">${escapeHtml(data.categoryId)}</td></tr>
+        </table>
+        <h3 style="margin:0 0 8px;font-size:16px;">שירותים (${data.services.length})</h3>
+        ${servicesHtml}
+      </div>
+    `,
+  });
+  if (error) throw new Error(error.message);
+}
