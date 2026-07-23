@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { withSiteMetadata } from '@/lib/site-metadata';
 import { absoluteUrl } from '@/lib/site-url';
-import { GUIDE_PAGES, getGuideBySlug, getPopularPriceLists } from '@/lib/seo-content';
+import { GUIDE_PAGES, getGuideBySlug, getPopularPriceLists, SEO_LAST_UPDATED } from '@/lib/seo-content';
 import {
   Breadcrumbs,
   SeoFaqList,
@@ -51,7 +51,7 @@ export default async function GuidePage({ params }: PageProps) {
     headline: page.h1,
     description: page.metaDescription,
     datePublished: page.datePublished,
-    dateModified: page.datePublished,
+    dateModified: page.dateModified ?? SEO_LAST_UPDATED,
     author: { '@type': 'Organization', name: 'בונה הצעות מחיר' },
     publisher: { '@type': 'Organization', name: 'בונה הצעות מחיר' },
     ...(pageUrl ? { mainEntityOfPage: pageUrl } : {}),

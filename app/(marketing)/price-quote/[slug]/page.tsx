@@ -3,7 +3,13 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { withSiteMetadata } from '@/lib/site-metadata';
 import { absoluteUrl } from '@/lib/site-url';
-import { INDUSTRY_PAGES, getIndustryBySlug, getPriceListsForIndustry } from '@/lib/seo-content';
+import {
+  INDUSTRY_PAGES,
+  getIndustryBySlug,
+  getPriceListsForIndustry,
+  getPriceListBySlug,
+} from '@/lib/seo-content';
+import { ArrowLeft } from 'lucide-react';
 import {
   Breadcrumbs,
   ContentSections,
@@ -41,6 +47,8 @@ export default async function IndustryPage({ params }: PageProps) {
 
   const pageUrl = absoluteUrl(`/price-quote/${page.slug}`) ?? '';
   const relatedPriceLists = getPriceListsForIndustry(page.slug);
+  /** דף המחירון התואם – לקישור הדדי ולמניעת קניבליזציה (price-quote=כלי, pricing=מחירון). */
+  const matchingPriceList = getPriceListBySlug(page.slug);
   const breadcrumbItems = [
     { label: 'דף הבית', url: absoluteUrl('/landing') ?? '/landing' },
     { label: page.h1, url: pageUrl },
@@ -76,13 +84,28 @@ export default async function IndustryPage({ params }: PageProps) {
           <p className="text-slate-600 leading-relaxed mb-8">{page.body}</p>
 
           <h2 className="text-2xl font-bold text-[#0F172A] mb-4">
-            מחירון {page.label} – טווחי ייחוס
+            כמה עולה {page.label}? טווחי מחיר לבניית הצעה
           </h2>
           <p className="text-slate-600 mb-5 text-sm">
-            המחירים הם נקודת פתיחה מקובלת בישראל ומשתנים לפי תנאי השטח. בכלי מסמנים את
-            התוספות והסכום מתעדכן אוטומטית.
+            המחירים הם נקודת פתיחה מקובלת בישראל ומשתנים לפי תנאי השטח. לחצו על סוג העבודה כדי
+            להתחיל לבנות הצעה – מסמנים תוספות והסכום מתעדכן אוטומטית.
           </p>
           <PriceTable rows={page.prices} categoryId={page.categoryId} />
+
+          {matchingPriceList && (
+            <Link
+              href={`/pricing/${matchingPriceList.slug}`}
+              className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-4 hover:border-blue-300 hover:shadow-sm transition-all"
+            >
+              <span className="text-sm text-slate-700">
+                רוצה את <span className="font-bold text-slate-900">{matchingPriceList.h1}</span> המלא, עם כל טווחי המחיר והסברים?
+              </span>
+              <span className="inline-flex items-center gap-1.5 text-sm font-bold text-[#2563eb] whitespace-nowrap">
+                למחירון המלא
+                <ArrowLeft size={16} aria-hidden />
+              </span>
+            </Link>
+          )}
 
           {page.sections && <ContentSections sections={page.sections} />}
 

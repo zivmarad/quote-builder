@@ -99,6 +99,8 @@ export default async function PriceListPage({ params }: PageProps) {
             השטח.
           </p>
 
+          {page.sections && <ContentSections sections={page.sections} />}
+
           <SeoCta
             title={`בנה הצעת מחיר ${relatedIndustry ? `ל${relatedIndustry.label}` : ''} עכשיו`}
             href={
@@ -111,9 +113,13 @@ export default async function PriceListPage({ params }: PageProps) {
                 ? `בחר עבודות ל${relatedIndustry.label}`
                 : 'נסה עכשיו בחינם'
             }
+            {...(relatedIndustry
+              ? {
+                  secondaryHref: `/price-quote/${relatedIndustry.slug}`,
+                  secondaryCta: `הצעת מחיר ל${relatedIndustry.label}`,
+                }
+              : {})}
           />
-
-          {page.sections && <ContentSections sections={page.sections} />}
 
           <div className="my-12">
             <h2 className="text-2xl font-bold text-[#0F172A] mb-6">שאלות נפוצות</h2>

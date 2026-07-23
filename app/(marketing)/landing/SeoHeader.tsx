@@ -34,6 +34,12 @@ export default function SeoHeader() {
             טפסים
           </Link>
           <Link
+            href="/guides/price-quote-template"
+            className="hidden lg:inline text-slate-600 hover:text-slate-900 transition-colors whitespace-nowrap"
+          >
+            טופס הצעת מחיר
+          </Link>
+          <Link
             href="/?try=1"
             className="text-white font-bold px-3 sm:px-4 py-2 rounded-xl bg-[#2563eb] hover:bg-[#1d4ed8] transition-colors whitespace-nowrap text-xs sm:text-sm"
           >

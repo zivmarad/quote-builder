@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { FileText, FileSpreadsheet, Printer, ArrowLeft } from 'lucide-react';
 import { withSiteMetadata } from '@/lib/site-metadata';
 import { absoluteUrl } from '@/lib/site-url';
 import {
@@ -11,6 +10,7 @@ import {
   buildBreadcrumbJsonLd,
   buildFaqJsonLd,
 } from '../_seo/SeoComponents';
+import TemplateDownloadCards, { type TemplateCard } from './TemplateDownloadCards';
 
 export const metadata: Metadata = withSiteMetadata('/templates', {
   title: 'טופס הצעת מחיר להורדה חינם – Word, Excel ו-PDF',
@@ -22,7 +22,7 @@ const faq = [
   {
     question: 'איך מורידים טופס הצעת מחיר חינם?',
     answer:
-      'בעמוד זה אפשר להוריד תבנית הצעת מחיר ב-Word (לעריכה), ב-Excel/CSV (לחישוב), וגרסת PDF להדפסה – הכל בחינם וללא הרשמה. לחיצה על כל כפתור מורידה את הקובץ למכשיר.',
+      'בעמוד זה לוחצים על כל כרטיס הורדה (Word, Excel או PDF) – כל הריבוע לחיץ, לא רק הקישור הכחול. התבניות חינמיות וללא הרשמה. לחיצה על Word או Excel מורידה את הקובץ; לחיצה על PDF פותחת תבנית להדפסה.',
   },
   {
     question: 'מה עדיף – תבנית להורדה או כלי אוטומטי?',
@@ -36,11 +36,11 @@ const faq = [
   },
 ];
 
-const templateCards = [
+const templateCards: TemplateCard[] = [
   {
     href: '/templates/word',
     download: true,
-    icon: FileText,
+    icon: 'word',
     title: 'תבנית Word (.doc)',
     desc: 'מסמך מעוצב לעריכה ב-Word או Google Docs. הוסף לוגו ופרטים ומלא ידנית.',
     cta: 'הורד תבנית Word',
@@ -48,7 +48,7 @@ const templateCards = [
   {
     href: '/templates/excel',
     download: true,
-    icon: FileSpreadsheet,
+    icon: 'excel',
     title: 'תבנית Excel (.csv)',
     desc: 'גיליון לחישוב הצעת מחיר, נפתח ב-Excel או Google Sheets. מלא כמויות ומחירים.',
     cta: 'הורד תבנית Excel',
@@ -56,7 +56,7 @@ const templateCards = [
   {
     href: '/templates/print',
     download: false,
-    icon: Printer,
+    icon: 'print',
     title: 'תבנית PDF להדפסה',
     desc: 'עמוד נקי בעיצוב A4 להדפסה או שמירה כ-PDF ישירות מהדפדפן.',
     cta: 'פתח תבנית להדפסה',
@@ -85,30 +85,12 @@ export default function TemplatesPage() {
           </h1>
           <p className="text-lg text-slate-600 leading-relaxed mb-8">
             הורד תבנית הצעת מחיר מקצועית בפורמט שנוח לך – Word לעריכה, Excel לחישוב, או PDF
-            להדפסה. כל התבניות חינמיות וללא הרשמה. רוצה לחסוך זמן ולא לטעות בחישוב? בנה הצעת מחיר
-            חכמה עם מחירון מובנה שמתמלאת ומחושבת לבד.
+            להדפסה. לחצו על כל הכרטיס כדי להוריד (לא רק על הקישור הכחול). כל התבניות חינמיות
+            וללא הרשמה. רוצה לחסוך זמן ולא לטעות בחישוב? בנה הצעת מחיר חכמה עם מחירון מובנה
+            שמתמלאת ומחושבת לבד.
           </p>
 
-          <div className="grid sm:grid-cols-3 gap-4 mb-4">
-            {templateCards.map(({ href, download, icon: Icon, title, desc, cta }) => (
-              <Link
-                key={href}
-                href={href}
-                {...(download ? { download: '' } : {})}
-                className="group flex flex-col rounded-2xl border border-slate-200 bg-white p-5 hover:border-blue-200 hover:shadow-md transition-all"
-              >
-                <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-[#2563eb] mb-3">
-                  <Icon size={22} aria-hidden />
-                </span>
-                <h2 className="text-base font-bold text-[#0F172A] mb-1">{title}</h2>
-                <p className="text-slate-600 text-sm leading-relaxed mb-3 flex-1">{desc}</p>
-                <span className="inline-flex items-center gap-1.5 text-sm font-bold text-[#2563eb]">
-                  {cta}
-                  <ArrowLeft size={16} aria-hidden />
-                </span>
-              </Link>
-            ))}
-          </div>
+          <TemplateDownloadCards cards={templateCards} />
 
           <SeoCta
             title="עדיף על כל תבנית: בנה הצעת מחיר חכמה"

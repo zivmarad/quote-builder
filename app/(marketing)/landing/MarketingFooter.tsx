@@ -1,5 +1,29 @@
 import Link from 'next/link';
 
+/** מחירונים מובילים לפי נפח חיפוש (GSC) – בראש הרשימה כדי לחזק אותם. */
+const FOOTER_PRICING = [
+  { slug: 'home-renovation', label: 'מחירון שיפוץ דירה' },
+  { slug: 'electrical', label: 'מחירון חשמלאים' },
+  { slug: 'painting', label: 'מחירון צבע' },
+  { slug: 'doors', label: 'מחירון דלתות' },
+  { slug: 'plumbing', label: 'מחירון אינסטלציה' },
+  { slug: 'tiling', label: 'מחירון ריצוף' },
+  { slug: 'air-conditioning', label: 'מחירון מיזוג אוויר' },
+  { slug: 'drywall', label: 'מחירון גבס' },
+];
+
+/** הצעות מחיר לפי ענף – ממוקד כלי. */
+const FOOTER_INDUSTRIES = [
+  { slug: 'home-renovation', label: 'הצעת מחיר לשיפוץ דירה' },
+  { slug: 'electrical', label: 'הצעת מחיר לחשמל' },
+  { slug: 'painting', label: 'הצעת מחיר לצביעת דירה' },
+  { slug: 'plumbing', label: 'הצעת מחיר לאינסטלציה' },
+  { slug: 'gardening', label: 'הצעת מחיר לגינון' },
+  { slug: 'handyman', label: 'הצעת מחיר להנדימן' },
+  { slug: 'sofa-cleaning', label: 'הצעת מחיר לניקוי ספות' },
+  { slug: 'aluminum', label: 'הצעת מחיר לאלומיניום' },
+];
+
 export default function MarketingFooter() {
   const year = new Date().getFullYear();
   return (
@@ -9,40 +33,34 @@ export default function MarketingFooter() {
       style={{ paddingBottom: 'var(--safe-area-inset-bottom)' }}
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-        <div className="grid sm:grid-cols-3 gap-6 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-6">
+          <div>
+            <h3 className="font-bold text-slate-900 mb-3 text-sm">מחירונים 2026</h3>
+            <ul className="space-y-2 text-sm text-slate-600">
+              {FOOTER_PRICING.map(({ slug, label }) => (
+                <li key={slug}>
+                  <Link href={`/pricing/${slug}`} className="hover:text-slate-900 transition-colors">
+                    {label}
+                  </Link>
+                </li>
+              ))}
+              <li>
+                <Link href="/pricing" className="font-medium text-[#2563eb] hover:text-[#1d4ed8] transition-colors">
+                  כל המחירונים ←
+                </Link>
+              </li>
+            </ul>
+          </div>
           <div>
             <h3 className="font-bold text-slate-900 mb-3 text-sm">הצעת מחיר לפי ענף</h3>
             <ul className="space-y-2 text-sm text-slate-600">
-              <li>
-                <Link href="/price-quote/plumbing" className="hover:text-slate-900 transition-colors">
-                  הצעת מחיר לאינסטלציה
-                </Link>
-              </li>
-              <li>
-                <Link href="/price-quote/electrical" className="hover:text-slate-900 transition-colors">
-                  הצעת מחיר לחשמל
-                </Link>
-              </li>
-              <li>
-                <Link href="/price-quote/painting" className="hover:text-slate-900 transition-colors">
-                  הצעת מחיר לצביעת דירה
-                </Link>
-              </li>
-              <li>
-                <Link href="/price-quote/aluminum" className="hover:text-slate-900 transition-colors">
-                  הצעת מחיר לאלומיניום
-                </Link>
-              </li>
-              <li>
-                <Link href="/price-quote/welding" className="hover:text-slate-900 transition-colors">
-                  הצעת מחיר למסגרות
-                </Link>
-              </li>
-              <li>
-                <Link href="/price-quote/home-renovation" className="hover:text-slate-900 transition-colors">
-                  הצעת מחיר לשיפוץ דירה
-                </Link>
-              </li>
+              {FOOTER_INDUSTRIES.map(({ slug, label }) => (
+                <li key={slug}>
+                  <Link href={`/price-quote/${slug}`} className="hover:text-slate-900 transition-colors">
+                    {label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
           <div>
@@ -51,6 +69,11 @@ export default function MarketingFooter() {
               <li>
                 <Link href="/templates" className="hover:text-slate-900 transition-colors">
                   טופס הצעת מחיר להורדה
+                </Link>
+              </li>
+              <li>
+                <Link href="/guides/price-quote-template" className="hover:text-slate-900 transition-colors">
+                  מדריך: טופס הצעת מחיר
                 </Link>
               </li>
               <li>
@@ -64,13 +87,8 @@ export default function MarketingFooter() {
                 </Link>
               </li>
               <li>
-                <Link href="/pricing" className="hover:text-slate-900 transition-colors">
-                  מחירונים לפי ענף
-                </Link>
-              </li>
-              <li>
-                <Link href="/guides" className="hover:text-slate-900 transition-colors">
-                  כל המדריכים
+                <Link href="/guides" className="font-medium text-[#2563eb] hover:text-[#1d4ed8] transition-colors">
+                  כל המדריכים ←
                 </Link>
               </li>
             </ul>
