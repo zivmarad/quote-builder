@@ -24,6 +24,10 @@ export const metadata: Metadata = withSiteMetadata('/', {
   title: 'בונה הצעות מחיר | תמחור והצעות מחיר מקצועיות',
   description:
     'בונה הצעות מחיר לקבלנים ושיפוצניקים – PDF ממותג, שליחה בוואטסאפ והיסטוריה. מתאים לבעלי מקצוע בישראל.',
+  icons: {
+    icon: '/icon.png',
+    apple: '/icon.png',
+  },
   openGraph: {
     title: 'בונה הצעות מחיר | hatzaot.co.il',
     description:
