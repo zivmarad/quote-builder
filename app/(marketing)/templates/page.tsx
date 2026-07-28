@@ -10,7 +10,8 @@ import {
   buildBreadcrumbJsonLd,
   buildFaqJsonLd,
 } from '../_seo/SeoComponents';
-import TemplateDownloadCards, { type TemplateCard } from './TemplateDownloadCards';
+import TemplateDownloadCards from './TemplateDownloadCards';
+import { TEMPLATE_DOWNLOAD_CARDS } from './template-cards';
 
 export const metadata: Metadata = withSiteMetadata('/templates', {
   title: 'טופס הצעת מחיר להורדה חינם – Word, Excel ו-PDF',
@@ -32,34 +33,7 @@ const faq = [
   {
     question: 'התבניות מתאימות לכל בעל מקצוע?',
     answer:
-      'כן. התבניות גנריות ומתאימות לכל ענף – אינסטלציה, חשמל, צבע, שיפוצים, אלומיניום, גינון ועוד. בכלי האוטומטי יש מחירון ייעודי לכל ענף.',
-  },
-];
-
-const templateCards: TemplateCard[] = [
-  {
-    href: '/templates/word',
-    download: true,
-    icon: 'word',
-    title: 'תבנית Word (.doc)',
-    desc: 'מסמך מעוצב לעריכה ב-Word או Google Docs. הוסף לוגו ופרטים ומלא ידנית.',
-    cta: 'הורד תבנית Word',
-  },
-  {
-    href: '/templates/excel',
-    download: true,
-    icon: 'excel',
-    title: 'תבנית Excel (.csv)',
-    desc: 'גיליון לחישוב הצעת מחיר, נפתח ב-Excel או Google Sheets. מלא כמויות ומחירים.',
-    cta: 'הורד תבנית Excel',
-  },
-  {
-    href: '/templates/print',
-    download: false,
-    icon: 'print',
-    title: 'תבנית PDF להדפסה',
-    desc: 'עמוד נקי בעיצוב A4 להדפסה או שמירה כ-PDF ישירות מהדפדפן.',
-    cta: 'פתח תבנית להדפסה',
+      'כן. התבניות גנריות ומתאימות לכל ענף – אינסטלציה, חשמל, צבע, שיפוצים, אלומיניום, גינון ועוד. בכלי האוטומטי יש מחירון מובנה לכל ענף.',
   },
 ];
 
@@ -90,7 +64,7 @@ export default function TemplatesPage() {
             שמתמלאת ומחושבת לבד.
           </p>
 
-          <TemplateDownloadCards cards={templateCards} />
+          <TemplateDownloadCards cards={TEMPLATE_DOWNLOAD_CARDS} />
 
           <SeoCta
             title="עדיף על כל תבנית: בנה הצעת מחיר חכמה"

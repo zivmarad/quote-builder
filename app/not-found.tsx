@@ -11,10 +11,16 @@ export default function NotFound() {
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
-            href="/"
+            href="/landing"
             className="inline-flex items-center justify-center px-6 py-3 rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 transition-colors"
           >
             דף הבית
+          </Link>
+          <Link
+            href="/templates"
+            className="inline-flex items-center justify-center px-6 py-3 rounded-xl font-bold border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
+          >
+            טפסים להורדה
           </Link>
           <Link
             href="/profile"

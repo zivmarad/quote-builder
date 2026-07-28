@@ -1,6 +1,6 @@
-import { redirect } from 'next/navigation';
+import { permanentRedirect } from 'next/navigation';
 
-/** הפניה לסל – דף הצ'קאוט הוא בעצם הסל. */
+/** הפניה קבועה לסל – דף הצ'קאוט הוא בעצם הסל. */
 export default function CheckoutPage() {
-  redirect('/cart');
+  permanentRedirect('/cart');
 }

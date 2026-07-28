@@ -11,7 +11,7 @@ const SEO_MODIFIED = new Date(SEO_LAST_UPDATED);
 
 const PUBLIC_PATHS: SitemapEntry[] = [
   { path: '/landing', changeFrequency: 'weekly', priority: 1 },
-  { path: '/', changeFrequency: 'weekly', priority: 0.9 },
+  // `/` הוא אפליקציה (אורחים מופנים ל-/landing) – לא מתחרה בדף השיווקי ב-sitemap
   { path: '/guides', changeFrequency: 'weekly', priority: 0.8 },
   { path: '/pricing', changeFrequency: 'weekly', priority: 0.9 },
   { path: '/templates', changeFrequency: 'monthly', priority: 0.8 },

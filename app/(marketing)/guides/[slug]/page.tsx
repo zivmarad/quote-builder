@@ -12,6 +12,11 @@ import {
   buildBreadcrumbJsonLd,
   buildFaqJsonLd,
 } from '../../_seo/SeoComponents';
+import TemplateDownloadCards from '../../templates/TemplateDownloadCards';
+import {
+  GUIDE_SLUGS_WITH_DOWNLOADS,
+  TEMPLATE_DOWNLOAD_CARDS,
+} from '../../templates/template-cards';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -37,6 +42,7 @@ export default async function GuidePage({ params }: PageProps) {
   const page = getGuideBySlug(slug);
   if (!page) notFound();
 
+  const showDownloads = GUIDE_SLUGS_WITH_DOWNLOADS.has(page.slug);
   const pageUrl = absoluteUrl(`/guides/${page.slug}`) ?? '';
   const popularPriceLists = getPopularPriceLists();
   const breadcrumbItems = [
@@ -73,9 +79,27 @@ export default async function GuidePage({ params }: PageProps) {
             ]}
           />
 
-          <h1 className="text-3xl sm:text-4xl font-black text-[#0F172A] leading-tight mb-8">
+          <h1 className="text-3xl sm:text-4xl font-black text-[#0F172A] leading-tight mb-4">
             {page.h1}
           </h1>
+
+          {showDownloads && (
+            <section className="mb-10" aria-labelledby="guide-downloads-heading">
+              <h2 id="guide-downloads-heading" className="text-xl font-bold text-[#0F172A] mb-2">
+                הורדה מיידית – חינם וללא הרשמה
+              </h2>
+              <p className="text-slate-600 text-sm leading-relaxed mb-4">
+                לחצו על כל כרטיס כדי להוריד (Word / Excel) או לפתוח תבנית להדפסה. כל הריבוע לחיץ.
+              </p>
+              <TemplateDownloadCards cards={TEMPLATE_DOWNLOAD_CARDS} />
+              <p className="text-sm text-slate-500">
+                רוצים את כל האפשרויות במקום אחד?{' '}
+                <Link href="/templates" className="font-semibold text-[#2563eb] hover:underline">
+                  עמוד הטפסים והתבניות
+                </Link>
+              </p>
+            </section>
+          )}
 
           {page.sections.map((section) => (
             <section key={section.heading} className="mb-8">
@@ -99,16 +123,16 @@ export default async function GuidePage({ params }: PageProps) {
           ))}
 
           <SeoCta
-            {...(page.slug === 'price-quote-template' || page.slug === 'price-quote-word'
+            {...(showDownloads
               ? {
                   title:
                     page.slug === 'price-quote-word'
                       ? 'רוצה הצעת מחיר וורד מוכנה?'
                       : 'רוצה טופס הצעת מחיר מוכן?',
                   subtitle:
-                    'הורד תבנית Word/Excel חינם, או בנה הצעה חכמה עם מחירון מובנה – הרשמה חינמית לייצוא PDF.',
+                    'הורידו למעלה תבנית Word/Excel, או בנו הצעה חכמה עם מחירון מובנה – הרשמה חינמית לייצוא PDF.',
                   secondaryHref: '/templates',
-                  secondaryCta: 'הורד תבנית Word / Excel',
+                  secondaryCta: 'לעמוד הטפסים',
                 }
               : {})}
           />
