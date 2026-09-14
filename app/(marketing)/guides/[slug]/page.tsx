@@ -81,7 +81,7 @@ export default async function GuidePage({ params }: PageProps) {
             ]}
           />
 
-          <h1 className="text-3xl sm:text-4xl font-black text-[#0F172A] leading-tight mb-4">
+          <h1 className="text-2xl sm:text-4xl font-black text-[#0F172A] leading-tight mb-3 sm:mb-4">
             {page.h1}
           </h1>
 

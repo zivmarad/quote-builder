@@ -204,15 +204,15 @@ export function SeoHeroCta({
   cta?: string;
 }) {
   return (
-    <section className="mb-8 rounded-3xl bg-[#2563eb] px-6 py-8 sm:px-10 sm:py-10 text-center shadow-lg shadow-blue-600/20">
-      <h2 className="text-xl sm:text-2xl font-black text-white mb-2 leading-tight">{title}</h2>
-      <p className="text-blue-50 mb-6 max-w-xl mx-auto leading-relaxed">{subtitle}</p>
+    <section className="mb-6 sm:mb-8 rounded-2xl sm:rounded-3xl bg-[#2563eb] px-5 py-5 sm:px-10 sm:py-10 text-center shadow-md shadow-blue-600/10">
+      <h2 className="text-lg sm:text-2xl font-black text-white mb-1.5 sm:mb-2 leading-snug">{title}</h2>
+      <p className="text-sm sm:text-base text-blue-50 mb-4 sm:mb-6 max-w-xl mx-auto leading-relaxed">{subtitle}</p>
       <Link
         href={href}
-        className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-[#2563eb] bg-white hover:bg-blue-50 transition-all text-lg shadow-md"
+        className="inline-flex items-center justify-center gap-2 px-6 py-3 sm:px-8 sm:py-4 rounded-xl font-bold text-[#2563eb] bg-white hover:bg-blue-50 transition-all text-base sm:text-lg shadow-sm"
       >
         {cta}
-        <ArrowLeft size={20} aria-hidden />
+        <ArrowLeft size={18} aria-hidden />
       </Link>
     </section>
   );

@@ -56,7 +56,7 @@ export default function TemplatesPage() {
             items={[{ label: 'דף הבית', href: '/landing' }, { label: 'טפסים ותבניות' }]}
           />
 
-          <h1 className="text-3xl sm:text-4xl font-black text-[#0F172A] leading-tight mb-4">
+          <h1 className="text-2xl sm:text-4xl font-black text-[#0F172A] leading-tight mb-3 sm:mb-4">
             טופס הצעת מחיר להורדה – חינם
           </h1>
           <p className="text-lg text-slate-600 leading-relaxed mb-8">
