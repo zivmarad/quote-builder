@@ -152,6 +152,15 @@ export default function SpotlightOverlay({
     return () => window.clearTimeout(id);
   }, [open, targetRef]);
 
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onDismiss();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, onDismiss]);
+
   if (!mounted || !open || !layout) return null;
 
   const { hole, tooltip } = layout;
@@ -169,6 +178,12 @@ export default function SpotlightOverlay({
           borderRadius: hole.radius,
           boxShadow: '0 0 0 9999px rgb(15 23 42 / 0.52)',
         }}
+      />
+      <button
+        type="button"
+        aria-label={skipLabel}
+        className="fixed inset-0 z-[51] cursor-default bg-transparent"
+        onClick={onDismiss}
       />
       <div
         role="dialog"
