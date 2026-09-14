@@ -49,3 +49,5 @@ next-env.d.ts
 
 # landing video source backup (re-encoded demo.mp4 is committed)
 public/landing/demo.original.mp4
+
+dev-server.log

@@ -43,7 +43,13 @@ export default function AddToBasketButton({ service }: AddToBasketButtonProps) {
       dismissPage('service');
     }
 
-    router.back();
+    // חזרה דטרמיניסטית לעמוד הקטגוריה (כדי להוסיף עוד שירותים) — ולא router.back()
+    // שתלוי בהיסטוריית הדפדפן ועלול להחזיר לדף שממנו הגענו (למשל מחירון/מדריך).
+    if (service.category) {
+      router.push(`/category/${encodeURIComponent(service.category)}`);
+    } else {
+      router.back();
+    }
   };
 
   return (
