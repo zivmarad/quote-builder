@@ -4,7 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import { withSiteMetadata } from '@/lib/site-metadata';
 import { absoluteUrl } from '@/lib/site-url';
 import { PRICE_LIST_PAGES, INDUSTRY_PAGES } from '@/lib/seo-content';
-import { Breadcrumbs, JsonLd, buildBreadcrumbJsonLd } from '../_seo/SeoComponents';
+import { Breadcrumbs, JsonLd, SeoHeroCta, SeoStartByTrade, buildBreadcrumbJsonLd } from '../_seo/SeoComponents';
 
 export const metadata: Metadata = withSiteMetadata('/pricing', {
   title: 'מחירונים לבעלי מקצוע 2026 | אינסטלציה, חשמל, צבע ושיפוצים',
@@ -25,13 +25,16 @@ export default function PriceListHubPage() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
           <Breadcrumbs items={[{ label: 'דף הבית', href: '/landing' }, { label: 'מחירונים' }]} />
 
-          <h1 className="text-3xl sm:text-4xl font-black text-[#0F172A] leading-tight mb-3">
+          <h1 className="text-2xl sm:text-4xl font-black text-[#0F172A] leading-tight mb-3">
             מחירונים לבעלי מקצוע (2026)
           </h1>
-          <p className="text-lg text-slate-600 leading-relaxed mb-10">
+          <p className="text-base sm:text-lg text-slate-600 leading-relaxed mb-5">
             טווחי מחירים מקובלים בישראל לפי ענף – נקודת ייחוס לתמחור. כדי לבנות הצעת מחיר
             מדויקת ללקוח, השתמש בבונה הצעות המחיר.
           </p>
+
+          <SeoHeroCta />
+          <SeoStartByTrade />
 
           <div className="grid sm:grid-cols-2 gap-4">
             {PRICE_LIST_PAGES.map((list) => (

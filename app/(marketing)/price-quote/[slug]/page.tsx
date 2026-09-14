@@ -16,6 +16,7 @@ import {
   PriceTable,
   SeoFaqList,
   SeoCta,
+  SeoHeroCta,
   JsonLd,
   buildBreadcrumbJsonLd,
   buildFaqJsonLd,
@@ -77,11 +78,17 @@ export default async function IndustryPage({ params }: PageProps) {
             items={[{ label: 'דף הבית', href: '/landing' }, { label: page.h1 }]}
           />
 
-          <h1 className="text-3xl sm:text-4xl font-black text-[#0F172A] leading-tight mb-4">
+          <h1 className="text-2xl sm:text-4xl font-black text-[#0F172A] leading-tight mb-3 sm:mb-4">
             {page.h1}
           </h1>
-          <p className="text-lg text-slate-600 leading-relaxed mb-4">{page.intro}</p>
-          <p className="text-slate-600 leading-relaxed mb-8">{page.body}</p>
+          <p className="text-base sm:text-lg text-slate-600 leading-relaxed mb-3">{page.intro}</p>
+          <p className="text-slate-600 leading-relaxed mb-5">{page.body}</p>
+
+          <SeoHeroCta
+            title={`בנה הצעת מחיר ל${page.label} — ושלח בוואטסאפ תוך דקה`}
+            href={`/category/${page.categoryId}`}
+            cta={`בחר עבודות ל${page.label}`}
+          />
 
           <h2 className="text-2xl font-bold text-[#0F172A] mb-4">
             כמה עולה {page.label}? טווחי מחיר לבניית הצעה

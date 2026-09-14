@@ -31,6 +31,7 @@ import {
 import { categories, splitOrderedCategories } from './service/services';
 import type { Category } from './service/services';
 import { useLanguage } from './contexts/LanguageContext';
+import { useAuth } from './contexts/AuthContext';
 import { useCustomCatalog } from './contexts/CustomCatalogContext';
 import { getServiceDisplayName, isCustomCategoryId } from '../lib/custom-catalog-types';
 import {
@@ -100,6 +101,7 @@ type SearchResult = {
 export default function HomePage() {
   const router = useRouter();
   const { t, dir } = useLanguage();
+  const { user, isLoaded } = useAuth();
   const { getMergedServices, customCategories } = useCustomCatalog();
   const { shouldShow, dismissPage } = useSpotlightOnboarding();
   const [search, setSearch] = useState('');
@@ -232,7 +234,12 @@ export default function HomePage() {
             </h1>
             <InstallAppButton showHint />
           </div>
-          <p className="text-slate-500 font-medium text-sm sm:text-base mb-4">{t('home.subtitle')}</p>
+          <p className="text-slate-500 font-medium text-sm sm:text-base mb-3">{t('home.subtitle')}</p>
+          {!user && isLoaded && (
+            <p className="mb-4 text-sm text-slate-600 rounded-xl border border-blue-100 bg-blue-50/60 px-3.5 py-2.5">
+              {t('home.guestHint')}
+            </p>
+          )}
 
           <div className="relative max-w-xl">
             <label htmlFor="home-search" className="sr-only">

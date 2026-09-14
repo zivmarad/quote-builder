@@ -167,21 +167,21 @@ export function SeoCta({
   secondaryCta?: string;
 }) {
   return (
-    <section className="my-12 rounded-3xl bg-gradient-to-b from-blue-50 to-white border border-blue-100 px-6 py-10 text-center">
-      <h2 className="text-xl sm:text-2xl font-bold text-[#0F172A] mb-2">{title}</h2>
-      <p className="text-slate-600 mb-6 max-w-md mx-auto">{subtitle}</p>
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+    <section className="my-10 sm:my-12 rounded-2xl border border-blue-100 bg-blue-50/60 p-5 sm:p-6">
+      <h2 className="text-lg sm:text-xl font-black text-slate-900 mb-1.5 leading-snug">{title}</h2>
+      <p className="text-sm sm:text-base text-slate-600 mb-4 max-w-xl leading-relaxed">{subtitle}</p>
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
         <Link
           href={href}
-          className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-white bg-[#2563eb] hover:bg-[#1d4ed8] transition-all text-lg shadow-lg shadow-blue-600/25 hover:shadow-xl"
+          className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3.5 rounded-xl font-bold text-white bg-[#2563eb] hover:bg-blue-700 transition-all text-base shadow-sm shadow-blue-600/20"
         >
           {cta}
-          <ArrowLeft size={20} aria-hidden />
+          <ArrowLeft size={18} aria-hidden />
         </Link>
         {secondaryHref && secondaryCta && (
           <Link
             href={secondaryHref}
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-[#2563eb] bg-white border border-blue-200 hover:bg-blue-50 transition-all"
+            className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3.5 rounded-xl font-bold text-[#2563eb] bg-white border border-blue-200 hover:bg-blue-50 transition-all text-base"
           >
             {secondaryCta}
           </Link>

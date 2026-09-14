@@ -10,6 +10,7 @@ import {
   PriceTable,
   SeoFaqList,
   SeoCta,
+  SeoHeroCta,
   JsonLd,
   buildBreadcrumbJsonLd,
   buildFaqJsonLd,
@@ -67,10 +68,28 @@ export default async function PriceListPage({ params }: PageProps) {
             ]}
           />
 
-          <h1 className="text-3xl sm:text-4xl font-black text-[#0F172A] leading-tight mb-4">
+          <h1 className="text-2xl sm:text-4xl font-black text-[#0F172A] leading-tight mb-3 sm:mb-4">
             {page.h1}
           </h1>
-          <p className="text-lg text-slate-600 leading-relaxed mb-8">{page.intro}</p>
+          <p className="text-base sm:text-lg text-slate-600 leading-relaxed mb-5">{page.intro}</p>
+
+          <SeoHeroCta
+            title={
+              relatedIndustry
+                ? `בנה הצעת מחיר ל${relatedIndustry.label} — ושלח בוואטסאפ תוך דקה`
+                : undefined
+            }
+            href={
+              relatedIndustry
+                ? `/category/${relatedIndustry.categoryId}`
+                : '/?try=1'
+            }
+            cta={
+              relatedIndustry
+                ? `בחר עבודות ל${relatedIndustry.label}`
+                : 'בנה הצעה עכשיו'
+            }
+          />
 
           <div className="mb-6 rounded-2xl border border-blue-100 bg-blue-50/60 px-5 py-4">
             <p className="text-sm font-bold text-[#0F172A] mb-1">מחירון מעודכן 2026</p>

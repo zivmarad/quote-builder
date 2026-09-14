@@ -26,6 +26,7 @@
     "searchLabel": "Quick search",
     "noResults": "No results found",
     "searchHint": "Type to search all trades and services",
+    "guestHint": "Pick a trade to start building a quote — free, no signup. Sign up only to export PDF.",
     "addProfessionTitle": "Another trade?",
     "addProfessionSubtitle": "Request a new category",
     "tradesSection": "Trades",
