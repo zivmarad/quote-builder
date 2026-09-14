@@ -27,6 +27,7 @@ type TooltipPos = {
   left: number;
   width: number;
   placement: 'above' | 'below';
+  arrowLeft: number;
 };
 
 type SpotlightLayout = {
@@ -34,22 +35,22 @@ type SpotlightLayout = {
   tooltip: TooltipPos;
 };
 
-const PAD = 8;
-const TOOLTIP_GAP = 14;
+const PAD = 6;
+const TOOLTIP_GAP = 12;
 
 function computeLayout(el: HTMLElement): SpotlightLayout {
   const rect = el.getBoundingClientRect();
   const hole: HoleRect = {
-    top: Math.max(8, rect.top - PAD),
-    left: Math.max(8, rect.left - PAD),
-    width: Math.min(window.innerWidth - 16, rect.width + PAD * 2),
+    top: Math.max(4, rect.top - PAD),
+    left: Math.max(4, rect.left - PAD),
+    width: Math.min(window.innerWidth - 8, rect.width + PAD * 2),
     height: rect.height + PAD * 2,
     radius: Math.min(22, Math.max(12, parseFloat(getComputedStyle(el).borderRadius) || 16)),
   };
 
-  const tooltipWidth = Math.min(320, window.innerWidth - 32);
+  const tooltipWidth = Math.min(280, window.innerWidth - 32);
   const spaceBelow = window.innerHeight - hole.top - hole.height;
-  const placement: 'above' | 'below' = spaceBelow > 150 ? 'below' : 'above';
+  const placement: 'above' | 'below' = spaceBelow > 130 ? 'below' : 'above';
   const centerX = hole.left + hole.width / 2;
   const left = Math.min(
     Math.max(16, centerX - tooltipWidth / 2),
@@ -57,8 +58,9 @@ function computeLayout(el: HTMLElement): SpotlightLayout {
   );
   const top =
     placement === 'below' ? hole.top + hole.height + TOOLTIP_GAP : hole.top - TOOLTIP_GAP;
+  const arrowLeft = Math.min(Math.max(16, centerX - left), tooltipWidth - 16);
 
-  return { hole, tooltip: { top, left, width: tooltipWidth, placement } };
+  return { hole, tooltip: { top, left, width: tooltipWidth, placement, arrowLeft } };
 }
 
 function layoutEqual(a: SpotlightLayout | null, b: SpotlightLayout | null): boolean {
@@ -71,7 +73,8 @@ function layoutEqual(a: SpotlightLayout | null, b: SpotlightLayout | null): bool
     a.hole.height === b.hole.height &&
     a.tooltip.top === b.tooltip.top &&
     a.tooltip.left === b.tooltip.left &&
-    a.tooltip.placement === b.tooltip.placement
+    a.tooltip.placement === b.tooltip.placement &&
+    a.tooltip.arrowLeft === b.tooltip.arrowLeft
   );
 }
 
@@ -141,6 +144,7 @@ export default function SpotlightOverlay({
 }: SpotlightOverlayProps) {
   const mounted = useIsClient();
   const layout = useSpotlightLayout(targetRef, open);
+  const tooltipRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -157,9 +161,20 @@ export default function SpotlightOverlay({
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onDismiss();
     };
+    const onPointer = (e: PointerEvent) => {
+      const node = e.target as Node | null;
+      if (!node) return;
+      if (tooltipRef.current?.contains(node)) return;
+      if (targetRef.current?.contains(node)) return;
+      onDismiss();
+    };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [open, onDismiss]);
+    document.addEventListener('pointerdown', onPointer, true);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.removeEventListener('pointerdown', onPointer, true);
+    };
+  }, [open, onDismiss, targetRef]);
 
   if (!mounted || !open || !layout) return null;
 
@@ -169,27 +184,21 @@ export default function SpotlightOverlay({
     <>
       <div
         aria-hidden
-        className="spotlight-hole pointer-events-none fixed z-[50]"
+        className="spotlight-beacon-ring pointer-events-none fixed z-[54]"
         style={{
           top: hole.top,
           left: hole.left,
           width: hole.width,
           height: hole.height,
           borderRadius: hole.radius,
-          boxShadow: '0 0 0 9999px rgb(15 23 42 / 0.52)',
         }}
       />
-      <button
-        type="button"
-        aria-label={skipLabel}
-        className="fixed inset-0 z-[51] cursor-default bg-transparent"
-        onClick={onDismiss}
-      />
       <div
+        ref={tooltipRef}
         role="dialog"
         aria-modal="false"
         aria-labelledby="spotlight-title"
-        className="spotlight-tooltip fixed z-[55] pointer-events-auto"
+        className="spotlight-tooltip fixed z-[55]"
         style={{
           top: tooltip.placement === 'below' ? tooltip.top : undefined,
           bottom:
@@ -198,18 +207,27 @@ export default function SpotlightOverlay({
           width: tooltip.width,
         }}
       >
-        <div className="rounded-2xl bg-white px-4 py-3.5 shadow-2xl shadow-slate-900/25 ring-1 ring-slate-900/10 text-right">
-          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-            <h3 id="spotlight-title" className="text-[15px] font-black text-slate-900 leading-snug">
+        <div className="relative rounded-2xl border border-blue-100 bg-white px-3.5 py-3 shadow-lg shadow-blue-600/10 text-right">
+          <span
+            aria-hidden
+            className={`absolute w-2.5 h-2.5 bg-white border-blue-100 rotate-45 ${
+              tooltip.placement === 'below'
+                ? '-top-[6px] border-t border-l'
+                : '-bottom-[6px] border-b border-r'
+            }`}
+            style={{ left: tooltip.arrowLeft - 5 }}
+          />
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <h3 id="spotlight-title" className="text-sm font-black text-slate-900 leading-snug">
               {title}
             </h3>
             {step != null && (
-              <span className="shrink-0 text-[11px] font-bold tabular-nums text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full">
+              <span className="shrink-0 text-[11px] font-bold tabular-nums text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded-full">
                 {step}/{totalSteps}
               </span>
             )}
           </div>
-          {body && <p className="text-[13px] text-slate-600 leading-relaxed mb-3">{body}</p>}
+          {body && <p className="text-[12px] text-slate-600 leading-relaxed mb-2">{body}</p>}
           <button
             type="button"
             onClick={onDismiss}

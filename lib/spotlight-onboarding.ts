@@ -96,9 +96,9 @@ export function subscribeSpotlight(onStoreChange: () => void): () => void {
 }
 
 export const SPOTLIGHT_RING_CLASS =
-  'spotlight-target ring-2 ring-white ring-offset-2 ring-offset-slate-900/40 shadow-lg shadow-blue-500/20 rounded-[inherit]';
+  'spotlight-target ring-2 ring-blue-500 ring-offset-2 ring-offset-[#F8FAFC] rounded-[inherit]';
 
-/** לקוביות/כרטיסים בתוך זרימת העמוד — דורש relative ל-z-index מעל ה-overlay */
-export const SPOTLIGHT_TARGET_CLASS = `relative z-[53] ${SPOTLIGHT_RING_CLASS}`;
+/** כרטיס/כפתור שמודגש ב-beacon — בלי z-index גבוה, כדי לא לחסום את שאר המסך */
+export const SPOTLIGHT_TARGET_CLASS = `relative ${SPOTLIGHT_RING_CLASS}`;
 
-export const SPOTLIGHT_ELEVATED_CLASS = 'spotlight-elevated !z-[53]';
+export const SPOTLIGHT_ELEVATED_CLASS = 'spotlight-elevated';
