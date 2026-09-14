@@ -6,6 +6,7 @@ import {
   Breadcrumbs,
   SeoFaqList,
   SeoCta,
+  SeoHeroCta,
   JsonLd,
   buildBreadcrumbJsonLd,
   buildFaqJsonLd,
@@ -58,18 +59,18 @@ export default function TemplatesPage() {
             טופס הצעת מחיר להורדה – חינם
           </h1>
           <p className="text-lg text-slate-600 leading-relaxed mb-8">
-            הורד תבנית הצעת מחיר מקצועית בפורמט שנוח לך – Word לעריכה, Excel לחישוב, או PDF
-            להדפסה. לחצו על כל הכרטיס כדי להוריד (לא רק על הקישור הכחול). כל התבניות חינמיות
-            וללא הרשמה. רוצה לחסוך זמן ולא לטעות בחישוב? בנה הצעת מחיר חכמה עם מחירון מובנה
-            שמתמלאת ומחושבת לבד.
+            בנה הצעת מחיר חכמה עם מחירון מובנה שמתמלאת ומחושבת לבד – או הורד תבנית ריקה
+            בפורמט שנוח לך (Word לעריכה, Excel לחישוב, או PDF להדפסה) למילוי ידני. הכול חינם
+            וללא כרטיס אשראי.
           </p>
 
-          <TemplateDownloadCards cards={TEMPLATE_DOWNLOAD_CARDS} />
+          <SeoHeroCta />
 
-          <SeoCta
-            title="עדיף על כל תבנית: בנה הצעת מחיר חכמה"
-            subtitle="מחירון מובנה לכל ענף, חישוב סכומים ומע&quot;מ אוטומטי – הרשמה חינמית לייצוא PDF ושליחה בוואטסאפ."
-          />
+          <h2 className="text-lg font-bold text-[#0F172A] mb-1">מעדיפים תבנית ריקה למילוי ידני?</h2>
+          <p className="text-slate-500 text-sm mb-4">
+            חינם וללא הרשמה – Word, Excel או PDF להדפסה. לחצו על כל הכרטיס כדי להוריד.
+          </p>
+          <TemplateDownloadCards cards={TEMPLATE_DOWNLOAD_CARDS} />
 
           <section className="mt-4">
             <h2 className="text-2xl font-bold text-[#0F172A] mb-4">
@@ -86,6 +87,11 @@ export default function TemplatesPage() {
               ממותגת כ-PDF מוכן לשליחה בוואטסאפ – ישירות מהנייד, בפחות מדקה.
             </p>
           </section>
+
+          <SeoCta
+            title="מוכן לבנות הצעה חכמה?"
+            subtitle="מחירון מובנה לכל ענף, חישוב סכומים ומע&quot;מ אוטומטי – הרשמה חינמית לייצוא PDF ושליחה בוואטסאפ."
+          />
 
           <div className="my-12">
             <h2 className="text-2xl font-bold text-[#0F172A] mb-6">שאלות נפוצות</h2>

@@ -8,6 +8,7 @@ import {
   Breadcrumbs,
   SeoFaqList,
   SeoCta,
+  SeoHeroCta,
   JsonLd,
   buildBreadcrumbJsonLd,
   buildFaqJsonLd,
@@ -83,13 +84,15 @@ export default async function GuidePage({ params }: PageProps) {
             {page.h1}
           </h1>
 
+          <SeoHeroCta />
+
           {showDownloads && (
             <section className="mb-10" aria-labelledby="guide-downloads-heading">
               <h2 id="guide-downloads-heading" className="text-xl font-bold text-[#0F172A] mb-2">
-                הורדה מיידית – חינם וללא הרשמה
+                מעדיפים למלא ידנית? תבניות חינם להורדה
               </h2>
               <p className="text-slate-600 text-sm leading-relaxed mb-4">
-                לחצו על כל כרטיס כדי להוריד (Word / Excel) או לפתוח תבנית להדפסה. כל הריבוע לחיץ.
+                תבנית ריקה ב-Word, Excel או PDF — חינם וללא הרשמה. (הכלי שלמעלה ממלא ומחשב עבורכם.) לחצו על כל כרטיס להורדה.
               </p>
               <TemplateDownloadCards cards={TEMPLATE_DOWNLOAD_CARDS} />
               <p className="text-sm text-slate-500">

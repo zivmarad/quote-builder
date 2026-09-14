@@ -191,6 +191,33 @@ export function SeoCta({
   );
 }
 
+/** באנר CTA ראשי – מוביל לבניית הצעה בבונה (הפעולה המועדפת, בולט מעל שאר התוכן). */
+export function SeoHeroCta({
+  title = 'בנה הצעת מחיר ממותגת — ושלח בוואטסאפ תוך דקה',
+  subtitle = 'בוחרים עבודות ממחירון מובנה, הסכום והמע"מ מחושבים אוטומטית, ויוצא PDF עם הלוגו שלך. חינם, בלי כרטיס אשראי.',
+  href = '/?try=1',
+  cta = 'בנה הצעה עכשיו',
+}: {
+  title?: string;
+  subtitle?: string;
+  href?: string;
+  cta?: string;
+}) {
+  return (
+    <section className="mb-8 rounded-3xl bg-[#2563eb] px-6 py-8 sm:px-10 sm:py-10 text-center shadow-lg shadow-blue-600/20">
+      <h2 className="text-xl sm:text-2xl font-black text-white mb-2 leading-tight">{title}</h2>
+      <p className="text-blue-50 mb-6 max-w-xl mx-auto leading-relaxed">{subtitle}</p>
+      <Link
+        href={href}
+        className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-[#2563eb] bg-white hover:bg-blue-50 transition-all text-lg shadow-md"
+      >
+        {cta}
+        <ArrowLeft size={20} aria-hidden />
+      </Link>
+    </section>
+  );
+}
+
 /** עוטף סקריפט JSON-LD בודד. */
 export function JsonLd({ data }: { data: Record<string, unknown> }) {
   return (
