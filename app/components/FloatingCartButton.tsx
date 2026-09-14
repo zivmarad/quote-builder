@@ -28,12 +28,12 @@ export default function FloatingCartButton() {
   const router = useRouter();
   const pathname = usePathname();
   const { t } = useLanguage();
-  const { shouldShow, dismissPage, complete } = useSpotlightOnboarding();
+  const { shouldShow, dismissPage, complete, seenPages } = useSpotlightOnboarding();
   const prevCountRef = useRef(itemCount);
   const cartButtonRef = useRef<HTMLButtonElement>(null);
   const [bounce, setBounce] = useState(false);
 
-  const showGoCartSpotlight = shouldShow('go-cart') && itemCount > 0;
+  const showGoCartSpotlight = shouldShow('go-cart') && itemCount > 0 && seenPages.includes('service');
 
   useEffect(() => {
     if (itemCount > prevCountRef.current && itemCount > 0) {
@@ -100,8 +100,10 @@ export default function FloatingCartButton() {
       <SpotlightOverlay
         open={showGoCartSpotlight}
         targetRef={cartButtonRef}
-        hint={t('spotlight.goCart')}
+        title={t('spotlight.goCartTitle')}
+        body={t('spotlight.goCartBody')}
         skipLabel={t('spotlight.skip')}
+        step={4}
         onDismiss={() => dismissPage('go-cart')}
       />
     </>

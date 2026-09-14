@@ -438,8 +438,10 @@ export default function ServiceWizardPage() {
       <SpotlightOverlay
         open={showAddSpotlight}
         targetRef={addButtonRef}
-        hint={t('spotlight.pricingAdd')}
+        title={t('spotlight.serviceTitle')}
+        body={t('spotlight.serviceBody')}
         skipLabel={t('spotlight.skip')}
+        step={3}
         onDismiss={() => dismissPage('service')}
       />
 

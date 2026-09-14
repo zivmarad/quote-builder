@@ -59,11 +59,15 @@
     "later": "Maybe later"
   },
   "spotlight": {
-    "homeCategory": "Select a trade",
-    "categoryService": "Choose a service",
-    "pricingAdd": "Add to cart to continue",
-    "goCart": "View your quote",
-    "skip": "Skip tour"
+    "homeTitle": "Start here",
+    "homeBody": "Pick a trade — plumbing, electrical, paint — and build a quote without signing up.",
+    "categoryTitle": "Choose a job",
+    "categoryBody": "Tap a service to set extras and price.",
+    "serviceTitle": "Add to quote",
+    "serviceBody": "After extras, tap here. You can add more jobs afterwards.",
+    "goCartTitle": "Your quote is ready",
+    "goCartBody": "Tap to preview, send on WhatsApp, or download a PDF.",
+    "skip": "Skip"
   },
   "header": {
     "appName": "Quote Builder",

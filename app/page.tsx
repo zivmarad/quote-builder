@@ -332,8 +332,10 @@ export default function HomePage() {
       <SpotlightOverlay
         open={showCategorySpotlight}
         targetRef={spotlightRef}
-        hint={t('spotlight.homeCategory')}
+        title={t('spotlight.homeTitle')}
+        body={t('spotlight.homeBody')}
         skipLabel={t('spotlight.skip')}
+        step={1}
         onDismiss={() => dismissPage('home')}
       />
     </main>

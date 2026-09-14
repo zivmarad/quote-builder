@@ -1,14 +1,25 @@
 'use client';
 
-import { useRef, useSyncExternalStore, type RefObject } from 'react';
+import { useEffect, useRef, useSyncExternalStore, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 
 type SpotlightOverlayProps = {
   open: boolean;
   targetRef: RefObject<HTMLElement | null>;
-  hint: string;
+  title: string;
+  body?: string;
   skipLabel: string;
+  step?: number;
+  totalSteps?: number;
   onDismiss: () => void;
+};
+
+type HoleRect = {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+  radius: number;
 };
 
 type TooltipPos = {
@@ -16,35 +27,51 @@ type TooltipPos = {
   left: number;
   width: number;
   placement: 'above' | 'below';
-  arrowLeft: number;
 };
 
-function computeTooltipPos(rect: DOMRect): TooltipPos {
-  const tooltipWidth = Math.min(240, window.innerWidth - 32);
-  const centerX = rect.left + rect.width / 2;
+type SpotlightLayout = {
+  hole: HoleRect;
+  tooltip: TooltipPos;
+};
+
+const PAD = 8;
+const TOOLTIP_GAP = 14;
+
+function computeLayout(el: HTMLElement): SpotlightLayout {
+  const rect = el.getBoundingClientRect();
+  const hole: HoleRect = {
+    top: Math.max(8, rect.top - PAD),
+    left: Math.max(8, rect.left - PAD),
+    width: Math.min(window.innerWidth - 16, rect.width + PAD * 2),
+    height: rect.height + PAD * 2,
+    radius: Math.min(22, Math.max(12, parseFloat(getComputedStyle(el).borderRadius) || 16)),
+  };
+
+  const tooltipWidth = Math.min(320, window.innerWidth - 32);
+  const spaceBelow = window.innerHeight - hole.top - hole.height;
+  const placement: 'above' | 'below' = spaceBelow > 150 ? 'below' : 'above';
+  const centerX = hole.left + hole.width / 2;
   const left = Math.min(
     Math.max(16, centerX - tooltipWidth / 2),
     window.innerWidth - tooltipWidth - 16,
   );
-  const spaceBelow = window.innerHeight - rect.bottom;
-  const placement = spaceBelow > 120 ? 'below' : 'above';
-  const top = placement === 'below' ? rect.bottom + 10 : rect.top - 10;
-  const arrowLeft = Math.min(
-    Math.max(12, centerX - left),
-    tooltipWidth - 12,
-  );
-  return { top, left, width: tooltipWidth, placement, arrowLeft };
+  const top =
+    placement === 'below' ? hole.top + hole.height + TOOLTIP_GAP : hole.top - TOOLTIP_GAP;
+
+  return { hole, tooltip: { top, left, width: tooltipWidth, placement } };
 }
 
-function posEqual(a: TooltipPos | null, b: TooltipPos | null): boolean {
+function layoutEqual(a: SpotlightLayout | null, b: SpotlightLayout | null): boolean {
   if (a === b) return true;
   if (!a || !b) return false;
   return (
-    a.top === b.top &&
-    a.left === b.left &&
-    a.width === b.width &&
-    a.placement === b.placement &&
-    a.arrowLeft === b.arrowLeft
+    a.hole.top === b.hole.top &&
+    a.hole.left === b.hole.left &&
+    a.hole.width === b.hole.width &&
+    a.hole.height === b.hole.height &&
+    a.tooltip.top === b.tooltip.top &&
+    a.tooltip.left === b.tooltip.left &&
+    a.tooltip.placement === b.tooltip.placement
   );
 }
 
@@ -56,31 +83,29 @@ function useIsClient(): boolean {
   );
 }
 
-function useTargetTooltipPos(
+function useSpotlightLayout(
   targetRef: RefObject<HTMLElement | null>,
   open: boolean,
-): TooltipPos | null {
-  const cachedRef = useRef<TooltipPos | null>(null);
+): SpotlightLayout | null {
+  const cachedRef = useRef<SpotlightLayout | null>(null);
 
   return useSyncExternalStore(
     (onStoreChange) => {
       if (!open) return () => {};
 
       const update = () => onStoreChange();
-
       window.addEventListener('resize', update);
       window.addEventListener('scroll', update, true);
 
       let ro: ResizeObserver | null = null;
       const attachObserver = () => {
         ro?.disconnect();
-        ro = targetRef.current ? new ResizeObserver(update) : null;
         if (targetRef.current) {
-          ro?.observe(targetRef.current);
+          ro = new ResizeObserver(update);
+          ro.observe(targetRef.current);
           update();
         }
       };
-
       const raf = requestAnimationFrame(attachObserver);
 
       return () => {
@@ -95,10 +120,8 @@ function useTargetTooltipPos(
         cachedRef.current = null;
         return null;
       }
-      const next = computeTooltipPos(targetRef.current.getBoundingClientRect());
-      if (posEqual(cachedRef.current, next)) {
-        return cachedRef.current;
-      }
+      const next = computeLayout(targetRef.current);
+      if (layoutEqual(cachedRef.current, next)) return cachedRef.current;
       cachedRef.current = next;
       return next;
     },
@@ -109,57 +132,73 @@ function useTargetTooltipPos(
 export default function SpotlightOverlay({
   open,
   targetRef,
-  hint,
+  title,
+  body,
   skipLabel,
+  step,
+  totalSteps = 4,
   onDismiss,
 }: SpotlightOverlayProps) {
   const mounted = useIsClient();
-  const pos = useTargetTooltipPos(targetRef, open);
+  const layout = useSpotlightLayout(targetRef, open);
 
-  if (!mounted || !open || !pos) return null;
+  useEffect(() => {
+    if (!open) return;
+    const el = targetRef.current;
+    if (!el) return;
+    const id = window.setTimeout(() => {
+      el.scrollIntoView({ block: 'center', behavior: 'smooth', inline: 'nearest' });
+    }, 80);
+    return () => window.clearTimeout(id);
+  }, [open, targetRef]);
+
+  if (!mounted || !open || !layout) return null;
+
+  const { hole, tooltip } = layout;
 
   return createPortal(
     <>
-      <button
-        type="button"
-        aria-label={skipLabel}
-        className="fixed inset-0 z-[50] bg-slate-900/[0.07] transition-opacity cursor-default"
-        onClick={onDismiss}
+      <div
+        aria-hidden
+        className="spotlight-hole pointer-events-none fixed z-[50]"
+        style={{
+          top: hole.top,
+          left: hole.left,
+          width: hole.width,
+          height: hole.height,
+          borderRadius: hole.radius,
+          boxShadow: '0 0 0 9999px rgb(15 23 42 / 0.52)',
+        }}
       />
       <div
         role="dialog"
-        aria-live="polite"
+        aria-modal="false"
+        aria-labelledby="spotlight-title"
         className="spotlight-tooltip fixed z-[55] pointer-events-auto"
         style={{
-          top: pos.placement === 'below' ? pos.top : undefined,
-          bottom: pos.placement === 'above' ? window.innerHeight - pos.top : undefined,
-          left: pos.left,
-          width: pos.width,
+          top: tooltip.placement === 'below' ? tooltip.top : undefined,
+          bottom:
+            tooltip.placement === 'above' ? window.innerHeight - tooltip.top : undefined,
+          left: tooltip.left,
+          width: tooltip.width,
         }}
-        onClick={(e) => e.stopPropagation()}
       >
-        <div className="relative overflow-hidden rounded-2xl bg-white border border-slate-200 ring-1 ring-slate-900/5 px-4 py-3 pr-5 shadow-2xl shadow-slate-900/[0.12] text-right">
-          <span aria-hidden className="absolute inset-y-0 right-0 w-1 bg-blue-600" />
-          <span
-            aria-hidden
-            className={`absolute w-2.5 h-2.5 bg-white border-slate-200 rotate-45 ${
-              pos.placement === 'below'
-                ? '-top-[6px] border-t border-l'
-                : '-bottom-[6px] border-b border-r'
-            }`}
-            style={{ left: pos.arrowLeft - 5 }}
-          />
-          <div className="flex items-center justify-end gap-2 mb-1.5">
-            <p className="text-[13px] font-semibold leading-snug text-slate-900">{hint}</p>
-            <span aria-hidden className="relative flex h-2 w-2 shrink-0">
-              <span className="absolute inline-flex h-full w-full rounded-full bg-blue-500/40 spotlight-ping" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-600" />
-            </span>
+        <div className="rounded-2xl bg-white px-4 py-3.5 shadow-2xl shadow-slate-900/25 ring-1 ring-slate-900/10 text-right">
+          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+            <h3 id="spotlight-title" className="text-[15px] font-black text-slate-900 leading-snug">
+              {title}
+            </h3>
+            {step != null && (
+              <span className="shrink-0 text-[11px] font-bold tabular-nums text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full">
+                {step}/{totalSteps}
+              </span>
+            )}
           </div>
+          {body && <p className="text-[13px] text-slate-600 leading-relaxed mb-3">{body}</p>}
           <button
             type="button"
             onClick={onDismiss}
-            className="text-[11px] font-medium text-slate-400 hover:text-slate-600 transition-colors"
+            className="text-[12px] font-medium text-slate-400 hover:text-slate-700 transition-colors"
           >
             {skipLabel}
           </button>

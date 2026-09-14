@@ -228,8 +228,10 @@ export default function CategoryPage() {
       <SpotlightOverlay
         open={!!spotlightServiceId}
         targetRef={spotlightRef}
-        hint={t('spotlight.categoryService')}
+        title={t('spotlight.categoryTitle')}
+        body={t('spotlight.categoryBody')}
         skipLabel={t('spotlight.skip')}
+        step={2}
         onDismiss={() => dismissPage('category')}
       />
 

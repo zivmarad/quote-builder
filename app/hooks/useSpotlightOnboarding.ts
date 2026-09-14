@@ -54,6 +54,7 @@ export function useSpotlightOnboarding() {
   return {
     isActive,
     shouldShow,
+    seenPages,
     dismissPage,
     complete: finish,
   };
