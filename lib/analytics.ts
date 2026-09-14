@@ -24,4 +24,7 @@ export const AnalyticsEvents = {
   SignupPageViewed: 'signup_page_viewed',
   SignupCompleted: 'signup_completed',
   QuoteExported: 'quote_exported',
+  TemplateChoiceShown: 'template_choice_shown',
+  TemplateBuilderChosen: 'template_builder_chosen',
+  TemplatePlainChosen: 'template_plain_chosen',
 } as const;

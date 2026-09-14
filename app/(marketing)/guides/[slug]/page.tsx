@@ -95,7 +95,7 @@ export default async function GuidePage({ params }: PageProps) {
                 מעדיפים למלא ידנית? תבניות חינם להורדה
               </h2>
               <p className="text-slate-600 text-sm leading-relaxed mb-4">
-                תבנית ריקה ב-Word, Excel או PDF — חינם וללא הרשמה. (הכלי שלמעלה ממלא ומחשב עבורכם.) לחצו על כל כרטיס להורדה.
+                תבנית ריקה ב-Word, Excel או PDF — חינם וללא הרשמה. בלחיצה תבחרו: תבנית למילוי ידני, או הצעה ממותגת עם לוגו וכל הפרטים.
               </p>
               <TemplateDownloadCards cards={TEMPLATE_DOWNLOAD_CARDS} />
               <p className="text-sm text-slate-500">
