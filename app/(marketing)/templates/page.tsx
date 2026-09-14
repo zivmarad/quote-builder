@@ -7,6 +7,7 @@ import {
   SeoFaqList,
   SeoCta,
   SeoHeroCta,
+  SeoStartByTrade,
   JsonLd,
   buildBreadcrumbJsonLd,
   buildFaqJsonLd,
@@ -65,6 +66,8 @@ export default function TemplatesPage() {
           </p>
 
           <SeoHeroCta />
+
+          <SeoStartByTrade />
 
           <h2 className="text-lg font-bold text-[#0F172A] mb-1">מעדיפים תבנית ריקה למילוי ידני?</h2>
           <p className="text-slate-500 text-sm mb-4">

@@ -9,6 +9,7 @@ import {
   SeoFaqList,
   SeoCta,
   SeoHeroCta,
+  SeoStartByTrade,
   JsonLd,
   buildBreadcrumbJsonLd,
   buildFaqJsonLd,
@@ -85,6 +86,8 @@ export default async function GuidePage({ params }: PageProps) {
           </h1>
 
           <SeoHeroCta />
+
+          <SeoStartByTrade />
 
           {showDownloads && (
             <section className="mb-10" aria-labelledby="guide-downloads-heading">

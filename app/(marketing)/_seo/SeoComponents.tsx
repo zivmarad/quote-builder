@@ -218,6 +218,35 @@ export function SeoHeroCta({
   );
 }
 
+/** קיצור דרך: צ'יפים שמובילים ישירות לבניית הצעה לפי תחום (מדלגים על דף הבית). */
+const START_TRADES: { id: string; label: string }[] = [
+  { id: 'electricity', label: 'חשמל' },
+  { id: 'paint', label: 'צבע' },
+  { id: 'plumbing', label: 'אינסטלציה' },
+  { id: 'tiling', label: 'ריצוף' },
+  { id: 'home-renovation', label: 'שיפוץ דירה' },
+  { id: 'aluminium', label: 'אלומיניום' },
+];
+
+export function SeoStartByTrade() {
+  return (
+    <div className="mb-10 -mt-2">
+      <p className="text-sm text-slate-500 mb-2">או התחל הצעה לפי תחום:</p>
+      <div className="flex flex-wrap gap-2">
+        {START_TRADES.map((tr) => (
+          <Link
+            key={tr.id}
+            href={`/category/${tr.id}`}
+            className="px-3.5 py-1.5 rounded-full bg-slate-100 text-slate-700 text-sm font-medium hover:bg-blue-50 hover:text-blue-700 transition-colors"
+          >
+            {tr.label}
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /** עוטף סקריפט JSON-LD בודד. */
 export function JsonLd({ data }: { data: Record<string, unknown> }) {
   return (

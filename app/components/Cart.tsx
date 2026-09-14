@@ -11,7 +11,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useCustomers, type Customer } from '../contexts/CustomersContext';
 import { saveDraft } from '../../lib/drafts-storage';
 import { formatDiscountLabel } from '../../lib/quote-discount';
-import { Trash2, Edit2, Check, X, ShoppingBag, Plus, FileText, Share2, Eye, Loader2, ChevronDown, ChevronUp, Save } from 'lucide-react';
+import { Trash2, Edit2, Check, X, ShoppingBag, Plus, FileText, Share2, Eye, Loader2, ChevronDown, ChevronUp, Save, UserPlus } from 'lucide-react';
 import { Reorder, useDragControls } from 'framer-motion';
 import { markFirstQuoteCompleted } from '../../lib/first-quote-install';
 import ConfirmDialog from './ConfirmDialog';
@@ -295,6 +295,7 @@ export default function Cart() {
   const [draftName, setDraftName] = useState('');
   const [deleteItemId, setDeleteItemId] = useState<string | null>(null);
   const [showClearBasketConfirm, setShowClearBasketConfirm] = useState(false);
+  const [loginWallAction, setLoginWallAction] = useState<'download_pdf' | 'share_whatsapp' | 'save_draft' | null>(null);
   const [customerComboOpen, setCustomerComboOpen] = useState(false);
   const [customerComboQuery, setCustomerComboQuery] = useState('');
   const [discountType, setDiscountType] = useState<'percent' | 'fixed'>(discount?.type ?? 'percent');
@@ -716,7 +717,7 @@ export default function Cart() {
 
   const redirectGuestToLogin = (action: 'download_pdf' | 'share_whatsapp' | 'save_draft') => {
     trackEvent(AnalyticsEvents.LoginWallHit, { action });
-    router.push('/login?from=' + encodeURIComponent('/cart'));
+    setLoginWallAction(action);
   };
 
   const handleExportPDF = async () => {
@@ -1630,6 +1631,58 @@ export default function Cart() {
       onConfirm={() => clearBasket()}
       onCancel={() => setShowClearBasketConfirm(false)}
     />
+    {loginWallAction && (
+      <div
+        className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50"
+        dir="rtl"
+        role="presentation"
+        onClick={() => setLoginWallAction(null)}
+      >
+        <div
+          className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-md w-full p-5 sm:p-6 border border-slate-200"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="login-wall-title"
+          onClick={(e) => e.stopPropagation()}
+          style={{ paddingBottom: 'calc(1.25rem + env(safe-area-inset-bottom))' }}
+        >
+          <div className="flex items-center justify-between mb-3">
+            <h3 id="login-wall-title" className="text-xl font-black text-slate-900">כמעט סיימת!</h3>
+            <button
+              type="button"
+              onClick={() => setLoginWallAction(null)}
+              className="p-2 -m-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100"
+              aria-label="סגור"
+            >
+              <X size={22} />
+            </button>
+          </div>
+          <p className="text-slate-600 text-sm leading-relaxed">
+            {loginWallAction === 'download_pdf' && 'כדי להוריד PDF ממותג עם הלוגו והפרטים שלך — '}
+            {loginWallAction === 'share_whatsapp' && 'כדי לשלוח את ההצעה בוואטסאפ — '}
+            {loginWallAction === 'save_draft' && 'כדי לשמור טיוטה ולחזור אליה בהמשך — '}
+            דרושה הרשמה חינמית קצרה (30 שניות, בלי כרטיס אשראי). ההצעה שבנית תישמר.
+          </p>
+          <div className="flex flex-col gap-3 mt-5">
+            <button
+              type="button"
+              onClick={() => router.push('/signup?from=' + encodeURIComponent('/cart'))}
+              className="w-full py-3 min-h-[52px] rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 flex items-center justify-center gap-2 transition-colors active:scale-[0.98]"
+            >
+              <UserPlus size={20} />
+              הרשמה חינמית
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push('/login?from=' + encodeURIComponent('/cart'))}
+              className="w-full py-3 min-h-[52px] rounded-xl font-bold border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
+            >
+              כבר יש לי חשבון — התחברות
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
     {toastEl}
     </>
   );
