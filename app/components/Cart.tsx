@@ -15,6 +15,14 @@ import { Trash2, Edit2, Check, X, ShoppingBag, Plus, FileText, Share2, Eye, Load
 import { Reorder, useDragControls } from 'framer-motion';
 import { markFirstQuoteCompleted } from '../../lib/first-quote-install';
 import ConfirmDialog from './ConfirmDialog';
+import CartNotesEditor from './CartNotesEditor';
+import {
+  deleteQuoteNoteTemplate,
+  loadCartMeta,
+  loadSavedQuoteNotes,
+  saveCartMeta,
+  saveQuoteNoteTemplate,
+} from '../../lib/cart-meta-storage';
 
 const PENDING_DRAFT_KEY = 'quoteBuilder_pendingDraft';
 import { getQuotePreviewHtml } from './utils/quotePreview';
@@ -301,7 +309,26 @@ export default function Cart() {
   const [discountType, setDiscountType] = useState<'percent' | 'fixed'>(discount?.type ?? 'percent');
   const [discountInput, setDiscountInput] = useState(discount?.value ? String(discount.value) : '');
   const [showDiscount, setShowDiscount] = useState(Boolean(discount?.value));
+  const [metaHydrated, setMetaHydrated] = useState(false);
+  const [savedNotes, setSavedNotes] = useState<string[]>([]);
   const customerComboRef = useRef<HTMLDivElement>(null);
+  const metaHydratedRef = useRef(false);
+  const cartMetaRef = useRef({
+    notes: '',
+    customerName: '',
+    customerPhone: '',
+    customerEmail: '',
+    customerAddress: '',
+    customerCompanyId: '',
+  });
+  cartMetaRef.current = {
+    notes,
+    customerName,
+    customerPhone,
+    customerEmail,
+    customerAddress,
+    customerCompanyId,
+  };
 
   const filteredCustomers = useMemo(() => {
     const q = customerComboQuery.trim().toLowerCase();
@@ -444,31 +471,96 @@ export default function Cart() {
     setEditPrice(currentPrice.toString());
   }, [editingId, items]);
 
-  /** טעינת פרטי לקוח מטיוטה שנטענה מאיזור אישי */
+  /** טעינת פרטי לקוח והערות: קודם טיוטה ממתינה, אחרת מה שנשמר עם הסל (כדי שלא יימחק ביציאה) */
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const raw = sessionStorage.getItem(PENDING_DRAFT_KEY);
-    if (!raw) return;
-    try {
-      const data = JSON.parse(raw) as Record<string, string>;
-      if (data.customerName !== undefined) setCustomerName(data.customerName || '');
-      if (data.customerPhone !== undefined) setCustomerPhone(data.customerPhone || '');
-      if (data.customerEmail !== undefined) setCustomerEmail(data.customerEmail || '');
-      if (data.customerAddress !== undefined) setCustomerAddress(data.customerAddress || '');
-      if (data.customerCompanyId !== undefined) setCustomerCompanyId(data.customerCompanyId || '');
-      if (data.notes !== undefined) setNotes(data.notes || '');
-      if (data.discountType && data.discountValue) {
-        const type = data.discountType === 'fixed' ? 'fixed' : 'percent';
-        const value = parseFloat(data.discountValue);
-        if (!isNaN(value) && value > 0) {
-          setDiscount({ type, value });
+    let cancelled = false;
+    void (async () => {
+      const userId = user?.id ?? null;
+      const saved = await loadSavedQuoteNotes(userId);
+      if (!cancelled) setSavedNotes(saved);
+
+      if (typeof window !== 'undefined') {
+        const raw = sessionStorage.getItem(PENDING_DRAFT_KEY);
+        if (raw) {
+          try {
+            const data = JSON.parse(raw) as Record<string, string>;
+            if (cancelled) return;
+            if (data.customerName !== undefined) setCustomerName(data.customerName || '');
+            if (data.customerPhone !== undefined) setCustomerPhone(data.customerPhone || '');
+            if (data.customerEmail !== undefined) setCustomerEmail(data.customerEmail || '');
+            if (data.customerAddress !== undefined) setCustomerAddress(data.customerAddress || '');
+            if (data.customerCompanyId !== undefined) setCustomerCompanyId(data.customerCompanyId || '');
+            if (data.notes !== undefined) setNotes(data.notes || '');
+            if (data.discountType && data.discountValue) {
+              const type = data.discountType === 'fixed' ? 'fixed' : 'percent';
+              const value = parseFloat(data.discountValue);
+              if (!isNaN(value) && value > 0) {
+                setDiscount({ type, value });
+              }
+            }
+            if (data.customerPhone || data.customerEmail || data.customerAddress || data.customerCompanyId) {
+              setShowCustomerDetails(true);
+            }
+          } catch {
+            /* ignore */
+          }
+          sessionStorage.removeItem(PENDING_DRAFT_KEY);
+          if (!cancelled) {
+            metaHydratedRef.current = true;
+            setMetaHydrated(true);
+          }
+          return;
         }
       }
-    } catch {
-      /* ignore */
-    }
-    sessionStorage.removeItem(PENDING_DRAFT_KEY);
-  }, []);
+
+      const meta = await loadCartMeta(userId);
+      if (cancelled) return;
+      const keepLocal = metaHydratedRef.current;
+      const take = (local: string, stored: string) => (keepLocal && local.trim() ? local : stored);
+      setCustomerName((prev) => take(prev, meta.customerName));
+      setCustomerPhone((prev) => take(prev, meta.customerPhone));
+      setCustomerEmail((prev) => take(prev, meta.customerEmail));
+      setCustomerAddress((prev) => take(prev, meta.customerAddress));
+      setCustomerCompanyId((prev) => take(prev, meta.customerCompanyId));
+      setNotes((prev) => take(prev, meta.notes));
+      if (meta.customerPhone || meta.customerEmail || meta.customerAddress || meta.customerCompanyId) {
+        setShowCustomerDetails(true);
+      }
+      metaHydratedRef.current = true;
+      setMetaHydrated(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, setDiscount]);
+
+  useEffect(() => {
+    if (!metaHydrated) return;
+    const userId = user?.id ?? null;
+    const persistNow = () => {
+      void saveCartMeta(userId, cartMetaRef.current);
+    };
+    const timer = window.setTimeout(persistNow, 200);
+    window.addEventListener('pagehide', persistNow);
+    window.addEventListener('beforeunload', persistNow);
+    document.addEventListener('visibilitychange', persistNow);
+    return () => {
+      window.clearTimeout(timer);
+      persistNow();
+      window.removeEventListener('pagehide', persistNow);
+      window.removeEventListener('beforeunload', persistNow);
+      document.removeEventListener('visibilitychange', persistNow);
+    };
+  }, [
+    metaHydrated,
+    notes,
+    customerName,
+    customerPhone,
+    customerEmail,
+    customerAddress,
+    customerCompanyId,
+    user?.id,
+  ]);
 
   const handleSaveDraft = async () => {
     if (items.length === 0) return;
@@ -1315,18 +1407,29 @@ export default function Cart() {
           </div>
         </div>
 
-        {/* הערות להצעה – לא חלק מפרטי הלקוח */}
-        <div className="px-6 py-4 bg-white border-t border-slate-100">
-          <label htmlFor="notes" className="block text-sm font-bold text-slate-700 mb-1.5 text-right">הערות להצעה</label>
-          <textarea
-            id="notes"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="למשל: המחיר לא כולל חומרים, צפי לסיום, תנאי תשלום..."
-            rows={2}
-            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right resize-y"
-          />
-        </div>
+        {/* הערות להצעה – נשמרות אוטומטית; במובייל נפתחות בגיליון נוח להקלדה */}
+        <CartNotesEditor
+          notes={notes}
+          onChange={setNotes}
+          savedNotes={savedNotes}
+          onSaveTemplate={() => {
+            const text = notes.trim();
+            if (!text) return;
+            void saveQuoteNoteTemplate(user?.id ?? null, text).then(setSavedNotes);
+            setToast('ההערה נשמרה להצעות הבאות');
+          }}
+          onApplyTemplate={(note) => {
+            setNotes((prev) => {
+              const current = prev.trim();
+              if (!current) return note;
+              if (current.includes(note)) return prev;
+              return `${current}\n${note}`;
+            });
+          }}
+          onDeleteTemplate={(note) => {
+            void deleteQuoteNoteTemplate(user?.id ?? null, note).then(setSavedNotes);
+          }}
+        />
 
         <div className="bg-slate-50 px-4 py-3 sm:px-6 sm:py-4 border-t border-slate-100">
           <div className="max-w-xs mr-auto space-y-1.5 text-right">
