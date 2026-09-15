@@ -117,8 +117,8 @@
     "appMenu": "תפריט אפליקציה"
   },
   "login": {
-    "title": "התחברות",
-    "description": "התחברות לחשבון שלך.",
+    "title": "התחברות או הרשמה",
+    "description": "עם Google אפשר להיכנס לחשבון קיים או לפתוח חשבון חדש.",
     "newUserTitle": "משתמש חדש? אין עדיין חשבון?",
     "signupButton": "הרשמה – צור חשבון",
     "username": "שם משתמש או אימייל",
@@ -134,7 +134,7 @@
   },
   "auth": {
     "continueWithGoogle": "המשך עם Google",
-    "googleHint": "לחיצה אחת, בלי סיסמה",
+    "googleHint": "כניסה או הרשמה בלחיצה אחת, בלי סיסמה",
     "orEmail": "או עם אימייל",
     "orPassword": "או עם סיסמה",
     "googleError": "לא הצלחנו להתחבר עם Google. נסה שוב.",

@@ -80,8 +80,8 @@
     "customers": "Клиенты"
   },
   "login": {
-    "title": "Вход",
-    "description": "Вход в аккаунт.",
+    "title": "Вход или регистрация",
+    "description": "Через Google можно войти или создать новый аккаунт.",
     "newUserTitle": "Новый пользователь? Нет аккаунта?",
     "signupButton": "Регистрация – Создать аккаунт",
     "username": "Имя пользователя или email",
@@ -97,7 +97,7 @@
   },
   "auth": {
     "continueWithGoogle": "Продолжить с Google",
-    "googleHint": "Один клик, без пароля",
+    "googleHint": "Вход или регистрация в один клик, без пароля",
     "orEmail": "или по email",
     "orPassword": "или с паролем",
     "googleError": "Не удалось войти через Google. Попробуйте ещё раз.",
