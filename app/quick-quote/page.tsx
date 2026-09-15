@@ -70,13 +70,6 @@ function SavedRow({
   const [price, setPrice] = useState(String(freeQuoteUnitPrice(item)));
   const [notes, setNotes] = useState(item.description ?? '');
 
-  useEffect(() => {
-    setName(item.name);
-    setQty(String(freeQuoteQty(item)));
-    setPrice(String(freeQuoteUnitPrice(item)));
-    setNotes(item.description ?? '');
-  }, [item.id, item.name, item.quantity, item.basePrice, item.overridePrice, item.description]);
-
   const commit = () => {
     const trimmed = name.trim();
     const unitPrice = parsePrice(price);
@@ -277,7 +270,7 @@ export default function QuickQuotePage() {
         <div className="space-y-3">
           {freeItems.map((item) => (
             <SavedRow
-              key={item.id}
+              key={`${item.id}:${item.name}:${item.quantity}:${item.basePrice}:${item.overridePrice ?? ''}:${item.description ?? ''}`}
               item={item}
               onCommit={handleSavedCommit}
               onDelete={removeItem}
