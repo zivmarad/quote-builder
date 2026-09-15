@@ -207,10 +207,10 @@ export default function SpotlightOverlay({
           width: tooltip.width,
         }}
       >
-        <div className="relative rounded-2xl border border-blue-100 bg-white px-3.5 py-3 shadow-lg shadow-blue-600/10 text-right">
+        <div className="relative rounded-2xl border border-slate-700 bg-slate-900 px-3.5 py-3 shadow-xl shadow-slate-900/40 text-right">
           <span
             aria-hidden
-            className={`absolute w-2.5 h-2.5 bg-white border-blue-100 rotate-45 ${
+            className={`absolute w-2.5 h-2.5 bg-slate-900 border-slate-700 rotate-45 ${
               tooltip.placement === 'below'
                 ? '-top-[6px] border-t border-l'
                 : '-bottom-[6px] border-b border-r'
@@ -218,20 +218,20 @@ export default function SpotlightOverlay({
             style={{ left: tooltip.arrowLeft - 5 }}
           />
           <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <h3 id="spotlight-title" className="text-sm font-black text-slate-900 leading-snug">
+            <h3 id="spotlight-title" className="text-sm font-black text-white leading-snug">
               {title}
             </h3>
             {step != null && (
-              <span className="shrink-0 text-[11px] font-bold tabular-nums text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded-full">
+              <span className="shrink-0 text-[11px] font-bold tabular-nums text-white bg-blue-600 px-1.5 py-0.5 rounded-full">
                 {step}/{totalSteps}
               </span>
             )}
           </div>
-          {body && <p className="text-[12px] text-slate-600 leading-relaxed mb-2">{body}</p>}
+          {body && <p className="text-[12px] text-slate-300 leading-relaxed mb-2">{body}</p>}
           <button
             type="button"
             onClick={onDismiss}
-            className="text-[12px] font-medium text-slate-400 hover:text-slate-700 transition-colors"
+            className="text-[12px] font-medium text-slate-400 hover:text-white transition-colors"
           >
             {skipLabel}
           </button>

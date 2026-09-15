@@ -151,17 +151,17 @@ body {
 
 @keyframes spotlight-beacon-pulse {
   0% {
-    box-shadow: 0 0 0 0 rgb(37 99 235 / 0.45);
+    box-shadow: 0 0 0 2px rgb(37 99 235 / 0.95), 0 0 0 0 rgb(37 99 235 / 0.4);
   }
   70% {
-    box-shadow: 0 0 0 12px rgb(37 99 235 / 0);
+    box-shadow: 0 0 0 2px rgb(37 99 235 / 0.95), 0 0 0 14px rgb(37 99 235 / 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgb(37 99 235 / 0);
+    box-shadow: 0 0 0 2px rgb(37 99 235 / 0.95), 0 0 0 0 rgb(37 99 235 / 0);
   }
 }
 .spotlight-beacon-ring {
-  box-shadow: 0 0 0 2px rgb(37 99 235 / 0.85);
+  box-shadow: 0 0 0 2px rgb(37 99 235 / 0.95), 0 8px 24px rgb(37 99 235 / 0.28);
   animation: spotlight-beacon-pulse 1.8s ease-out infinite;
 }
 @media (prefers-reduced-motion: reduce) {
