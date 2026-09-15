@@ -9,7 +9,6 @@ import EditablePriceLabel from '../../../components/EditablePriceLabel';
 import AddCustomQuestionModal from '../../../components/AddCustomQuestionModal';
 import { usePriceOverrides } from '../../../contexts/PriceOverridesContext';
 import { useCustomCatalog } from '../../../contexts/CustomCatalogContext';
-import { useAuth } from '../../../contexts/AuthContext';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import {
   SPOTLIGHT_ELEVATED_CLASS,
@@ -149,7 +148,6 @@ const QuestionCard = memo(function QuestionCard({
 export default function ServiceWizardPage() {
   const { slug, serviceId } = useParams();
   const router = useRouter();
-  const { user } = useAuth();
   const { getBasePrice, getImpactValue, setBasePrice, setQuestionImpact } = usePriceOverrides();
   const { getMergedServices, getMergedQuestions, addQuestion, deleteQuestion, getCategoryById } =
     useCustomCatalog();
@@ -227,10 +225,6 @@ export default function ServiceWizardPage() {
   }, []);
 
   const handleAddQuestionClick = () => {
-    if (!user) {
-      router.push(`/login?from=${encodeURIComponent(`/category/${categoryId}/${svcId}`)}`);
-      return;
-    }
     setShowAddQuestion(true);
   };
 

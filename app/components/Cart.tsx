@@ -35,6 +35,7 @@ import {
 import { trackEvent, AnalyticsEvents } from '../../lib/analytics';
 import { recordProductMetric } from '../../lib/product-metrics-client';
 import type { BasketItem } from '../contexts/QuoteBasketContext';
+import { FREE_QUOTE_CATEGORY } from '../../lib/free-quote';
 
 interface CartItemRowProps {
   item: BasketItem;
@@ -154,7 +155,7 @@ function CartItemRow({
         <div className="flex flex-col gap-3 flex-1 min-w-0">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
               <div className="flex-1 text-right min-w-0">
-                <span className={`text-[10px] font-bold uppercase tracking-wider mb-1 block ${item.category === 'פריט חופשי' ? 'text-emerald-600' : 'text-blue-600'}`}>{item.category}</span>
+                <span className={`text-[10px] font-bold uppercase tracking-wider mb-1 block ${item.category === FREE_QUOTE_CATEGORY ? 'text-emerald-600' : 'text-blue-600'}`}>{item.category}</span>
                 <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
                   {item.name}
                   {item.quantity != null && item.quantity > 1 && (
@@ -163,6 +164,11 @@ function CartItemRow({
                     </span>
                   )}
                 </h3>
+                {item.description?.trim() && (
+                  <p className="mt-1 text-sm text-slate-500 leading-relaxed whitespace-pre-wrap">
+                    {item.description.trim()}
+                  </p>
+                )}
               </div>
               <div className="flex items-center gap-2 shrink-0 justify-end sm:justify-start">
                 {isEditing ? (
@@ -1035,7 +1041,7 @@ export default function Cart() {
     const validExtras = customExtras.filter((e) => e.text.trim() && e.price >= 0).map((e) => ({ text: e.text.trim(), price: e.price }));
     addItem({
       name,
-      category: 'פריט חופשי',
+      category: FREE_QUOTE_CATEGORY,
       basePrice: priceVal,
       extras: validExtras.length > 0 ? validExtras : undefined,
     });

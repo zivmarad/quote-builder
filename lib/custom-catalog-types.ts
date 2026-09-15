@@ -163,6 +163,38 @@ export function isCustomCatalogEmpty(data: CustomCatalogData): boolean {
   );
 }
 
+function mergeById<T extends { id: string }>(primary: T[], incoming: T[]): T[] {
+  const map = new Map<string, T>();
+  for (const item of incoming) map.set(item.id, item);
+  for (const item of primary) map.set(item.id, item);
+  return [...map.values()];
+}
+
+/** מאחד קטלוג אורח לקטלוג משתמש בלי לדרוס פריטים קיימים עם אותו מזהה */
+export function mergeCustomCatalogs(
+  primary: CustomCatalogData,
+  incoming: CustomCatalogData
+): CustomCatalogData {
+  if (isCustomCatalogEmpty(incoming)) return primary;
+  if (isCustomCatalogEmpty(primary)) return incoming;
+
+  const servicesByCategory: Record<string, Service[]> = { ...incoming.servicesByCategory };
+  for (const [catId, list] of Object.entries(primary.servicesByCategory)) {
+    servicesByCategory[catId] = mergeById(list, servicesByCategory[catId] ?? []);
+  }
+
+  const extraQuestions: Record<string, Question[]> = { ...incoming.extraQuestions };
+  for (const [serviceId, list] of Object.entries(primary.extraQuestions)) {
+    extraQuestions[serviceId] = mergeById(list, extraQuestions[serviceId] ?? []);
+  }
+
+  return {
+    customCategories: mergeById(primary.customCategories, incoming.customCategories),
+    servicesByCategory,
+    extraQuestions,
+  };
+}
+
 export function parseCustomCatalog(raw: unknown): CustomCatalogData {
   if (!raw || typeof raw !== 'object') return { ...EMPTY_CUSTOM_CATALOG, customCategories: [] };
   const o = raw as Partial<CustomCatalogData>;

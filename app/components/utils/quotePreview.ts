@@ -9,6 +9,8 @@ export interface BasketItem {
   extras?: Array<{ text: string; price: number }>;
   quantity?: number;
   unit?: string;
+  /** הערה לשורה (לא הערות הסל הכלליות) */
+  description?: string;
 }
 
 /** פרופיל בעל המקצוע – מופיע בראש הצעת המחיר */
@@ -28,6 +30,19 @@ const escapeHtml = (s: string) =>
 /** מטהר טקסט תוספת להצגה מקצועית בהצעה – מסיר סימני שאלה ומעבד לפורמט נקי */
 const formatExtraForQuote = (text: string): string =>
   text.replace(/\?+$/, '').trim();
+
+function itemNameCellInnerHtml(item: BasketItem): string {
+  const extrasDesc =
+    item.extras && item.extras.length > 0
+      ? item.extras.map((e) => `• ${escapeHtml(formatExtraForQuote(e.text))}`).join('<br>')
+      : '';
+  const note = item.description?.trim()
+    ? escapeHtml(item.description.trim()).replace(/\n/g, '<br>')
+    : '';
+  return `<div class="item-name">${escapeHtml(item.name)}</div>${
+    extrasDesc ? `<div class="item-extras">${extrasDesc}</div>` : ''
+  }${note ? `<div class="item-note">${note}</div>` : ''}`;
+}
 
 const hasProfile = (p?: QuoteProfile | null) =>
   p && (p.businessName || p.phone || p.logo || p.contactName || p.companyId || p.email || p.address);
@@ -188,14 +203,10 @@ export function getQuotePreviewHtml(params: {
       const currentPrice = item.overridePrice ?? calculatedPrice;
       const qty = item.quantity ?? 1;
       const pricePerUnit = currentPrice / qty;
-      const hasExtras = item.extras && item.extras.length > 0;
-      const extrasDesc = hasExtras
-        ? item.extras!.map((e) => `• ${escapeHtml(formatExtraForQuote(e.text))}`).join('<br>')
-        : '';
       const qtyDisplay = qty > 1 && item.unit ? `${qty} ${item.unit}` : String(qty);
       return `
         <tr>
-          <td><div class="item-name">${escapeHtml(item.name)}</div>${extrasDesc ? `<div class="item-extras">${extrasDesc}</div>` : ''}</td>
+          <td>${itemNameCellInnerHtml(item)}</td>
           <td style="text-align:center">${escapeHtml(qtyDisplay)}</td>
           <td class="price-cell">₪${pricePerUnit.toLocaleString('he-IL')}</td>
           <td class="price-cell">₪${currentPrice.toLocaleString('he-IL')}</td>
@@ -210,7 +221,7 @@ export function getQuotePreviewHtml(params: {
       .quote-preview-body .container { max-width: 100% !important; }
       .quote-preview-body .quote-title { font-size: 16px !important; }
       .quote-preview-body .items-table { font-size: 12px !important; }
-      .quote-preview-body .item-name, .quote-preview-body .item-extras { font-size: 12px !important; }
+      .quote-preview-body .item-name, .quote-preview-body .item-extras, .quote-preview-body .item-note { font-size: 12px !important; }
     }
   `;
   return `
@@ -301,6 +312,7 @@ export function getQuoteStyles(fontFamily = "'Heebo', 'Assistant', 'Segoe UI', T
     .items-table tbody tr:last-child td { border-bottom: 2px solid #1e3a5f; }
     .item-name { font-weight: 500; color: #1a1a1a; }
     .item-extras { font-size: 11px; color: #555; margin-top: 3px; line-height: 1.5; }
+    .item-note { font-size: 10px; color: #666; margin-top: 3px; line-height: 1.45; font-weight: 400; }
     .price-cell { text-align: center; font-weight: 600; color: #1a1a1a; white-space: nowrap; }
     .summary { width: 180px; border: 1px solid #e5e5e5; font-size: 10px; }
     .summary-row { display: flex; justify-content: space-between; padding: 5px 8px; align-items: center; gap: 6px; }
@@ -380,14 +392,10 @@ export const generateQuotePDF = (
     const currentPrice = item.overridePrice ?? calculatedPrice;
     const qty = item.quantity ?? 1;
     const pricePerUnit = currentPrice / qty;
-    const hasExtras = item.extras && item.extras.length > 0;
-    const extrasDesc = hasExtras
-      ? item.extras!.map((e) => `• ${escapeHtml(formatExtraForQuote(e.text))}`).join('<br>')
-      : '';
     const qtyDisplay = qty > 1 && item.unit ? `${qty} ${item.unit}` : String(qty);
     return `
       <tr>
-        <td><div class="item-name">${escapeHtml(item.name)}</div>${extrasDesc ? `<div class="item-extras">${extrasDesc}</div>` : ''}</td>
+        <td>${itemNameCellInnerHtml(item)}</td>
         <td style="text-align:center">${escapeHtml(qtyDisplay)}</td>
         <td class="price-cell">₪${pricePerUnit.toLocaleString('he-IL')}</td>
         <td class="price-cell">₪${currentPrice.toLocaleString('he-IL')}</td>
@@ -438,6 +446,7 @@ export const generateQuotePDF = (
     .items-table tbody tr:last-child td { border-bottom: 2px solid #1e3a5f; }
     .item-name { font-weight: 500; color: #1a1a1a; }
     .item-extras { font-size: 10px; color: #555; margin-top: 2px; line-height: 1.5; }
+    .item-note { font-size: 10px; color: #666; margin-top: 2px; line-height: 1.45; font-weight: 400; }
     .price-cell { text-align: center; font-weight: 600; color: #1a1a1a; white-space: nowrap; }
     .summary { width: 180px; border: 1px solid #e5e5e5; font-size: 10px; }
     .summary-row { display: flex; justify-content: space-between; padding: 5px 8px; align-items: center; gap: 6px; }
@@ -512,14 +521,10 @@ export function rowToHtml(item: BasketItem): string {
   const currentPrice = item.overridePrice ?? calculatedPrice;
   const qty = item.quantity ?? 1;
   const pricePerUnit = currentPrice / qty;
-  const hasExtras = item.extras && item.extras.length > 0;
-  const extrasDesc = hasExtras
-    ? item.extras!.map((e) => `• ${escapeHtml(formatExtraForQuote(e.text))}`).join('<br>')
-    : '';
   const qtyDisplay = qty > 1 && item.unit ? `${qty} ${item.unit}` : String(qty);
   return `
     <tr>
-      <td><div class="item-name">${escapeHtml(item.name)}</div>${extrasDesc ? `<div class="item-extras">${extrasDesc}</div>` : ''}</td>
+      <td>${itemNameCellInnerHtml(item)}</td>
       <td style="text-align:center">${escapeHtml(qtyDisplay)}</td>
       <td class="price-cell">₪${pricePerUnit.toLocaleString('he-IL')}</td>
       <td class="price-cell">₪${currentPrice.toLocaleString('he-IL')}</td>

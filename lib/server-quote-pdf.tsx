@@ -9,6 +9,7 @@ export interface ServerQuoteItem {
   unit?: string;
   overridePrice?: number;
   extras?: Array<{ text: string; price: number }>;
+  description?: string;
 }
 
 export interface ServerQuoteSnapshot {
@@ -103,6 +104,9 @@ export async function generateServerQuotePdf(snapshot: ServerQuoteSnapshot): Pro
             <View key={`${item.name}-${idx}`} style={styles.tableRow}>
               <View style={styles.cellDesc}>
                 <Text>{item.name}</Text>
+                {item.description?.trim() ? (
+                  <Text style={styles.extra}>{item.description.trim()}</Text>
+                ) : null}
                 {(item.extras ?? []).map((ex, i) => (
                   <Text key={`${idx}-ex-${i}`} style={styles.extra}>• {ex.text}</Text>
                 ))}

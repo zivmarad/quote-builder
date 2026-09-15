@@ -5,7 +5,6 @@ import { useParams, useRouter } from 'next/navigation';
 import { categories } from '../../service/services';
 import { usePriceOverrides } from '../../contexts/PriceOverridesContext';
 import { useCustomCatalog } from '../../contexts/CustomCatalogContext';
-import { useAuth } from '../../contexts/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { getServiceDisplayName, isCustomCategoryId, isCustomServiceId } from '../../../lib/custom-catalog-types';
 import { SPOTLIGHT_TARGET_CLASS } from '@/lib/spotlight-onboarding';
@@ -17,7 +16,6 @@ import { Search, Plus, Trash2 } from 'lucide-react';
 export default function CategoryPage() {
   const { slug } = useParams();
   const router = useRouter();
-  const { user } = useAuth();
   const { getBasePrice } = usePriceOverrides();
   const {
     getMergedServices,
@@ -56,10 +54,6 @@ export default function CategoryPage() {
     showServiceSpotlight && filteredServices[0] ? filteredServices[0].id : null;
 
   const handleAddServiceClick = () => {
-    if (!user) {
-      router.push(`/login?from=${encodeURIComponent(`/category/${categoryId}`)}`);
-      return;
-    }
     setShowAddService(true);
   };
 

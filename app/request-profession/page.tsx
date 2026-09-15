@@ -1,18 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, Plus, Sparkles, Trash2, Wrench } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
-import { useAuth } from '../contexts/AuthContext';
 import { useCustomCatalog } from '../contexts/CustomCatalogContext';
 import { PROFESSION_ICON_OPTIONS } from '../../lib/custom-catalog-types';
 
 export default function RequestProfessionPage() {
   const router = useRouter();
   const { t, dir } = useLanguage();
-  const { user } = useAuth();
   const {
     isLoaded,
     customCategories,
@@ -26,14 +24,15 @@ export default function RequestProfessionPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const preset = new URLSearchParams(window.location.search).get('name')?.trim();
+    if (preset) setName(preset.slice(0, 60));
+  }, []);
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-
-    if (!user) {
-      router.push(`/login?from=${encodeURIComponent('/request-profession')}`);
-      return;
-    }
 
     if (!name.trim()) {
       setError(t('requestProfession.nameRequired'));
@@ -92,76 +91,62 @@ export default function RequestProfessionPage() {
                 </p>
               </div>
 
-              {!user ? (
-                <div className="space-y-4">
-                  <p className="text-sm text-slate-600 text-center">
-                    {t('requestProfession.loginRequired')}
-                  </p>
-                  <Link
-                    href={`/login?from=${encodeURIComponent('/request-profession')}`}
-                    className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-bold text-white bg-[#2563eb] hover:bg-[#1d4ed8] transition-all"
-                  >
-                    {t('requestProfession.loginButton')}
-                  </Link>
+              <form onSubmit={handleCreate} className="space-y-5">
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">
+                    {t('requestProfession.nameLabel')}
+                  </label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder={t('requestProfession.namePlaceholder')}
+                    className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    maxLength={60}
+                    disabled={loading}
+                  />
                 </div>
-              ) : (
-                <form onSubmit={handleCreate} className="space-y-5">
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">
-                      {t('requestProfession.nameLabel')}
-                    </label>
-                    <input
-                      type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder={t('requestProfession.namePlaceholder')}
-                      className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      maxLength={60}
-                      disabled={loading}
-                    />
+
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">
+                    {t('requestProfession.iconLabel')}
+                  </label>
+                  <div className="grid grid-cols-8 gap-2">
+                    {PROFESSION_ICON_OPTIONS.map((opt) => (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => setIcon(opt)}
+                        className={`h-10 rounded-xl text-xl flex items-center justify-center border transition-all ${
+                          icon === opt
+                            ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
+                            : 'border-slate-200 bg-white hover:border-slate-300'
+                        }`}
+                        aria-label={opt}
+                      >
+                        {opt}
+                      </button>
+                    ))}
                   </div>
+                </div>
 
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">
-                      {t('requestProfession.iconLabel')}
-                    </label>
-                    <div className="grid grid-cols-8 gap-2">
-                      {PROFESSION_ICON_OPTIONS.map((opt) => (
-                        <button
-                          key={opt}
-                          type="button"
-                          onClick={() => setIcon(opt)}
-                          className={`h-10 rounded-xl text-xl flex items-center justify-center border transition-all ${
-                            icon === opt
-                              ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
-                              : 'border-slate-200 bg-white hover:border-slate-300'
-                          }`}
-                          aria-label={opt}
-                        >
-                          {opt}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                {error && <p className="text-sm text-red-600 font-medium">{error}</p>}
 
-                  {error && <p className="text-sm text-red-600 font-medium">{error}</p>}
+                <button
+                  type="submit"
+                  disabled={loading || !isLoaded}
+                  className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-bold text-white bg-[#2563eb] hover:bg-[#1d4ed8] disabled:opacity-60 transition-all shadow-lg shadow-blue-600/20"
+                >
+                  <Plus size={20} />
+                  {loading ? t('requestProfession.saving') : t('requestProfession.createButton')}
+                </button>
 
-                  <button
-                    type="submit"
-                    disabled={loading || !isLoaded}
-                    className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-bold text-white bg-[#2563eb] hover:bg-[#1d4ed8] disabled:opacity-60 transition-all shadow-lg shadow-blue-600/20"
-                  >
-                    <Plus size={20} />
-                    {loading ? t('requestProfession.saving') : t('requestProfession.createButton')}
-                  </button>
-
-                  <p className="text-center text-xs text-slate-400">{t('requestProfession.note')}</p>
-                </form>
-              )}
+                <p className="text-center text-xs text-slate-400">{t('requestProfession.note')}</p>
+              </form>
             </div>
           </div>
 
-          {user && customCategories.length > 0 && (
+          {customCategories.length > 0 && (
             <section className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 sm:p-6">
               <h2 className="text-lg font-bold text-slate-900 mb-4">
                 {t('requestProfession.myProfessions')}

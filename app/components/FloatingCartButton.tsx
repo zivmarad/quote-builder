@@ -11,6 +11,7 @@ import SpotlightOverlay from './onboarding/SpotlightOverlay';
 
 const HIDE_PATHS = [
   '/cart',
+  '/quick-quote',
   '/login',
   '/signup',
   '/profile',

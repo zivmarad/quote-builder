@@ -27,6 +27,7 @@ import {
   Sofa,
   Bath,
   Home,
+  FileText,
 } from 'lucide-react';
 import { categories, splitOrderedCategories } from './service/services';
 import type { Category } from './service/services';
@@ -181,6 +182,9 @@ export default function HomePage() {
   }, [deferredSearch, t, getMergedServices, myProfessionCategories]);
 
   const showResults = search.trim().length > 0;
+  const addProfessionHref = search.trim()
+    ? `/request-profession?name=${encodeURIComponent(search.trim().slice(0, 60))}`
+    : '/request-profession';
 
   const renderCategoryCard = (cat: Category, opts?: { emoji?: string }) => {
     const IconComponent = categoryIcons[cat.id] ?? Package;
@@ -263,38 +267,77 @@ export default function HomePage() {
             {showResults && (
               <div className="absolute z-20 top-full mt-2 w-full bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden">
                 {searchResults.length > 0 ? (
-                  <ul className="max-h-72 overflow-y-auto py-1">
-                    {searchResults.map((result) => (
-                      <li key={`${result.type}-${result.categoryId}-${result.serviceId ?? 'cat'}`}>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            router.push(result.href);
-                            setSearch('');
-                          }}
-                          className="w-full text-right px-4 py-3 hover:bg-blue-50 active:bg-blue-100 transition-colors flex items-center justify-between gap-3"
-                        >
-                          <div className="min-w-0">
-                            <p className="font-semibold text-slate-900 text-sm truncate">
-                              {result.type === 'service' ? result.serviceName : result.categoryName}
-                            </p>
-                            {result.type === 'service' && (
-                              <p className="text-xs text-slate-500 truncate">{result.categoryName}</p>
-                            )}
-                          </div>
-                          <ChevronRight size={16} className="text-slate-300 shrink-0 rotate-180" />
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
+                  <>
+                    <ul className="max-h-72 overflow-y-auto py-1">
+                      {searchResults.map((result) => (
+                        <li key={`${result.type}-${result.categoryId}-${result.serviceId ?? 'cat'}`}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              router.push(result.href);
+                              setSearch('');
+                            }}
+                            className="w-full text-right px-4 py-3 hover:bg-blue-50 active:bg-blue-100 transition-colors flex items-center justify-between gap-3"
+                          >
+                            <div className="min-w-0">
+                              <p className="font-semibold text-slate-900 text-sm truncate">
+                                {result.type === 'service' ? result.serviceName : result.categoryName}
+                              </p>
+                              {result.type === 'service' && (
+                                <p className="text-xs text-slate-500 truncate">{result.categoryName}</p>
+                              )}
+                            </div>
+                            <ChevronRight size={16} className="text-slate-300 shrink-0 rotate-180" />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                    <Link
+                      href={addProfessionHref}
+                      className="flex items-center justify-center gap-1.5 border-t border-slate-100 px-4 py-3 text-sm font-semibold text-blue-600 hover:bg-blue-50"
+                    >
+                      <Plus size={15} />
+                      {t('home.noResultsAddProfession')}
+                    </Link>
+                  </>
                 ) : (
-                  <p className="px-4 py-4 text-sm text-slate-500">{t('home.noResults')}</p>
+                  <div className="px-4 py-4 space-y-3">
+                    <p className="text-sm text-slate-500 text-center">{t('home.noResults')}</p>
+                    <Link
+                      href="/quick-quote"
+                      className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 active:bg-blue-800"
+                    >
+                      <FileText size={16} />
+                      {t('home.noResultsQuickQuote')}
+                    </Link>
+                    <Link
+                      href={addProfessionHref}
+                      className="flex items-center justify-center gap-1.5 w-full px-4 py-2 text-sm font-semibold text-slate-600 hover:text-blue-600"
+                    >
+                      <Plus size={15} />
+                      {t('home.noResultsAddProfession')}
+                    </Link>
+                  </div>
                 )}
               </div>
             )}
           </div>
           {!showResults && <p className="mt-2 text-xs text-slate-400">{t('home.searchHint')}</p>}
         </header>
+
+        <Link
+          href="/quick-quote"
+          className="mb-6 sm:mb-8 flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/70 hover:bg-emerald-50 hover:border-emerald-300 transition-all p-4 sm:p-5 active:scale-[0.99] shadow-sm"
+        >
+          <div className="w-11 h-11 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
+            <FileText size={22} className="text-emerald-700" />
+          </div>
+          <div className="min-w-0 flex-1 text-right">
+            <p className="font-bold text-slate-900 text-[1.05rem] leading-tight">{t('home.quickQuoteTitle')}</p>
+            <p className="mt-0.5 text-sm text-emerald-800/80">{t('home.quickQuoteSubtitle')}</p>
+          </div>
+          <ChevronRight size={20} className="text-emerald-400 shrink-0 rotate-180" />
+        </Link>
 
         <section className="mb-8 sm:mb-10">
           <h2 className="text-base sm:text-lg font-bold text-slate-700 mb-3 sm:mb-4">

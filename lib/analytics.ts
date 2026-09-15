@@ -27,5 +27,5 @@ export const AnalyticsEvents = {
   GoogleAuthStarted: 'google_auth_started',
   TemplateChoiceShown: 'template_choice_shown',
   TemplateBuilderChosen: 'template_builder_chosen',
-  TemplatePlainChosen: 'template_plain_chosen',
+  QuickQuoteOpened: 'quick_quote_opened',
 } as const;

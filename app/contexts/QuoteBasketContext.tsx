@@ -57,15 +57,18 @@ export interface BasketItem {
   basePrice: number; // מחיר הבסיס של השירות (כולל כמות – basePrice×qty)
   extras?: BasketExtra[]; // רשימת התוספות המפורטת
   overridePrice?: number; // מחיר סופי ידני (אם נערך)
-  description?: string;
   quantity?: number; // כמות (למשל 2 אסלות)
   unit?: string; // יחידה (אסלה, חדר, וכו')
+  /** הערה לשורה בהצעה המהירה – לא הערות הסל הכלליות */
+  description?: string;
 }
 
 interface QuoteBasketContextType {
   items: BasketItem[];
-  addItem: (item: Omit<BasketItem, 'id'>) => void;
+  addItem: (item: Omit<BasketItem, 'id'>) => string;
   removeItem: (id: string) => void;
+  /** עדכון שדות של פריט קיים (הצעה מהירה / פריט חופשי) */
+  updateItem: (id: string, patch: Partial<Omit<BasketItem, 'id'>>) => void;
   /** הסרת תת־שירות (תוספת) מפריט */
   removeExtraFromItem: (itemId: string, extraIndex: number) => void;
   updateItemPrice: (id: string, newPrice: number) => void;
@@ -161,12 +164,20 @@ export const QuoteBasketProvider: React.FC<{ children: React.ReactNode; userId?:
     }
   }, [items, discount, isLoaded, userId]);
 
-  const addItem = (item: Omit<BasketItem, 'id'>) => {
+  const addItem = (item: Omit<BasketItem, 'id'>): string => {
+    const id = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const newItem: BasketItem = {
       ...item,
-      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      id,
     };
     setItems((prev) => [...prev, newItem]);
+    return id;
+  };
+
+  const updateItem = (id: string, patch: Partial<Omit<BasketItem, 'id'>>) => {
+    setItems((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, ...patch } : item))
+    );
   };
 
   const removeItem = (id: string) => {
@@ -243,6 +254,7 @@ export const QuoteBasketProvider: React.FC<{ children: React.ReactNode; userId?:
     () => ({
       items,
       addItem,
+      updateItem,
       removeItem,
       removeExtraFromItem,
       updateItemPrice,
