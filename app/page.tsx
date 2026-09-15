@@ -42,6 +42,7 @@ import { useSpotlightOnboarding } from './hooks/useSpotlightOnboarding';
 import SpotlightOverlay from './components/onboarding/SpotlightOverlay';
 import InstallAppButton from './components/InstallAppButton';
 import { trackEvent, AnalyticsEvents } from '@/lib/analytics';
+import { recordProductMetric } from '@/lib/product-metrics-client';
 
 const categoryIcons: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
   paint: Palette,
@@ -112,16 +113,16 @@ export default function HomePage() {
   const suggestedCategoryId = SPOTLIGHT_SUGGESTED_HOME_CATEGORY_ID;
 
   useEffect(() => {
-    // אורח שנכנס לאפליקציה (ללא סשן מחובר) — פעם אחת לכל session
-    const hasSession = document.cookie.includes('quoteBuilder_session=');
-    if (hasSession) return;
+    // כניסה לדף הבית — פעם אחת לכל session (אורח ומחובר)
     try {
-      if (sessionStorage.getItem('qb_guest_entry_tracked') === '1') return;
-      sessionStorage.setItem('qb_guest_entry_tracked', '1');
+      if (sessionStorage.getItem('qb_app_entry_tracked') === '1') return;
+      sessionStorage.setItem('qb_app_entry_tracked', '1');
     } catch {
       /* ignore */
     }
-    trackEvent(AnalyticsEvents.AppEnteredGuest);
+    const hasSession = document.cookie.includes('quoteBuilder_session=');
+    if (!hasSession) trackEvent(AnalyticsEvents.AppEnteredGuest);
+    recordProductMetric('app_entered');
   }, []);
 
   const { trades: tradeCategories, projects: projectCategories } = useMemo(

@@ -21,6 +21,7 @@ import { ArrowRight, UserCircle, Settings, FileText, ChevronLeft, Download, Tras
 import ConfirmDialog from '../components/ConfirmDialog';
 import InstallManualGuide from '../components/InstallManualGuide';
 import { markAppInstalled } from '../../lib/install-utils';
+import { recordProductMetric } from '../../lib/product-metrics-client';
 
 const PENDING_DRAFT_KEY = 'quoteBuilder_pendingDraft';
 
@@ -341,6 +342,7 @@ export default function ProfilePage() {
       a.download = `hatzaat-mechir-${quote.createdAt.slice(0, 10)}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
+      recordProductMetric('quote_pdf');
     } finally {
       setDownloadingId(null);
     }

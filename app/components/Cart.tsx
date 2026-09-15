@@ -33,6 +33,7 @@ import {
   GUEST_PREVIEW_WATERMARK_LINE,
 } from '../../lib/guest-quote-preview';
 import { trackEvent, AnalyticsEvents } from '../../lib/analytics';
+import { recordProductMetric } from '../../lib/product-metrics-client';
 import type { BasketItem } from '../contexts/QuoteBasketContext';
 
 interface CartItemRowProps {
@@ -796,6 +797,7 @@ export default function Cart() {
     exportMethod: 'download' | 'share' | 'fallback' = 'download'
   ) => {
     trackEvent(AnalyticsEvents.QuoteExported, { method: exportMethod });
+    recordProductMetric(exportMethod === 'share' ? 'quote_whatsapp' : 'quote_pdf');
     markFirstQuoteCompleted();
     clearBasket();
     setCustomerName('');

@@ -121,4 +121,6 @@ export const LIMITS = {
   QUOTE_NUMBER: { max: 80, windowMs: 60 * 1000 },
   /** יצירה/עדכון תורי ייצוא */
   QUOTE_JOBS: { max: 120, windowMs: 60 * 1000 },
+  /** ספירת קליקים לדשבורד מנהל */
+  METRICS: { max: 60, windowMs: 60 * 1000 },
 } as const;

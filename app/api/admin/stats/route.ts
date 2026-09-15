@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getUsersCount, getNewUsersCount } from '../../auth/lib/users-store';
 import { supabaseAdmin } from '../../../../lib/supabase-server';
 import { getAdminKeyFromRequest } from '../../../../lib/admin-config';
+import { getProductEventStats } from '../../../../lib/product-events';
 
 /** מפתח אדמין – רק מ-header (לא מ-URL) */
 function getAdminKey(request: Request): string | null {
@@ -15,10 +16,11 @@ export async function GET(request: Request) {
   }
 
   try {
-    const [totalUsers, newUsers7d, newUsers30d] = await Promise.all([
+    const [totalUsers, newUsers7d, newUsers30d, productEvents] = await Promise.all([
       getUsersCount(),
       getNewUsersCount(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()),
       getNewUsersCount(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
+      getProductEventStats(),
     ]);
 
     let totalQuotes = 0;
@@ -88,6 +90,7 @@ export async function GET(request: Request) {
       totalBasketLineItems,
       avgQuotesPerActiveUser,
       avgRevenuePerQuote,
+      productEvents,
     });
   } catch (e) {
     console.error('Admin stats error:', e);

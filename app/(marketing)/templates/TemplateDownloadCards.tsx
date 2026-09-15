@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import { FileText, FileSpreadsheet, Printer, ArrowLeft, Check, Loader2 } from 'lucide-react';
 import { AnalyticsEvents, trackEvent } from '@/lib/analytics';
+import { recordProductMetric } from '@/lib/product-metrics-client';
 import TemplateChoiceSheet from './TemplateChoiceSheet';
 
 type IconKey = 'word' | 'excel' | 'print';
@@ -63,6 +64,9 @@ export default function TemplateDownloadCards({ cards }: { cards: TemplateCard[]
     if (!pendingCard) return;
     const card = pendingCard;
     trackEvent(AnalyticsEvents.TemplatePlainChosen, { format: card.icon });
+    if (card.icon === 'word') recordProductMetric('template_word');
+    else if (card.icon === 'excel') recordProductMetric('template_excel');
+    else recordProductMetric('template_pdf');
     setPendingCard(null);
     if (card.download) {
       startFileDownload(card.href);

@@ -26,9 +26,19 @@ import {
   Menu,
   X,
   Briefcase,
+  MousePointerClick,
+  Download,
+  MessageCircle,
+  Printer,
+  FileSpreadsheet,
 } from 'lucide-react';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { isAdminWireKeyHeaderSafe } from '../../lib/admin-header-key-safe';
+import {
+  emptyProductEventStats,
+  type ProductEventCount,
+  type ProductEventStats,
+} from '../../lib/product-events';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -50,7 +60,73 @@ type Stats = {
   totalBasketLineItems: number;
   avgQuotesPerActiveUser: number;
   avgRevenuePerQuote: number;
+  productEvents?: ProductEventStats;
 } | null;
+
+function formatCount(n: number) {
+  return n.toLocaleString('he-IL');
+}
+
+function formatMoney(n: number) {
+  return new Intl.NumberFormat('he-IL', {
+    style: 'currency',
+    currency: 'ILS',
+    maximumFractionDigits: 0,
+  }).format(n);
+}
+
+function ClickStat({
+  label,
+  count,
+  icon,
+  iconClass,
+}: {
+  label: string;
+  count: ProductEventCount;
+  icon: React.ReactNode;
+  iconClass: string;
+}) {
+  return (
+    <div className="rounded-2xl bg-white/[0.07] border border-white/10 p-4 md:p-5 text-right">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-slate-300 text-xs md:text-sm font-medium">{label}</p>
+          <p className="text-3xl md:text-[2.35rem] font-black text-white tabular-nums mt-1 tracking-tight leading-none">
+            {formatCount(count.total)}
+          </p>
+          <p className="text-slate-400 text-xs mt-2">{formatCount(count.last7d)} בשבעה ימים</p>
+        </div>
+        <div className={`p-2.5 rounded-xl shrink-0 ${iconClass}`}>{icon}</div>
+      </div>
+    </div>
+  );
+}
+
+function QuietStat({
+  label,
+  value,
+  icon,
+  iconClass,
+}: {
+  label: string;
+  value: React.ReactNode;
+  icon: React.ReactNode;
+  iconClass: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm text-right">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-slate-500 text-xs font-medium">{label}</p>
+          <p className="text-xl md:text-2xl font-black text-slate-900 tabular-nums mt-1.5 leading-tight">
+            {value}
+          </p>
+        </div>
+        <div className={`p-2 rounded-lg shrink-0 ${iconClass}`}>{icon}</div>
+      </div>
+    </div>
+  );
+}
 
 type UserRow = {
   id: string;
@@ -290,7 +366,7 @@ export default function AdminPage() {
   // ——— כניסה ———
   if (savedKey === null) {
     return (
-      <main className="min-h-screen bg-slate-900 flex items-center justify-center p-4" dir="rtl">
+      <main className="min-h-screen bg-[#0b1220] flex items-center justify-center p-4" dir="rtl">
         <div className="w-full max-w-md">
           <Link
             href="/"
@@ -298,14 +374,15 @@ export default function AdminPage() {
           >
             <ArrowRight size={20} /> חזרה לאתר
           </Link>
-          <div className="bg-slate-800 rounded-2xl border border-slate-700 shadow-2xl p-6 md:p-8">
+          <div className="bg-slate-900/80 rounded-3xl border border-white/10 shadow-2xl p-6 md:p-8 backdrop-blur">
             <div className="flex items-center gap-4 mb-8">
-              <div className="p-4 rounded-2xl bg-blue-600">
+              <div className="p-4 rounded-2xl bg-blue-600 shadow-lg shadow-blue-600/30">
                 <Lock size={28} className="text-white" />
               </div>
               <div>
+                <p className="text-blue-300 text-xs font-bold tracking-wide mb-1">הצעות.קו</p>
                 <h1 className="text-2xl font-black text-white">כניסת מנהל</h1>
-                <p className="text-slate-400 text-sm mt-0.5">לוח ניהול – גישה מאובטחת</p>
+                <p className="text-slate-400 text-sm mt-0.5">לוח ניהול מאובטח</p>
               </div>
             </div>
             {loginError && (
@@ -324,7 +401,7 @@ export default function AdminPage() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="ריק = רק סיסמת ניהול, כמו בעבר"
-                  className="w-full px-4 py-3 min-h-[48px] rounded-xl bg-slate-700/50 border border-slate-600 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 min-h-[48px] rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   dir="ltr"
                   autoComplete="username"
                 />
@@ -340,7 +417,7 @@ export default function AdminPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="סיסמת ניהול"
-                  className="w-full px-4 py-3 min-h-[48px] rounded-xl bg-slate-700/50 border border-slate-600 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 min-h-[48px] rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   dir="ltr"
                   autoComplete="current-password"
                 />
@@ -348,7 +425,7 @@ export default function AdminPage() {
               <button
                 type="submit"
                 disabled={!password}
-                className="w-full py-3 min-h-[52px] rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-50 transition-all"
+                className="w-full py-3 min-h-[52px] rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-50 transition-all shadow-lg shadow-blue-600/20"
               >
                 כניסה
               </button>
@@ -360,8 +437,19 @@ export default function AdminPage() {
   }
 
   // ——— לוח ניהול ———
+  const clicks = stats?.productEvents ?? emptyProductEventStats(true);
+  const templateClicks: ProductEventCount = {
+    total: clicks.templateWord.total + clicks.templateExcel.total + clicks.templatePdf.total,
+    last7d: clicks.templateWord.last7d + clicks.templateExcel.last7d + clicks.templatePdf.last7d,
+  };
+  const todayLabel = new Date().toLocaleDateString('he-IL', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  });
+
   return (
-    <div className="min-h-screen flex bg-slate-100" dir="rtl">
+    <div className="min-h-screen flex bg-slate-50" dir="rtl">
       {/* Overlay מובייל כשהסיידבר פתוח */}
       {sidebarOpen && (
         <button
@@ -375,43 +463,49 @@ export default function AdminPage() {
       {/* סיידבר: במובייל drawer, במחשב תמיד גלוי */}
       <aside
         className={`
-          w-64 shrink-0 bg-slate-900 text-white flex flex-col border-l border-slate-700
+          w-64 shrink-0 bg-[#0b1220] text-white flex flex-col border-l border-white/10
           fixed md:relative top-0 bottom-0 z-50 md:z-auto
           transition-transform duration-200 ease-out
           ${sidebarOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}
         `}
         style={{ height: '100dvh' }}
       >
-        <div className="p-5 border-b border-slate-700 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <LayoutDashboard size={22} className="text-blue-400" />
+        <div className="p-5 border-b border-white/10 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-blue-600 shadow-lg shadow-blue-600/30">
+              <LayoutDashboard size={18} className="text-white" />
+            </div>
             <div>
-              <h1 className="text-lg font-black text-white">לוח ניהול</h1>
-              <p className="text-slate-400 text-xs mt-0.5">בונה הצעות מחיר</p>
+              <h1 className="text-base font-black text-white leading-tight">לוח ניהול</h1>
+              <p className="text-slate-400 text-xs mt-0.5">הצעות.קו</p>
             </div>
           </div>
           <button
             type="button"
             aria-label="סגור תפריט"
             onClick={closeSidebar}
-            className="p-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white md:hidden"
+            className="p-2 rounded-lg text-slate-400 hover:bg-white/10 hover:text-white md:hidden"
           >
             <X size={24} />
           </button>
         </div>
         <nav className="p-3 flex-1 overflow-auto">
+          <div className="flex items-center gap-3 px-4 py-3 min-h-[48px] rounded-xl bg-white/10 text-white font-medium mb-1">
+            <BarChart3 size={20} className="text-blue-300" />
+            <span>דשבורד</span>
+          </div>
           <Link
             href="/"
             target="_blank"
             rel="noopener noreferrer"
             onClick={closeSidebar}
-            className="flex items-center gap-3 px-4 py-3 min-h-[48px] rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-colors mb-2"
+            className="flex items-center gap-3 px-4 py-3 min-h-[48px] rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-colors"
           >
             <ExternalLink size={20} />
             <span>פתח את האתר</span>
           </Link>
         </nav>
-        <div className="p-3 space-y-2 border-t border-slate-700">
+        <div className="p-3 space-y-2 border-t border-white/10">
           {installSuccess ? (
             <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-500/20 text-emerald-400 text-sm min-h-[48px]">
               <Check size={20} /> נוסף למסך הבית
@@ -427,7 +521,7 @@ export default function AdminPage() {
               {installLoading ? 'מתקין...' : 'הורד לאפליקציה'}
             </button>
           ) : (
-            <div className="px-4 py-3 rounded-xl bg-slate-800 text-slate-400 text-xs min-h-[48px] flex items-center">
+            <div className="px-4 py-3 rounded-xl bg-white/5 text-slate-400 text-xs min-h-[48px] flex items-center">
               <p className="font-medium text-slate-300">להוספה למסך הבית: תפריט → הוסף למסך הבית</p>
             </div>
           )}
@@ -458,201 +552,235 @@ export default function AdminPage() {
           ) : (
             <>
               {/* כותרת + כפתור תפריט מובייל (דביק במובייל) */}
-              <header className="sticky top-0 z-30 -mx-4 px-4 py-3 md:py-0 md:static md:mx-0 md:px-0 bg-slate-100 md:bg-transparent mb-6 md:mb-8 flex items-start justify-between gap-4">
+              <header className="sticky top-0 z-30 -mx-4 px-4 py-3 md:py-0 md:static md:mx-0 md:px-0 bg-slate-50/95 md:bg-transparent backdrop-blur md:backdrop-blur-none mb-6 md:mb-8 flex items-start justify-between gap-4">
                 <div>
-                  <h2 className="text-xl md:text-2xl font-black text-slate-900">דשבורד</h2>
-                  <p className="text-slate-500 text-sm mt-0.5 hidden sm:block">סקירה כללית ושליטה במשתמשים</p>
+                  <p className="text-slate-500 text-xs font-medium mb-0.5">{todayLabel}</p>
+                  <h2 className="text-xl md:text-2xl font-black text-slate-900">דשבורד מנהלים</h2>
+                  <p className="text-slate-500 text-sm mt-0.5 hidden sm:block">קליקים, משתמשים והצעות במקום אחד</p>
                 </div>
                 <button
                   type="button"
                   aria-label="פתח תפריט"
                   onClick={() => setSidebarOpen(true)}
-                  className="p-3 rounded-xl bg-slate-800 text-white hover:bg-slate-700 active:bg-slate-600 md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center shrink-0"
+                  className="p-3 rounded-xl bg-[#0b1220] text-white hover:bg-slate-800 active:bg-slate-700 md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center shrink-0"
                 >
                   <Menu size={24} />
                 </button>
               </header>
 
+              <section
+                className="rounded-3xl bg-[#0b1220] text-white p-5 md:p-7 mb-6 md:mb-8 shadow-xl shadow-slate-900/10"
+                aria-label="קליקים במוצר"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3 mb-5">
+                  <div>
+                    <h3 className="text-lg md:text-xl font-black flex items-center gap-2">
+                      <MousePointerClick size={22} className="text-blue-300" />
+                      קליקים במוצר
+                    </h3>
+                    <p className="text-slate-400 text-sm mt-1">
+                      ספירה מדויקת מהאתר — מתעדכנת אוטומטית, גם מהטלפון
+                    </p>
+                  </div>
+                </div>
+                {clicks.tableMissing ? (
+                  <div className="rounded-2xl bg-amber-400/15 border border-amber-300/30 text-amber-100 p-4 text-sm">
+                    טבלת הספירה עדיין לא הוגדרה ב־Supabase. הרץ את{' '}
+                    <code className="font-mono text-xs bg-black/20 px-1.5 py-0.5 rounded">supabase-product-events.sql</code>
+                    {' '}ואז רענן את הדף.
+                  </div>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-3 md:mb-4">
+                      <ClickStat
+                        label="כניסות לאפליקציה"
+                        count={clicks.appEntered}
+                        icon={<MousePointerClick size={18} />}
+                        iconClass="bg-blue-500/20 text-blue-300"
+                      />
+                      <ClickStat
+                        label="הורדת PDF הצעה"
+                        count={clicks.quotePdf}
+                        icon={<Download size={18} />}
+                        iconClass="bg-emerald-500/20 text-emerald-300"
+                      />
+                      <ClickStat
+                        label="שיתוף בוואטסאפ"
+                        count={clicks.quoteWhatsapp}
+                        icon={<MessageCircle size={18} />}
+                        iconClass="bg-green-500/20 text-green-300"
+                      />
+                      <ClickStat
+                        label="הורדות תבניות"
+                        count={templateClicks}
+                        icon={<FileText size={18} />}
+                        iconClass="bg-violet-500/20 text-violet-300"
+                      />
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 md:gap-3">
+                      <div className="rounded-xl bg-white/[0.05] border border-white/10 px-3 py-3 text-right">
+                        <p className="text-slate-400 text-[11px] md:text-xs flex items-center gap-1.5">
+                          <FileText size={13} /> Word
+                        </p>
+                        <p className="text-lg md:text-xl font-black tabular-nums mt-1">
+                          {formatCount(clicks.templateWord.total)}
+                        </p>
+                      </div>
+                      <div className="rounded-xl bg-white/[0.05] border border-white/10 px-3 py-3 text-right">
+                        <p className="text-slate-400 text-[11px] md:text-xs flex items-center gap-1.5">
+                          <FileSpreadsheet size={13} /> Excel
+                        </p>
+                        <p className="text-lg md:text-xl font-black tabular-nums mt-1">
+                          {formatCount(clicks.templateExcel.total)}
+                        </p>
+                      </div>
+                      <div className="rounded-xl bg-white/[0.05] border border-white/10 px-3 py-3 text-right">
+                        <p className="text-slate-400 text-[11px] md:text-xs flex items-center gap-1.5">
+                          <Printer size={13} /> PDF להדפסה
+                        </p>
+                        <p className="text-lg md:text-xl font-black tabular-nums mt-1">
+                          {formatCount(clicks.templatePdf.total)}
+                        </p>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </section>
+
+              <h3 className="text-sm font-bold text-slate-500 mb-3 px-0.5">משתמשים</h3>
               {/* כרטיסי סטטיסטיקות – לחיצה מעבירה לרשימה מסוננת */}
-              <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8" aria-label="סטטיסטיקות">
+              <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8" aria-label="סטטיסטיקות משתמשים">
                 <button
                   type="button"
                   onClick={() => setListFilter('all')}
-                  className={`text-right rounded-xl md:rounded-2xl border p-4 md:p-6 shadow-sm transition-all hover:shadow-md hover:border-slate-300 active:scale-[0.98] min-h-[88px] md:min-h-0 ${
-                    listFilter === 'all' ? 'ring-2 ring-blue-500 border-blue-300 bg-blue-50/50' : 'bg-white border-slate-200'
+                  className={`text-right rounded-2xl border p-4 md:p-5 shadow-sm transition-all hover:shadow-md hover:border-slate-300 active:scale-[0.98] min-h-[88px] md:min-h-0 ${
+                    listFilter === 'all' ? 'ring-2 ring-blue-500 border-blue-300 bg-blue-50/50' : 'bg-white border-slate-200/80'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0">
                       <p className="text-slate-500 text-xs md:text-sm font-medium truncate">{'סה"כ משתמשים'}</p>
                       <p className="text-2xl md:text-3xl font-black text-slate-900 tabular-nums mt-0.5 md:mt-1">{stats?.totalUsers ?? 0}</p>
-                      <p className="text-[10px] md:text-xs text-slate-400 mt-1 hidden sm:block">לחץ לצפייה</p>
                     </div>
-                    <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-blue-100 text-blue-600 shrink-0">
-                      <Users size={22} className="md:w-7 md:h-7" />
+                    <div className="p-2 md:p-3 rounded-xl bg-blue-100 text-blue-600 shrink-0">
+                      <Users size={22} className="md:w-6 md:h-6" />
                     </div>
                   </div>
                 </button>
                 <button
                   type="button"
                   onClick={() => setListFilter('7d')}
-                  className={`text-right rounded-xl md:rounded-2xl border p-4 md:p-6 shadow-sm transition-all hover:shadow-md hover:border-slate-300 active:scale-[0.98] min-h-[88px] md:min-h-0 ${
-                    listFilter === '7d' ? 'ring-2 ring-emerald-500 border-emerald-300 bg-emerald-50/50' : 'bg-white border-slate-200'
+                  className={`text-right rounded-2xl border p-4 md:p-5 shadow-sm transition-all hover:shadow-md hover:border-slate-300 active:scale-[0.98] min-h-[88px] md:min-h-0 ${
+                    listFilter === '7d' ? 'ring-2 ring-emerald-500 border-emerald-300 bg-emerald-50/50' : 'bg-white border-slate-200/80'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0">
                       <p className="text-slate-500 text-xs md:text-sm font-medium truncate">נרשמו (7 ימים)</p>
                       <p className="text-2xl md:text-3xl font-black text-slate-900 tabular-nums mt-0.5 md:mt-1">{stats?.newUsers7d ?? 0}</p>
-                      <p className="text-[10px] md:text-xs text-slate-400 mt-1 hidden sm:block">לחץ לראות מי</p>
                     </div>
-                    <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-emerald-100 text-emerald-600 shrink-0">
-                      <UserPlus size={22} className="md:w-7 md:h-7" />
+                    <div className="p-2 md:p-3 rounded-xl bg-emerald-100 text-emerald-600 shrink-0">
+                      <UserPlus size={22} className="md:w-6 md:h-6" />
                     </div>
                   </div>
                 </button>
                 <button
                   type="button"
                   onClick={() => setListFilter('30d')}
-                  className={`text-right rounded-xl md:rounded-2xl border p-4 md:p-6 shadow-sm transition-all hover:shadow-md hover:border-slate-300 active:scale-[0.98] min-h-[88px] md:min-h-0 ${
-                    listFilter === '30d' ? 'ring-2 ring-amber-500 border-amber-300 bg-amber-50/50' : 'bg-white border-slate-200'
+                  className={`text-right rounded-2xl border p-4 md:p-5 shadow-sm transition-all hover:shadow-md hover:border-slate-300 active:scale-[0.98] min-h-[88px] md:min-h-0 ${
+                    listFilter === '30d' ? 'ring-2 ring-amber-500 border-amber-300 bg-amber-50/50' : 'bg-white border-slate-200/80'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0">
                       <p className="text-slate-500 text-xs md:text-sm font-medium truncate">נרשמו (30 יום)</p>
                       <p className="text-2xl md:text-3xl font-black text-slate-900 tabular-nums mt-0.5 md:mt-1">{stats?.newUsers30d ?? 0}</p>
-                      <p className="text-[10px] md:text-xs text-slate-400 mt-1 hidden sm:block">לחץ לראות מי</p>
                     </div>
-                    <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-amber-100 text-amber-600 shrink-0">
-                      <TrendingUp size={22} className="md:w-7 md:h-7" />
+                    <div className="p-2 md:p-3 rounded-xl bg-amber-100 text-amber-600 shrink-0">
+                      <TrendingUp size={22} className="md:w-6 md:h-6" />
                     </div>
                   </div>
                 </button>
                 <button
                   type="button"
                   onClick={() => setListFilter('top_quotes')}
-                  className={`text-right rounded-xl md:rounded-2xl border p-4 md:p-6 shadow-sm transition-all hover:shadow-md hover:border-slate-300 active:scale-[0.98] min-h-[88px] md:min-h-0 ${
-                    listFilter === 'top_quotes' ? 'ring-2 ring-violet-500 border-violet-300 bg-violet-50/50' : 'bg-white border-slate-200'
+                  className={`text-right rounded-2xl border p-4 md:p-5 shadow-sm transition-all hover:shadow-md hover:border-slate-300 active:scale-[0.98] min-h-[88px] md:min-h-0 ${
+                    listFilter === 'top_quotes' ? 'ring-2 ring-violet-500 border-violet-300 bg-violet-50/50' : 'bg-white border-slate-200/80'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0">
                       <p className="text-slate-500 text-xs md:text-sm font-medium truncate">{'סה"כ הצעות'}</p>
                       <p className="text-2xl md:text-3xl font-black text-slate-900 tabular-nums mt-0.5 md:mt-1">{stats?.totalQuotes ?? 0}</p>
-                      <p className="text-[10px] md:text-xs text-slate-400 mt-1 hidden sm:block">לפי הצעות</p>
                     </div>
-                    <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-violet-100 text-violet-600 shrink-0">
-                      <FileText size={22} className="md:w-7 md:h-7" />
+                    <div className="p-2 md:p-3 rounded-xl bg-violet-100 text-violet-600 shrink-0">
+                      <FileText size={22} className="md:w-6 md:h-6" />
                     </div>
                   </div>
                 </button>
               </section>
 
+              <h3 className="text-sm font-bold text-slate-500 mb-3 px-0.5">הצעות ועסק</h3>
               <section
                 className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8"
                 aria-label="סטטיסטיקות מורחבות"
               >
-                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm text-right">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="text-slate-500 text-xs font-medium truncate">הצעות חדשות (7 ימים)</p>
-                      <p className="text-xl md:text-2xl font-black text-slate-900 tabular-nums mt-1">{stats?.quotesLast7d ?? 0}</p>
-                    </div>
-                    <div className="p-2 rounded-lg bg-teal-100 text-teal-700 shrink-0">
-                      <FileText size={18} />
-                    </div>
-                  </div>
-                </div>
-                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm text-right">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="text-slate-500 text-xs font-medium truncate">הצעות (30 יום)</p>
-                      <p className="text-xl md:text-2xl font-black text-slate-900 tabular-nums mt-1">{stats?.quotesLast30d ?? 0}</p>
-                    </div>
-                    <div className="p-2 rounded-lg bg-cyan-100 text-cyan-700 shrink-0">
-                      <BarChart3 size={18} />
-                    </div>
-                  </div>
-                </div>
-                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm text-right">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="text-slate-500 text-xs font-medium truncate">סה״כ סכומי הצעות (מע״מ)</p>
-                      <p className="text-lg md:text-xl font-black text-slate-900 tabular-nums mt-1 leading-tight">
-                        {new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS', maximumFractionDigits: 0 }).format(stats?.totalRevenue ?? 0)}
-                      </p>
-                    </div>
-                    <div className="p-2 rounded-lg bg-green-100 text-green-700 shrink-0">
-                      <DollarSign size={18} />
-                    </div>
-                  </div>
-                </div>
-                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm text-right">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="text-slate-500 text-xs font-medium truncate">משתמשים עם הצעות</p>
-                      <p className="text-xl md:text-2xl font-black text-slate-900 tabular-nums mt-1">{stats?.usersWithQuotes ?? 0}</p>
-                    </div>
-                    <div className="p-2 rounded-lg bg-indigo-100 text-indigo-700 shrink-0">
-                      <Users size={18} />
-                    </div>
-                  </div>
-                </div>
-                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm text-right">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="text-slate-500 text-xs font-medium truncate">סלים לא ריקים</p>
-                      <p className="text-xl md:text-2xl font-black text-slate-900 tabular-nums mt-1">{stats?.usersWithBasket ?? 0}</p>
-                    </div>
-                    <div className="p-2 rounded-lg bg-orange-100 text-orange-700 shrink-0">
-                      <ShoppingCart size={18} />
-                    </div>
-                  </div>
-                </div>
-                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm text-right">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="text-slate-500 text-xs font-medium truncate">שורות סל (סה״כ)</p>
-                      <p className="text-xl md:text-2xl font-black text-slate-900 tabular-nums mt-1">{stats?.totalBasketLineItems ?? 0}</p>
-                    </div>
-                    <div className="p-2 rounded-lg bg-slate-200 text-slate-700 shrink-0">
-                      <ShoppingCart size={18} />
-                    </div>
-                  </div>
-                </div>
-                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm text-right">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="text-slate-500 text-xs font-medium truncate">ממוצע הצעות / משתמש פעיל</p>
-                      <p className="text-xl md:text-2xl font-black text-slate-900 tabular-nums mt-1">{stats?.avgQuotesPerActiveUser ?? 0}</p>
-                    </div>
-                    <div className="p-2 rounded-lg bg-violet-100 text-violet-700 shrink-0">
-                      <Percent size={18} />
-                    </div>
-                  </div>
-                </div>
-                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm text-right">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="text-slate-500 text-xs font-medium truncate">ממוצע סכום / הצעה</p>
-                      <p className="text-lg md:text-xl font-black text-slate-900 tabular-nums mt-1 leading-tight">
-                        {new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS', maximumFractionDigits: 0 }).format(stats?.avgRevenuePerQuote ?? 0)}
-                      </p>
-                    </div>
-                    <div className="p-2 rounded-lg bg-emerald-100 text-emerald-800 shrink-0">
-                      <DollarSign size={18} />
-                    </div>
-                  </div>
-                </div>
+                <QuietStat
+                  label="הצעות חדשות (7 ימים)"
+                  value={stats?.quotesLast7d ?? 0}
+                  icon={<FileText size={18} />}
+                  iconClass="bg-teal-100 text-teal-700"
+                />
+                <QuietStat
+                  label="הצעות (30 יום)"
+                  value={stats?.quotesLast30d ?? 0}
+                  icon={<BarChart3 size={18} />}
+                  iconClass="bg-cyan-100 text-cyan-700"
+                />
+                <QuietStat
+                  label="סה״כ סכומי הצעות (מע״מ)"
+                  value={formatMoney(stats?.totalRevenue ?? 0)}
+                  icon={<DollarSign size={18} />}
+                  iconClass="bg-green-100 text-green-700"
+                />
+                <QuietStat
+                  label="משתמשים עם הצעות"
+                  value={stats?.usersWithQuotes ?? 0}
+                  icon={<Users size={18} />}
+                  iconClass="bg-indigo-100 text-indigo-700"
+                />
+                <QuietStat
+                  label="סלים לא ריקים"
+                  value={stats?.usersWithBasket ?? 0}
+                  icon={<ShoppingCart size={18} />}
+                  iconClass="bg-orange-100 text-orange-700"
+                />
+                <QuietStat
+                  label="שורות סל (סה״כ)"
+                  value={stats?.totalBasketLineItems ?? 0}
+                  icon={<ShoppingCart size={18} />}
+                  iconClass="bg-slate-200 text-slate-700"
+                />
+                <QuietStat
+                  label="ממוצע הצעות / משתמש פעיל"
+                  value={stats?.avgQuotesPerActiveUser ?? 0}
+                  icon={<Percent size={18} />}
+                  iconClass="bg-violet-100 text-violet-700"
+                />
+                <QuietStat
+                  label="ממוצע סכום / הצעה"
+                  value={formatMoney(stats?.avgRevenuePerQuote ?? 0)}
+                  icon={<DollarSign size={18} />}
+                  iconClass="bg-emerald-100 text-emerald-800"
+                />
               </section>
 
               {/* מקצועות מותאמים שמשתמשים יצרו */}
-              <section className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-6 md:mb-8">
-                <div className="px-4 sm:px-6 py-4 border-b border-slate-200 flex items-center justify-between gap-3">
+              <section className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden mb-6 md:mb-8">
+                <div className="px-4 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
                   <div>
-                    <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                      <Briefcase size={20} className="text-blue-600" />
+                    <h3 className="text-base md:text-lg font-bold text-slate-900 flex items-center gap-2">
+                      <Briefcase size={18} className="text-blue-600" />
                       מקצועות שנוספו ע״י משתמשים
                     </h3>
                     <p className="text-sm text-slate-500 mt-0.5">
@@ -712,8 +840,8 @@ export default function AdminPage() {
               </section>
 
               {/* רשימת משתמשים + Breadcrumb */}
-              <section className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="px-4 sm:px-6 py-4 border-b border-slate-200 flex flex-col gap-3">
+              <section className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                <div className="px-4 sm:px-6 py-4 border-b border-slate-100 flex flex-col gap-3">
                   <div className="flex flex-wrap items-center gap-2 text-sm">
                     <span className="text-slate-500">דשבורד</span>
                     <span className="text-slate-300">/</span>

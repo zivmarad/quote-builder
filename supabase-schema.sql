@@ -163,5 +163,25 @@ CREATE INDEX IF NOT EXISTS idx_quote_export_jobs_status ON quote_export_jobs(sta
 CREATE INDEX IF NOT EXISTS idx_quote_export_jobs_created_at ON quote_export_jobs(created_at);
 ALTER TABLE quote_export_jobs ENABLE ROW LEVEL SECURITY;
 
+-- ספירת קליקים במוצר לדשבורד מנהלים
+CREATE TABLE IF NOT EXISTS product_events (
+  id BIGSERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT product_events_name_chk CHECK (
+    name IN (
+      'app_entered',
+      'quote_pdf',
+      'quote_whatsapp',
+      'template_word',
+      'template_excel',
+      'template_pdf'
+    )
+  )
+);
+CREATE INDEX IF NOT EXISTS product_events_name_created_at_idx
+  ON product_events (name, created_at DESC);
+ALTER TABLE product_events ENABLE ROW LEVEL SECURITY;
+
 -- מדיניות: שירות (service_role) יכול הכל. לקוח (anon) לא יכול גישה ישירה
 -- אנחנו משתמשים רק ב־API routes עם service_role, אז זה תקין

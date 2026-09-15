@@ -28,10 +28,14 @@ function isMarketingSeoPage(pathname: string): boolean {
   );
 }
 
+function isAdminPage(pathname: string): boolean {
+  return pathname === '/admin' || pathname.startsWith('/admin/');
+}
+
 export default function AppChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() ?? '';
 
-  if (isMarketingLanding(pathname)) {
+  if (isMarketingLanding(pathname) || isAdminPage(pathname)) {
     return <>{children}</>;
   }
 
