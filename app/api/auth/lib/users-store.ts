@@ -259,6 +259,55 @@ export async function getNewUsersCount(sinceIso: string): Promise<number> {
   return count ?? 0;
 }
 
+function usernameFromGoogle(email: string, name?: string): string {
+  const strip = (value: string) =>
+    value
+      .trim()
+      .replace(/\s+/g, '')
+      .replace(/[^a-zA-Z0-9\u0590-\u05FF._-]/g, '')
+      .slice(0, 24);
+  const fromName = strip(name ?? '');
+  const fromEmail = strip(email.split('@')[0] ?? '');
+  const base = fromName.length >= 2 ? fromName : fromEmail;
+  return base.length >= 2 ? base : 'user';
+}
+
+export async function allocateUniqueUsername(base: string): Promise<string> {
+  const cleaned = base.trim().slice(0, 32);
+  const seed = cleaned.length >= 2 ? cleaned : 'user';
+  if (!(await usernameExists(seed))) return seed;
+  for (let i = 2; i < 80; i++) {
+    const next = `${seed.slice(0, 24)}${i}`;
+    if (!(await usernameExists(next))) return next;
+  }
+  return `${seed.slice(0, 18)}${Date.now().toString(36)}`;
+}
+
+/** מוצא משתמש לפי אימייל גוגל, או יוצר חשבון חדש (בלי סיסמה ידועה). */
+export async function findOrCreateGoogleUser(input: {
+  email: string;
+  name?: string;
+}): Promise<{ user: StoredUser; created: boolean } | null> {
+  const email = input.email.trim().toLowerCase();
+  if (!email) return null;
+
+  const existing = await getUserByLogin(email);
+  if (existing) return { user: existing, created: false };
+
+  const username = await allocateUniqueUsername(usernameFromGoogle(email, input.name));
+  const passwordHash = await hashPassword(`google:${crypto.randomUUID()}:${Date.now()}`);
+  const user: StoredUser = {
+    id: generateId(),
+    username,
+    email,
+    passwordHash,
+    createdAt: new Date().toISOString(),
+  };
+  const created = await createUser(user);
+  if (!created) return null;
+  return { user, created: true };
+}
+
 /** מוחק משתמש וכל הנתונים המשויכים */
 export async function deleteUserById(userId: string): Promise<boolean> {
   if (!supabaseAdmin) return false;

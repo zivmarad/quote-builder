@@ -40,8 +40,17 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 | `NEXT_PUBLIC_SENTRY_DSN` | אופציונלי | DSN של Sentry לדיווח שגיאות בצד לקוח (ומספיק גם לשרת אם לא מגדירים `SENTRY_DSN`). |
 | `SENTRY_DSN` | אופציונלי | אותו DSN רק לשרת (לא חובה אם כבר יש `NEXT_PUBLIC_SENTRY_DSN`). |
 | `SENTRY_AUTH_TOKEN` | אופציונלי | ב־build (למשל Vercel): העלאת source maps ל־Sentry. בלי טוקן – ה־build מדלג על ההעלאה. |
+| `GOOGLE_CLIENT_ID` | לכניסה עם Google | מזהה הלקוח מ-Google Cloud (APIs & Services → Credentials → OAuth 2.0 Client). |
+| `GOOGLE_CLIENT_SECRET` | לכניסה עם Google | הסוד של אותו Client. **לא לחשוף בצד לקוח.** |
 
 **אופציונלי:** `NOTIFY_ADMIN_EMAIL`, `NOTIFY_SMS_EMAIL` – לקבלת מייל/SMS על הרשמה חדשה.
+
+**כניסה עם Google:** אחרי שמגדירים את `GOOGLE_CLIENT_ID` ו־`GOOGLE_CLIENT_SECRET`, ב-Google Cloud Console (APIs & Services → Credentials → OAuth client, סוג Web) הוסיפו ל-Authorized redirect URIs:
+
+- `http://localhost:3000/api/auth/google/callback`
+- `https://hatzaot.co.il/api/auth/google/callback`
+
+משתמש שנרשם עם Google מופיע באדמין כמו כולם (אימייל + תאריך). אם האימייל כבר קיים במערכת – מתחברים לאותו חשבון.
 
 **חשוב:** אל תעלה קבצי `.env` או `.env.local` ל-Git; הסודות רק במשתני הסביבה של הפלטפורמה.
 

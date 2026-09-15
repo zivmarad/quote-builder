@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { UserPlus, ArrowRight, Mail } from 'lucide-react';
 import { trackEvent, AnalyticsEvents } from '@/lib/analytics';
+import GoogleAuthButton, { AuthMethodDivider, messageForGoogleAuthError } from '../components/GoogleAuthButton';
 
 type Step = 'email' | 'code' | 'details';
 
@@ -29,6 +30,8 @@ export default function SignupPage() {
     const fromPath = f.startsWith('/') ? f : `/${f}`;
     setFrom(fromPath);
     trackEvent(AnalyticsEvents.SignupPageViewed, { from: fromPath });
+    const googleMsg = messageForGoogleAuthError(params.get('error'), t);
+    if (googleMsg) setError(googleMsg);
   }, []);
 
   const goToWelcome = () => {
@@ -101,46 +104,50 @@ export default function SignupPage() {
           <ArrowRight size={20} /> {t('common.backHome')}
         </Link>
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
-          <h1 className="text-2xl font-black text-slate-900 mb-2">{t('signup.title')}</h1>
-          <p className="text-slate-500 text-sm mb-6">
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">{t('signup.title')}</h1>
+          <p className="text-slate-500 text-sm mt-1.5 mb-6">
             {step === 'email' && t('signup.stepEmail')}
             {step === 'code' && `${t('signup.stepCode')} ${email}`}
             {step === 'details' && t('signup.stepDetails')}
           </p>
 
           {error && (
-            <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm mb-4" role="alert">
+            <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm mb-5" role="alert">
               {error}
             </div>
           )}
 
           {step === 'email' && (
-            <form onSubmit={handleSendCode} className="space-y-4">
-              <div>
-                <label htmlFor="signup-email" className="block text-sm font-bold text-slate-700 mb-2">
-                  {t('signup.email')}
-                </label>
-                <input
-                  id="signup-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  className="w-full px-4 py-3 min-h-[48px] rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  autoComplete="email"
-                  dir="ltr"
-                  required
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 min-h-[52px] rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 flex items-center justify-center gap-2 transition-colors active:scale-[0.98]"
-              >
-                <Mail size={20} />
-                {loading ? t('signup.sending') : t('signup.sendCode')}
-              </button>
-            </form>
+            <>
+              <GoogleAuthButton from={from} label={t('auth.continueWithGoogle')} hint={t('auth.googleHint')} />
+              <AuthMethodDivider label={t('auth.orEmail')} />
+              <form onSubmit={handleSendCode} className="space-y-4">
+                <div>
+                  <label htmlFor="signup-email" className="block text-sm font-bold text-slate-700 mb-2">
+                    {t('signup.email')}
+                  </label>
+                  <input
+                    id="signup-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    className="w-full px-4 py-3 min-h-[48px] rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    autoComplete="email"
+                    dir="ltr"
+                    required
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3 min-h-[52px] rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 flex items-center justify-center gap-2 transition-colors active:scale-[0.98]"
+                >
+                  <Mail size={20} />
+                  {loading ? t('signup.sending') : t('signup.sendCode')}
+                </button>
+              </form>
+            </>
           )}
 
           {step === 'code' && (

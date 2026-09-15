@@ -24,6 +24,7 @@ export const AnalyticsEvents = {
   SignupPageViewed: 'signup_page_viewed',
   SignupCompleted: 'signup_completed',
   QuoteExported: 'quote_exported',
+  GoogleAuthStarted: 'google_auth_started',
   TemplateChoiceShown: 'template_choice_shown',
   TemplateBuilderChosen: 'template_builder_chosen',
   TemplatePlainChosen: 'template_plain_chosen',

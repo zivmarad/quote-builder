@@ -6,8 +6,9 @@ import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { SAVED_USERNAME_KEY, SAVED_PASSWORD_KEY } from '../contexts/AuthContext';
 import { resolvePostLoginRedirectPath } from '../../lib/post-login-redirect';
-import { LogIn, ArrowRight, UserPlus } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { trackEvent, AnalyticsEvents } from '@/lib/analytics';
+import GoogleAuthButton, { AuthMethodDivider, messageForGoogleAuthError } from '../components/GoogleAuthButton';
 
 export default function LoginPage() {
   const [from, setFrom] = useState('/');
@@ -27,6 +28,8 @@ export default function LoginPage() {
     const fromPath = f.startsWith('/') ? f : `/${f}`;
     setFrom(fromPath);
     trackEvent(AnalyticsEvents.LoginPageViewed, { from: fromPath });
+    const googleMsg = messageForGoogleAuthError(params.get('error'), t);
+    if (googleMsg) setError(googleMsg);
   }, []);
 
   useEffect(() => {
@@ -75,24 +78,16 @@ export default function LoginPage() {
           <ArrowRight size={20} /> {t('common.backHome')}
         </Link>
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
-          <h1 className="text-2xl font-black text-slate-900 mb-2">{t('login.title')}</h1>
-          <p className="text-slate-500 text-sm mb-4">{t('login.description')}</p>
-          <div className="mb-5 p-4 rounded-xl bg-slate-50 border border-slate-200">
-            <p className="text-slate-700 text-sm font-medium mb-2">{t('login.newUserTitle')}</p>
-            <Link
-              href={from !== '/' ? `/signup?from=${encodeURIComponent(from)}` : '/signup'}
-              className="inline-flex items-center gap-2 py-2.5 px-4 rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 transition-colors text-sm"
-            >
-              <UserPlus size={18} />
-              {t('login.signupButton')}
-            </Link>
-          </div>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">{t('login.title')}</h1>
+          <p className="text-slate-500 text-sm mt-1.5 mb-6">{t('login.description')}</p>
+          {error && (
+            <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm mb-5" role="alert">
+              {error}
+            </div>
+          )}
+          <GoogleAuthButton from={from} label={t('auth.continueWithGoogle')} hint={t('auth.googleHint')} />
+          <AuthMethodDivider label={t('auth.orPassword')} />
           <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm" role="alert">
-                {error}
-              </div>
-            )}
             <div>
               <label htmlFor="login-username" className="block text-sm font-bold text-slate-700 mb-2">
                 {t('login.username')}
@@ -112,7 +107,6 @@ export default function LoginPage() {
                 className="w-full px-4 py-3 min-h-[48px] rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 autoComplete="username email"
                 dir="ltr"
-                autoFocus
               />
             </div>
             <div>
@@ -154,9 +148,8 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 min-h-[52px] rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 flex items-center justify-center gap-2 transition-colors active:scale-[0.98]"
+              className="w-full py-3 min-h-[52px] rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 transition-colors active:scale-[0.98]"
             >
-              <LogIn size={20} />
               {loading ? t('login.submitting') : t('login.submit')}
             </button>
           </form>

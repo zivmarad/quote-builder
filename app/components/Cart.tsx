@@ -15,6 +15,7 @@ import { Trash2, Edit2, Check, X, ShoppingBag, Plus, FileText, Share2, Eye, Load
 import { Reorder, useDragControls } from 'framer-motion';
 import { markFirstQuoteCompleted } from '../../lib/first-quote-install';
 import ConfirmDialog from './ConfirmDialog';
+import GoogleAuthButton, { AuthMethodDivider } from './GoogleAuthButton';
 import CartNotesEditor from './CartNotesEditor';
 import {
   deleteQuoteNoteTemplate,
@@ -1750,7 +1751,7 @@ export default function Cart() {
           style={{ paddingBottom: 'calc(1.25rem + env(safe-area-inset-bottom))' }}
         >
           <div className="flex items-center justify-between mb-3">
-            <h3 id="login-wall-title" className="text-xl font-black text-slate-900">כמעט סיימת!</h3>
+            <h3 id="login-wall-title" className="text-xl font-black text-slate-900 tracking-tight">כמעט סיימת!</h3>
             <button
               type="button"
               onClick={() => setLoginWallAction(null)}
@@ -1764,21 +1765,24 @@ export default function Cart() {
             {loginWallAction === 'download_pdf' && 'כדי להוריד PDF ממותג עם הלוגו והפרטים שלך — '}
             {loginWallAction === 'share_whatsapp' && 'כדי לשלוח את ההצעה בוואטסאפ — '}
             {loginWallAction === 'save_draft' && 'כדי לשמור טיוטה ולחזור אליה בהמשך — '}
-            דרושה הרשמה חינמית קצרה (30 שניות, בלי כרטיס אשראי). ההצעה שבנית תישמר.
+            דרושה הרשמה חינמית. ההצעה שבנית תישמר.
           </p>
-          <div className="flex flex-col gap-3 mt-5">
+          <p className="mt-2 text-xs text-slate-400">חינם לגמרי · בלי כרטיס אשראי · לחיצה אחת</p>
+          <div className="mt-5">
+            <GoogleAuthButton from="/cart" label="המשך עם Google" />
+            <AuthMethodDivider label="או" />
             <button
               type="button"
               onClick={() => router.push('/signup?from=' + encodeURIComponent('/cart'))}
-              className="w-full py-3 min-h-[52px] rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 flex items-center justify-center gap-2 transition-colors active:scale-[0.98]"
+              className="w-full py-3 min-h-[52px] rounded-xl font-semibold border border-slate-300 text-slate-800 hover:bg-slate-50 flex items-center justify-center gap-2 transition-colors"
             >
-              <UserPlus size={20} />
-              הרשמה חינמית
+              <UserPlus size={18} />
+              הרשמה באימייל
             </button>
             <button
               type="button"
               onClick={() => router.push('/login?from=' + encodeURIComponent('/cart'))}
-              className="w-full py-3 min-h-[52px] rounded-xl font-bold border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
+              className="w-full mt-2 py-2.5 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors"
             >
               כבר יש לי חשבון — התחברות
             </button>
