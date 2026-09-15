@@ -45,7 +45,7 @@ export function SettingsProvider({ children, userId }: { children: React.ReactNo
     const key = getStorageKey(userId);
     const loadFromStorage = (): QuoteSettings => {
       let raw = localStorage.getItem(key);
-      if (!raw) {
+      if (!raw && !userId) {
         const legacy = localStorage.getItem('quoteBuilderSettings');
         if (legacy) {
           localStorage.setItem(key, legacy);
@@ -103,10 +103,11 @@ export function SettingsProvider({ children, userId }: { children: React.ReactNo
 
   useEffect(() => {
     if (!isLoaded || typeof window === 'undefined') return;
+    if (lastLoadedForUserIdRef.current !== userId) return;
     try {
       const key = getStorageKey(userId);
       localStorage.setItem(key, JSON.stringify(settings));
-      if (userId && lastLoadedForUserIdRef.current === userId) void postSync('/settings', userId, { settings });
+      if (userId) void postSync('/settings', userId, { settings });
     } catch { /* ignore quota / private mode */ }
   }, [settings, isLoaded, userId]);
 

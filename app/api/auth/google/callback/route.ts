@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { findOrCreateGoogleUser } from '../../lib/users-store';
+import { displayNameFromGoogle, findOrCreateGoogleUser, seedProfileContactNameIfEmpty } from '../../lib/users-store';
 import { sendNewUserNotificationEmail } from '../../lib/send-email';
 import { createSessionToken, setSessionCookie, clearImpersonationCookies } from '../../../../../lib/auth-server';
 import { resolvePostLoginRedirectPath } from '../../../../../lib/post-login-redirect';
@@ -74,6 +74,15 @@ export async function GET(request: Request) {
 
   const result = await findOrCreateGoogleUser({ email: info.email, name: info.name });
   if (!result) return fail('google_failed', from);
+
+  const contactName = displayNameFromGoogle(info.name);
+  if (contactName) {
+    try {
+      await seedProfileContactNameIfEmpty(result.user.id, contactName);
+    } catch {
+      /* greeting seed must not block login */
+    }
+  }
 
   if (result.created) {
     try {

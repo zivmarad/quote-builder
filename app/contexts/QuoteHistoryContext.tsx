@@ -192,7 +192,8 @@ export function QuoteHistoryProvider({ children, userId }: { children: React.Rea
     const key = getStorageKey(userId);
     const loadFromStorage = (): SavedQuote[] => {
       let raw = localStorage.getItem(key);
-      if (!raw) {
+      // היסטוריה ישנה בלי userId — רק לאורח, לא לכל מי שמתחבר במכשיר
+      if (!raw && !userId) {
         const legacy = localStorage.getItem('quoteBuilderHistory');
         if (legacy) {
           localStorage.setItem(key, legacy);
@@ -223,9 +224,10 @@ export function QuoteHistoryProvider({ children, userId }: { children: React.Rea
         const guestRaw = localStorage.getItem(guestKey);
         const data = await fetchSync<{ quotes: SavedQuote[] }>('/history', userId);
         if (cancelled) return;
+        const serverReached = data != null;
         const serverQuotes = data?.quotes != null && Array.isArray(data.quotes) ? data.quotes : [];
         let guestQuotes: SavedQuote[] = [];
-        if (guestRaw) {
+        if (serverReached && guestRaw && serverQuotes.length === 0) {
           try {
             const parsed = JSON.parse(guestRaw) as unknown;
             guestQuotes = Array.isArray(parsed) ? mergeQuotes(parsed as SavedQuote[]) : [];
@@ -233,7 +235,11 @@ export function QuoteHistoryProvider({ children, userId }: { children: React.Rea
             /* ignore */
           }
         }
-        const merged = mergeQuotes(serverQuotes, localUserQuotes, guestQuotes);
+        // שרת הגיב: רק הצעות של המשתמש הזה (+ אורח אם החשבון ריק). לא ממזגים localStorage
+        // — שם נשמרה היסטוריה של משתמש אחר במעבר חשבון באותו דפדפן.
+        const merged = serverReached
+          ? mergeQuotes(serverQuotes, guestQuotes)
+          : localUserQuotes;
         const tomb = pendingServerDeleteIdsRef.current;
         const visible = merged.filter((q) => !tomb.has(q.id));
         lastLoadedForUserIdRef.current = userId;
@@ -272,6 +278,7 @@ export function QuoteHistoryProvider({ children, userId }: { children: React.Rea
 
   useEffect(() => {
     if (!isLoaded || typeof window === 'undefined') return;
+    if (lastLoadedForUserIdRef.current !== userId) return;
     try {
       const key = getStorageKey(userId);
       localStorage.setItem(key, JSON.stringify(quotes));

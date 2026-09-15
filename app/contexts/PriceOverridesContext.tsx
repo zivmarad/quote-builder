@@ -76,11 +76,12 @@ export function PriceOverridesProvider({
 
   useEffect(() => {
     if (!isLoaded || typeof window === 'undefined') return;
+    if (lastLoadedForUserIdRef.current !== userId) return;
     try {
       const key = getStorageKey(userId);
       const serialized = serializeOverridesStorage(overrides);
       localStorage.setItem(key, JSON.stringify(serialized));
-      if (userId && lastLoadedForUserIdRef.current === userId) {
+      if (userId) {
         void postSync('/price-overrides', userId, { overrides: serialized });
       }
     } catch { /* ignore quota / private mode */ }

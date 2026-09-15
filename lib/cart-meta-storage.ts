@@ -123,19 +123,11 @@ export async function loadCartMeta(userId: string | null | undefined): Promise<C
   if (!userId) return own;
 
   const guest = parseMeta(await readStored(metaKey(null)));
-  if (!metaHasContent(guest)) return own;
+  if (metaHasContent(own) || !metaHasContent(guest)) return own;
 
-  const merged: CartMeta = {
-    notes: own.notes.trim() ? own.notes : guest.notes,
-    customerName: own.customerName.trim() ? own.customerName : guest.customerName,
-    customerPhone: own.customerPhone.trim() ? own.customerPhone : guest.customerPhone,
-    customerEmail: own.customerEmail.trim() ? own.customerEmail : guest.customerEmail,
-    customerAddress: own.customerAddress.trim() ? own.customerAddress : guest.customerAddress,
-    customerCompanyId: own.customerCompanyId.trim() ? own.customerCompanyId : guest.customerCompanyId,
-  };
-  await writeStored(metaKey(userId), JSON.stringify(merged));
+  await writeStored(metaKey(userId), JSON.stringify(guest));
   await removeStored(metaKey(null));
-  return merged;
+  return guest;
 }
 
 export async function saveCartMeta(
@@ -155,12 +147,11 @@ export async function loadSavedQuoteNotes(userId: string | null | undefined): Pr
   if (!userId) return own;
 
   const guest = parseSavedNotes(await readStored(savedNotesKey(null)));
-  if (guest.length === 0) return own;
+  if (own.length > 0 || guest.length === 0) return own;
 
-  const merged = mergeSavedNotes(own, guest);
-  await writeStored(savedNotesKey(userId), JSON.stringify(merged));
+  await writeStored(savedNotesKey(userId), JSON.stringify(guest));
   await removeStored(savedNotesKey(null));
-  return merged;
+  return guest;
 }
 
 export async function saveQuoteNoteTemplate(

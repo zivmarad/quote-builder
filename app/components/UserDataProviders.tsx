@@ -21,7 +21,7 @@ export default function UserDataProviders({ children }: { children: React.ReactN
   }, [userId]);
 
   return (
-    <ProfileProvider userId={userId}>
+    <ProfileProvider key={userId ?? 'guest'} userId={userId}>
       <QuoteHistoryProvider userId={userId}>
         <SettingsProvider userId={userId}>
           <PriceOverridesProvider userId={userId}>

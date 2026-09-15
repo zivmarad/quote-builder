@@ -259,6 +259,18 @@ export async function getNewUsersCount(sinceIso: string): Promise<number> {
   return count ?? 0;
 }
 
+/** שם לתצוגה מגוגל — משאירים רווחים (למשל «זיו מרדאד»). */
+export function displayNameFromGoogle(name?: string): string {
+  const cleaned = (name ?? '')
+    .trim()
+    .replace(/[^\sA-Za-z0-9\u0590-\u05FF._'-]/g, '')
+    .replace(/\s+/g, ' ')
+    .slice(0, 80)
+    .trim();
+  if (cleaned.length < 2 || cleaned.includes('@')) return '';
+  return cleaned;
+}
+
 function usernameFromGoogle(email: string, name?: string): string {
   const strip = (value: string) =>
     value
@@ -270,6 +282,32 @@ function usernameFromGoogle(email: string, name?: string): string {
   const fromEmail = strip(email.split('@')[0] ?? '');
   const base = fromName.length >= 2 ? fromName : fromEmail;
   return base.length >= 2 ? base : 'user';
+}
+
+/** ממלא שם איש קשר רק אם עדיין ריק — לא דורס מה שהמשתמש כבר כתב בפרופיל. */
+export async function seedProfileContactNameIfEmpty(userId: string, contactName: string): Promise<void> {
+  if (!supabaseAdmin || !userId || !contactName.trim()) return;
+  const { data, error: readErr } = await supabaseAdmin
+    .from('user_profile')
+    .select('profile')
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (readErr) {
+    console.error('seedProfileContactNameIfEmpty read:', readErr);
+    return;
+  }
+  const existing =
+    data?.profile && typeof data.profile === 'object' ? (data.profile as Record<string, unknown>) : {};
+  if (typeof existing.contactName === 'string' && existing.contactName.trim()) return;
+  const { error } = await supabaseAdmin.from('user_profile').upsert(
+    {
+      user_id: userId,
+      profile: { ...existing, contactName: contactName.trim() },
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: 'user_id' }
+  );
+  if (error) console.error('seedProfileContactNameIfEmpty upsert:', error);
 }
 
 export async function allocateUniqueUsername(base: string): Promise<string> {

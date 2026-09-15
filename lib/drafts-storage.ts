@@ -73,7 +73,12 @@ async function runDraftsSync(userId: string): Promise<QuoteDraft[]> {
 
   const serverDrafts =
     serverResp?.drafts != null && Array.isArray(serverResp.drafts) ? serverResp.drafts : [];
-  const merged = trimDrafts(mergeDraftLists(serverDrafts, localDrafts, guestDrafts));
+  const serverReached = serverResp != null;
+  const merged = !serverReached
+    ? trimDrafts(localDrafts)
+    : serverDrafts.length > 0
+      ? trimDrafts(mergeDraftLists(serverDrafts))
+      : trimDrafts(mergeDraftLists(serverDrafts, guestDrafts));
 
   await basketStorageSet(key, JSON.stringify(merged));
   if (guestDrafts.length > 0) {

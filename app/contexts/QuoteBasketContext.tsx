@@ -121,13 +121,13 @@ export const QuoteBasketProvider: React.FC<{ children: React.ReactNode; userId?:
         if (cancelled) return;
         const serverItems = serverData?.items != null && Array.isArray(serverData.items) ? serverData.items : [];
         const guestParsed = parseBasketPersisted(guestSaved);
-        const guestItems = guestParsed.items;
+        const guestItems = serverItems.length === 0 ? guestParsed.items : [];
         const merged = [...serverItems, ...guestItems];
         lastLoadedForUserIdRef.current = userId;
         setItems(merged);
-        setDiscountState(guestParsed.discount ?? null);
+        setDiscountState(serverItems.length === 0 ? (guestParsed.discount ?? null) : null);
         if (merged.length > 0) {
-          void basketStorageSet(key, serializeBasket(merged, guestParsed.discount ?? null));
+          void basketStorageSet(key, serializeBasket(merged, serverItems.length === 0 ? guestParsed.discount ?? null : null));
           void postSync('/basket', userId, { items: merged });
         }
         void basketStorageRemove(guestKey);
@@ -150,13 +150,14 @@ export const QuoteBasketProvider: React.FC<{ children: React.ReactNode; userId?:
   // שמירה: IndexedDB תמיד; Supabase רק אם טענו עבור userId הזה
   useEffect(() => {
     if (typeof window === 'undefined' || !isLoaded) return;
+    if (lastLoadedForUserIdRef.current !== userId) return;
     const key = getStorageKey(userId);
     if (items.length > 0) {
       void basketStorageSet(key, serializeBasket(items, discount));
-      if (userId && lastLoadedForUserIdRef.current === userId) void postSync('/basket', userId, { items });
+      if (userId) void postSync('/basket', userId, { items });
     } else {
       void basketStorageRemove(key);
-      if (userId && lastLoadedForUserIdRef.current === userId) void postSync('/basket', userId, { items: [] });
+      if (userId) void postSync('/basket', userId, { items: [] });
     }
   }, [items, discount, isLoaded, userId]);
 

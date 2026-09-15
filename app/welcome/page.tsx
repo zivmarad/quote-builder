@@ -16,6 +16,7 @@ export default function WelcomePage() {
   const { vatRate, setVatRate } = useSettings();
   const { t, dir } = useLanguage();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const businessNameRef = useRef<HTMLInputElement>(null);
   const [logoUploading, setLogoUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -92,11 +93,17 @@ export default function WelcomePage() {
 
   const handleContinue = (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
     if (!profile.businessName.trim()) {
       setError(t('welcome.businessNameRequired'));
+      requestAnimationFrame(() => {
+        const el = businessNameRef.current;
+        if (!el) return;
+        el.focus();
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
       return;
     }
+    setError(null);
     goHome();
   };
 
@@ -117,12 +124,6 @@ export default function WelcomePage() {
             </div>
 
             <div className="bg-white rounded-3xl border border-slate-200 shadow-lg p-6 sm:p-8">
-              {error && (
-                <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm" role="alert">
-                  {error}
-                </div>
-              )}
-
               <form onSubmit={handleContinue} className="space-y-5">
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-2">{t('profile.logo')}</label>
@@ -163,12 +164,27 @@ export default function WelcomePage() {
                   </label>
                   <input
                     id="welcome-businessName"
+                    ref={businessNameRef}
                     type="text"
                     value={profile.businessName}
-                    onChange={(e) => setProfile({ businessName: e.target.value })}
+                    onChange={(e) => {
+                      setProfile({ businessName: e.target.value });
+                      if (error) setError(null);
+                    }}
                     placeholder={t('profile.businessNamePlaceholder')}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    aria-invalid={error ? true : undefined}
+                    aria-describedby={error ? 'welcome-business-error' : undefined}
+                    className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:border-transparent ${
+                      error
+                        ? 'border-red-400 focus:ring-red-500 bg-red-50/40'
+                        : 'border-slate-200 focus:ring-blue-500'
+                    }`}
                   />
+                  {error && (
+                    <p id="welcome-business-error" className="mt-2 text-sm text-red-600 font-medium">
+                      {error}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -227,6 +243,11 @@ export default function WelcomePage() {
                 )}
 
                 <div className="flex flex-col gap-3 pt-2">
+                  {error && (
+                    <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm" role="alert">
+                      {error}
+                    </div>
+                  )}
                   <button
                     type="submit"
                     className="w-full py-3.5 rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 transition-colors active:scale-[0.98]"

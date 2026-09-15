@@ -54,7 +54,7 @@ export function ProfileProvider({ children, userId }: { children: React.ReactNod
     serverSyncReadyRef.current = false;
     const loadFromStorage = (): UserProfile => {
       let raw = localStorage.getItem(key);
-      if (!raw) {
+      if (!raw && !userId) {
         const legacy = localStorage.getItem('quoteBuilderProfile');
         if (legacy) {
           try {
