@@ -32,7 +32,6 @@ import {
 import { categories, splitOrderedCategories } from './service/services';
 import type { Category } from './service/services';
 import { useLanguage } from './contexts/LanguageContext';
-import { useAuth } from './contexts/AuthContext';
 import { useCustomCatalog } from './contexts/CustomCatalogContext';
 import { getServiceDisplayName, isCustomCategoryId } from '../lib/custom-catalog-types';
 import {
@@ -103,7 +102,6 @@ type SearchResult = {
 export default function HomePage() {
   const router = useRouter();
   const { t, dir } = useLanguage();
-  const { user, isLoaded } = useAuth();
   const { getMergedServices, customCategories } = useCustomCatalog();
   const { shouldShow, dismissPage } = useSpotlightOnboarding();
   const [search, setSearch] = useState('');
@@ -230,21 +228,15 @@ export default function HomePage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#F8FAFC] px-5 py-6 sm:p-6 md:p-12" dir={dir}>
+    <main className="min-h-screen bg-[#F8FAFC] px-5 py-5 sm:p-6 md:p-12" dir={dir}>
       <div className="max-w-5xl mx-auto text-right">
-        <header className="mb-6 sm:mb-8">
-          <div className="flex items-center gap-2 sm:gap-3 mb-2">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#1E293B] leading-tight flex-1 min-w-0">
+        <header className="mb-5 sm:mb-6">
+          <div className="flex items-center gap-2 sm:gap-3 mb-4">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#1E293B] leading-tight flex-1 min-w-0">
               {t('home.title')}
             </h1>
-            <InstallAppButton showHint />
+            <InstallAppButton />
           </div>
-          <p className="text-slate-500 font-medium text-sm sm:text-base mb-3">{t('home.subtitle')}</p>
-          {!user && isLoaded && (
-            <p className="mb-4 text-sm text-slate-600 rounded-xl border border-blue-100 bg-blue-50/60 px-3.5 py-2.5">
-              {t('home.guestHint')}
-            </p>
-          )}
 
           <div className="relative max-w-xl">
             <label htmlFor="home-search" className="sr-only">
@@ -322,7 +314,6 @@ export default function HomePage() {
               </div>
             )}
           </div>
-          {!showResults && <p className="mt-2 text-xs text-slate-400">{t('home.searchHint')}</p>}
         </header>
 
         <Link

@@ -187,7 +187,9 @@ export default function QuickQuotePage() {
   const [draftPrice, setDraftPrice] = useState('');
   const [draftNotes, setDraftNotes] = useState('');
   const [hint, setHint] = useState<string | null>(null);
+  const [keyboardInset, setKeyboardInset] = useState(0);
   const draftNameRef = useRef<HTMLInputElement>(null);
+  const keyboardOpen = keyboardInset > 80;
 
   const freeItems = useMemo(() => items.filter(isFreeQuoteItem), [items]);
   const catalogCount = items.length - freeItems.length;
@@ -204,7 +206,24 @@ export default function QuickQuotePage() {
   }, []);
 
   useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const sync = () => {
+      setKeyboardInset(Math.max(0, window.innerHeight - vv.height - vv.offsetTop));
+    };
+    const id = window.requestAnimationFrame(sync);
+    vv.addEventListener('resize', sync);
+    vv.addEventListener('scroll', sync);
+    return () => {
+      window.cancelAnimationFrame(id);
+      vv.removeEventListener('resize', sync);
+      vv.removeEventListener('scroll', sync);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!isLoaded) return;
+    if (window.matchMedia('(pointer: coarse)').matches) return;
     const id = window.setTimeout(() => draftNameRef.current?.focus(), 80);
     return () => window.clearTimeout(id);
   }, [isLoaded]);
@@ -358,17 +377,20 @@ export default function QuickQuotePage() {
       </div>
 
       <div
-        className="fixed bottom-0 inset-x-0 z-40 border-t border-slate-200 bg-white/95 backdrop-blur-sm shadow-[0_-8px_24px_rgba(15,23,42,0.08)]"
-        style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
+        className="fixed inset-x-0 z-40 border-t border-slate-200 bg-white/95 backdrop-blur-sm shadow-[0_-8px_24px_rgba(15,23,42,0.08)]"
+        style={{
+          bottom: keyboardInset,
+          paddingBottom: keyboardOpen ? 8 : 'max(12px, env(safe-area-inset-bottom))',
+        }}
       >
         <div className="max-w-lg mx-auto px-4 pt-3 space-y-2">
-          {liveTotals.discountAmount > 0 && (
+          {!keyboardOpen && liveTotals.discountAmount > 0 && (
             <div className="flex justify-between text-sm text-green-700">
               <span>{t('quickQuote.discount')}</span>
               <span className="font-bold">-{formatShekel(liveTotals.discountAmount)}</span>
             </div>
           )}
-          {(itemCount > 0 || liveTotals.subtotalBeforeDiscount > 0) && (
+          {!keyboardOpen && (itemCount > 0 || liveTotals.subtotalBeforeDiscount > 0) && (
             <div className="flex justify-between text-sm text-slate-500">
               <span>
                 {vatRate === 0
@@ -378,24 +400,29 @@ export default function QuickQuotePage() {
               <span className="font-bold text-slate-900">{formatShekel(liveTotals.VAT)}</span>
             </div>
           )}
-          {liveTotals.subtotalBeforeDiscount > 0 && vatRate > 0 && (
+          {!keyboardOpen && liveTotals.subtotalBeforeDiscount > 0 && vatRate > 0 && (
             <div className="flex justify-between text-xs text-slate-400">
               <span>{t('quickQuote.subtotal')}</span>
               <span>{formatShekel(liveTotals.subtotalBeforeDiscount)}</span>
             </div>
           )}
-          <div className="flex justify-between items-baseline">
-            <span className="text-sm font-black text-slate-900">{t('quickQuote.total')}</span>
-            <span className="text-xl font-black text-blue-600 tabular-nums">
-              {formatShekel(liveTotals.totalWithVAT)}
-            </span>
-          </div>
+          {!keyboardOpen && (
+            <div className="flex justify-between items-baseline">
+              <span className="text-sm font-black text-slate-900">{t('quickQuote.total')}</span>
+              <span className="text-xl font-black text-blue-600 tabular-nums">
+                {formatShekel(liveTotals.totalWithVAT)}
+              </span>
+            </div>
+          )}
           <button
             type="button"
             onClick={handleContinue}
-            className="w-full min-h-[48px] rounded-2xl bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold text-base shadow-lg shadow-blue-600/20"
+            className="w-full min-h-[48px] rounded-2xl bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold text-base shadow-lg shadow-blue-600/20 flex items-center justify-center gap-3 px-4"
           >
-            {t('quickQuote.continue')}
+            <span>{t('quickQuote.continue')}</span>
+            {keyboardOpen && (
+              <span className="tabular-nums opacity-90">{formatShekel(liveTotals.totalWithVAT)}</span>
+            )}
           </button>
         </div>
       </div>
