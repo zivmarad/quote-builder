@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '../contexts/AuthContext';
 import { useProfile } from '../contexts/ProfileContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -19,6 +20,8 @@ export default function AppHeader() {
   const [impersonateExitLoading, setImpersonateExitLoading] = useState(false);
   const { profile } = useProfile();
   const { t, locale, setLocale, dir } = useLanguage();
+  const pathname = usePathname() ?? '';
+  const home = pathname === '/' || pathname.startsWith('/category/') || pathname === '/quotes';
   const [langOpen, setLangOpen] = useState(false);
   const langDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -58,7 +61,11 @@ export default function AppHeader() {
 
   return (
     <header
-      className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100"
+      className={
+        home
+          ? 'sticky top-0 z-40 bg-white'
+          : 'sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100'
+      }
       style={{ paddingTop: 'var(--safe-area-inset-top)' }}
     >
       {impersonating && (
@@ -82,7 +89,27 @@ export default function AppHeader() {
           </button>
         </div>
       )}
-      <div className="max-w-5xl mx-auto px-3 sm:px-4 md:px-8 py-2.5 sm:py-3 flex items-center justify-between gap-2 min-h-[52px] sm:min-h-0 min-w-0">
+      <div
+        className={
+          home
+            ? 'mx-auto flex min-h-[56px] max-w-md items-center justify-between gap-3 px-5'
+            : 'max-w-5xl mx-auto px-3 sm:px-4 md:px-8 py-2.5 sm:py-3 flex items-center justify-between gap-2 min-h-[52px] sm:min-h-0 min-w-0'
+        }
+      >
+        {home ? (
+          <Link
+            href="/profile"
+            className="flex min-w-0 items-center gap-2.5"
+            aria-label={isLoaded && displayName ? `${t('header.hello')} ${displayName}` : t('header.profile')}
+          >
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-blue-800 text-sm font-semibold text-white">
+              {isLoaded && user && displayName ? displayName.slice(0, 1) : <User size={16} />}
+            </span>
+            <span className="truncate text-sm font-semibold text-slate-900">
+              {isLoaded && displayName ? `${t('header.hello')} ${displayName}` : ''}
+            </span>
+          </Link>
+        ) : (
         <Link
           href="/"
           className="font-black text-slate-900 flex items-center gap-2 min-w-0 shrink-0 sm:min-w-0"
@@ -93,12 +120,17 @@ export default function AppHeader() {
           </span>
           <span className="hidden sm:inline truncate text-base sm:text-lg md:text-xl">{t('header.appName')}</span>
         </Link>
+        )}
         <div className="flex items-center gap-1 sm:gap-2 shrink-0 min-w-0">
           <div className="relative" ref={langDropdownRef}>
             <button
               type="button"
               onClick={() => setLangOpen((o) => !o)}
-              className="flex items-center gap-1.5 text-slate-600 hover:text-slate-900 font-medium text-xs sm:text-sm px-2.5 py-2 rounded-xl hover:bg-slate-100 transition-colors min-h-[44px] border border-slate-200/80"
+              className={
+                home
+                  ? 'flex min-h-[44px] items-center gap-1.5 rounded-xl px-2 text-sm font-medium text-stone-500 hover:text-stone-900'
+                  : 'flex items-center gap-1.5 text-slate-600 hover:text-slate-900 font-medium text-xs sm:text-sm px-2.5 py-2 rounded-xl hover:bg-slate-100 transition-colors min-h-[44px] border border-slate-200/80'
+              }
               aria-label="שפה"
               aria-expanded={langOpen}
             >
@@ -131,6 +163,7 @@ export default function AppHeader() {
               </>
             )}
           </div>
+          {!home && (
           <Link
             href="/profile"
             className="flex items-center justify-center gap-1.5 sm:gap-2 text-slate-600 hover:text-slate-900 font-medium text-xs sm:text-sm px-2.5 sm:px-4 py-2.5 sm:py-2 rounded-xl hover:bg-slate-100 transition-colors min-h-[44px] min-w-0 shrink-0"
@@ -139,10 +172,11 @@ export default function AppHeader() {
             <User size={20} className="shrink-0" />
             <span className="inline max-w-[85px] sm:max-w-[95px] truncate">{t('header.profile')}</span>
           </Link>
+          )}
           {isLoaded &&
             (user ? (
               <>
-                {displayName && (
+                {!home && displayName && (
                   <span className="text-slate-600 font-medium text-xs sm:text-sm truncate max-w-[100px] sm:max-w-[120px]">
                     {t('header.hello')} {displayName}
                   </span>
@@ -159,11 +193,12 @@ export default function AppHeader() {
               </>
             ) : (
               <>
-                {displayName && (
+                {!home && displayName && (
                   <span className="hidden sm:inline text-slate-600 font-medium text-xs sm:text-sm truncate max-w-[120px]">
                     {t('header.hello')} {displayName}
                   </span>
                 )}
+                {!home && (
                 <Link
                   href="/login"
                   className="flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 font-medium text-xs sm:text-sm px-2.5 sm:px-3 py-2.5 sm:py-2 rounded-xl hover:bg-slate-100 transition-colors min-h-[44px] min-w-0 shrink-0"
@@ -172,6 +207,8 @@ export default function AppHeader() {
                   <LogIn size={18} className="shrink-0" />
                   <span className="inline">{t('header.login')}</span>
                 </Link>
+                )}
+                {!home && (
                 <Link
                   href="/signup"
                   className="flex items-center justify-center gap-1.5 bg-blue-600 text-white font-bold text-xs sm:text-sm px-2.5 sm:px-3 py-2.5 sm:py-2 rounded-xl hover:bg-blue-700 transition-colors min-h-[44px] min-w-[44px] sm:min-w-0"
@@ -181,6 +218,7 @@ export default function AppHeader() {
                   <UserPlus size={18} className="shrink-0" />
                   <span className="hidden sm:inline">{t('header.signup')}</span>
                 </Link>
+                )}
               </>
             ))}
         </div>

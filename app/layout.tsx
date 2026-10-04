@@ -1,6 +1,6 @@
 import './globals.css';
 import type { Metadata, Viewport } from 'next';
-import { Heebo } from 'next/font/google';
+import { Heebo, Geist } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { withSiteMetadata } from '@/lib/site-metadata';
@@ -8,6 +8,9 @@ import ClarityAnalytics from './components/ClarityAnalytics';
 import { AuthProvider } from './contexts/AuthContext';
 import LanguageWrapper from './components/LanguageWrapper';
 import AppChrome from './components/AppChrome';
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -37,7 +40,7 @@ export const metadata: Metadata = withSiteMetadata('/', {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="he" dir="rtl">
+    <html lang="he" dir="rtl" className={cn("font-sans", geist.variable)}>
       <body className={`${heebo.className} antialiased bg-[#F8FAFC]`}>
         <AuthProvider>
           <LanguageWrapper>

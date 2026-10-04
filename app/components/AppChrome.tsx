@@ -49,14 +49,16 @@ export default function AppChrome({ children }: { children: React.ReactNode }) {
     );
   }
 
+  const calmSurface = pathname === '/' || pathname.startsWith('/category/') || pathname === '/quotes';
+
   return (
     <UserDataProviders>
       <QuoteBasketWithAuth>
         <AppHeader />
         <InAppBrowserBanner />
-        <div className="min-h-screen flex flex-col">
+        <div className={`min-h-screen flex flex-col ${calmSurface ? 'bg-[#f3f6fb]' : ''}`}>
           {children}
-          <Footer />
+          {!calmSurface && <Footer />}
         </div>
         <FloatingCartButton />
         <StorageQuotaAlert />

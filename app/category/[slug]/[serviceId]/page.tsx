@@ -22,7 +22,7 @@ import {
   isCustomQuestionId,
 } from '../../../../lib/custom-catalog-types';
 import { calculateQuestionExtraPrice, formatImpactLabel } from '../../../../lib/quote-pricing';
-import { Plus, Trash2 } from 'lucide-react';
+import { ArrowRight, Plus, Trash2 } from 'lucide-react';
 
 interface QuestionCardProps {
   q: Question;
@@ -76,7 +76,7 @@ const QuestionCard = memo(function QuestionCard({
   focusEnd,
 }: QuestionCardProps) {
   return (
-    <div className="question-card-in bg-white rounded-3xl border border-slate-100 shadow-sm px-5 py-4 flex flex-col gap-3">
+    <div className="question-card-in flex flex-col gap-3 border-b border-slate-100 px-5 py-4">
       <div className="flex items-start justify-between gap-2">
         <span className="text-sm font-bold text-slate-900 flex-1">{displayText}</span>
         {isCustom && (
@@ -100,19 +100,19 @@ const QuestionCard = memo(function QuestionCard({
           <button
             type="button"
             onClick={() => onToggle(q, true)}
-            className={`min-h-[44px] min-w-[56px] px-4 sm:px-5 py-2.5 rounded-2xl text-xs font-black transition-all active:scale-[0.98] ${
+            className={`min-h-[40px] min-w-[52px] rounded-full px-4 py-2 text-sm font-semibold transition-all active:scale-[0.98] ${
               answer === true
-                ? 'bg-blue-600 text-white shadow-md'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                ? 'bg-blue-800 text-white'
+                : 'bg-[#f3f6fb] text-slate-600'
             }`}
           >{yesLabel}</button>
           <button
             type="button"
             onClick={() => onToggle(q, false)}
-            className={`min-h-[44px] min-w-[56px] px-4 sm:px-5 py-2.5 rounded-2xl text-xs font-black transition-all active:scale-[0.98] ${
+            className={`min-h-[40px] min-w-[52px] rounded-full px-4 py-2 text-sm font-semibold transition-all active:scale-[0.98] ${
               answer === false
-                ? 'bg-slate-800 text-white shadow-md'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                ? 'bg-slate-700 text-white'
+                : 'bg-[#f3f6fb] text-slate-600'
             }`}
           >{noLabel}</button>
         </div>
@@ -301,111 +301,112 @@ export default function ServiceWizardPage() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 pb-28 sm:pb-28" dir={dir}>
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6">
-        <button
-          onClick={() => router.push(`/category/${category.id}`)}
-          className="mb-4 inline-flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 min-h-[44px] px-2 -mr-2 rounded-xl active:bg-slate-100"
-        >
-          <span>{t('common.back')}</span>
-          <span className="text-lg">↩</span>
-        </button>
-
-        <header className="mb-4 sm:mb-6">
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center justify-between gap-2 flex-wrap">
-            <span>{serviceName}</span>
-            <span className="text-xl text-slate-500">{category.icon}</span>
-          </h1>
-          <div className="mt-2 flex items-center gap-2 flex-wrap text-sm text-slate-500">
-            <span>{t('serviceWizard.basePrice')}:</span>
-            <EditablePriceLabel
-              label={`₪${effectiveBasePrice.toLocaleString('he-IL')} ${t('serviceWizard.perUnit')} ${service.unit}`}
-              defaultValue={effectiveBasePrice}
-              onSave={(v) => setBasePrice(service.id, v)}
-              editHint={editHint}
-            />
-          </div>
-        </header>
-
-        {service.isCounter && (
-          <section className="mb-4 sm:mb-6 bg-white p-4 rounded-2xl sm:rounded-3xl border border-slate-100 shadow-sm">
-            <h2 className="text-sm font-semibold text-slate-700 mb-2">{t('serviceWizard.quantityUnitsTitle')}</h2>
-            <div className="flex items-center gap-3">
-              <input
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                value={quantityInput}
-                onChange={(e) => handleQuantityChange(e.target.value)}
-                onFocus={(e) => focusEnd(e.currentTarget)}
-                onBlur={handleQuantityBlur}
-                placeholder="1"
-                className="w-24 min-h-[44px] rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-right text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500"
-                dir="ltr"
-              />
-              <span className="text-sm text-slate-500">({service.unit})</span>
-            </div>
-          </section>
-        )}
-
-        <section className="space-y-4">
-          <div className="mb-2">
-            <h2 className="text-sm font-semibold text-slate-700">{t('serviceWizard.customizeTitle')}</h2>
-            <p className="text-xs text-slate-500">{t('serviceWizard.customizeHint')}</p>
-          </div>
-
-          {questions.map((q) => {
-            const impactValue = getImpactValue(service.id, q.id, q.impact.value);
-            return (
-              <QuestionCard
-                key={q.id}
-                q={q}
-                displayText={getQuestionDisplayText(t, service.id, q)}
-                impactValue={impactValue}
-                impactLabel={formatImpactLabel(q, impactValue, service.unit)}
-                isCustom={isCustomQuestionId(q.id)}
-                answer={answers[q.id]}
-                showQuantityInput={hasQuantityInput(q)}
-                quantityValue={questionQuantities[q.id] ?? '1'}
-                quantityLabel={q.impact.quantityLabel ?? "יח'"}
-                editHint={editHint}
-                yesLabel={t('common.yes')}
-                noLabel={t('common.no')}
-                quantityWord={t('common.quantity')}
-                myQuestionLabel={t('customCatalog.myQuestion')}
-                deleteAria={t('customCatalog.deleteQuestion')}
-                onToggle={handleToggle}
-                onDelete={handleDeleteQuestion}
-                onSaveImpact={handleSaveImpact}
-                onQuantityChange={handleQuestionQuantityChange}
-                onQuantityBlur={handleQuestionQuantityBlur}
-                focusEnd={focusEnd}
-              />
-            );
-          })}
-
+    <main className="min-h-screen bg-[#f3f6fb] pb-32" dir={dir}>
+      <div className="mx-auto max-w-md text-slate-900">
+        <div className="px-5 pt-4">
           <button
             type="button"
-            onClick={handleAddQuestionClick}
-            className="group w-full flex items-center justify-center gap-2 px-4 py-4 rounded-3xl border-2 border-dashed border-slate-200 text-slate-500 font-bold text-sm hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50/40 transition-colors active:scale-[0.99]"
+            onClick={() => router.push(`/category/${category.id}`)}
+            className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-slate-500"
           >
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-slate-500 group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors">
-              <Plus size={16} />
-            </span>
-            {t('customCatalog.addQuestionButton')}
+            <ArrowRight size={18} />
+            {t('common.back')}
           </button>
-        </section>
+          <p className="text-sm text-slate-500">{t(`categoryName.${category.id}`, category.name)}</p>
+          <h1 className="mt-0.5 text-2xl font-semibold leading-tight tracking-tight text-slate-900">{serviceName}</h1>
+        </div>
+
+        <div className="px-4 pt-5">
+          <section className="overflow-hidden rounded-[28px] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
+              <span className="text-sm font-medium text-slate-500">{t('serviceWizard.basePrice')}</span>
+              <EditablePriceLabel
+                label={`₪${effectiveBasePrice.toLocaleString('he-IL')} ${t('serviceWizard.perUnit')} ${service.unit}`}
+                defaultValue={effectiveBasePrice}
+                onSave={(v) => setBasePrice(service.id, v)}
+                editHint={editHint}
+              />
+            </div>
+
+            {service.isCounter && (
+              <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
+                <span className="text-sm font-medium text-slate-700">{t('serviceWizard.quantityUnitsTitle')}</span>
+                <span className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={quantityInput}
+                    onChange={(e) => handleQuantityChange(e.target.value)}
+                    onFocus={(e) => focusEnd(e.currentTarget)}
+                    onBlur={handleQuantityBlur}
+                    placeholder="1"
+                    className="w-16 rounded-full bg-[#f3f6fb] px-3 py-2 text-center text-sm font-semibold text-slate-900 focus:outline-none"
+                    dir="ltr"
+                  />
+                  <span className="text-sm text-slate-500">{service.unit}</span>
+                </span>
+              </div>
+            )}
+
+            <div className="px-5 pb-1 pt-4">
+              <h2 className="text-sm font-semibold text-slate-700">{t('serviceWizard.customizeTitle')}</h2>
+              <p className="mt-0.5 text-xs text-slate-500">{t('serviceWizard.customizeHint')}</p>
+            </div>
+
+            {questions.map((q) => {
+              const impactValue = getImpactValue(service.id, q.id, q.impact.value);
+              return (
+                <QuestionCard
+                  key={q.id}
+                  q={q}
+                  displayText={getQuestionDisplayText(t, service.id, q)}
+                  impactValue={impactValue}
+                  impactLabel={formatImpactLabel(q, impactValue, service.unit)}
+                  isCustom={isCustomQuestionId(q.id)}
+                  answer={answers[q.id]}
+                  showQuantityInput={hasQuantityInput(q)}
+                  quantityValue={questionQuantities[q.id] ?? '1'}
+                  quantityLabel={q.impact.quantityLabel ?? "יח'"}
+                  editHint={editHint}
+                  yesLabel={t('common.yes')}
+                  noLabel={t('common.no')}
+                  quantityWord={t('common.quantity')}
+                  myQuestionLabel={t('customCatalog.myQuestion')}
+                  deleteAria={t('customCatalog.deleteQuestion')}
+                  onToggle={handleToggle}
+                  onDelete={handleDeleteQuestion}
+                  onSaveImpact={handleSaveImpact}
+                  onQuantityChange={handleQuestionQuantityChange}
+                  onQuantityBlur={handleQuestionQuantityBlur}
+                  focusEnd={focusEnd}
+                />
+              );
+            })}
+
+            <button
+              type="button"
+              onClick={handleAddQuestionClick}
+              className="flex w-full items-center gap-3 px-5 py-4 text-right text-sm font-semibold text-slate-700"
+            >
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-800">
+                <Plus size={16} aria-hidden />
+              </span>
+              {t('customCatalog.addQuestionButton')}
+            </button>
+          </section>
+        </div>
       </div>
 
       <div
-        className={`bottom-bar-in fixed bottom-0 inset-x-0 p-2 sm:p-4 bg-gradient-to-t from-slate-50 via-slate-50 to-transparent ${showAddSpotlight ? SPOTLIGHT_ELEVATED_CLASS : 'z-30'}`}
-        style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
+        className={`bottom-bar-in fixed bottom-0 inset-x-0 bg-gradient-to-t from-[#f3f6fb] via-[#f3f6fb] to-transparent p-4 ${showAddSpotlight ? SPOTLIGHT_ELEVATED_CLASS : 'z-30'}`}
+        style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
       >
-        <div className="mx-auto max-w-md sm:max-w-3xl px-2 sm:px-1 flex justify-center">
-          <div className="rounded-xl sm:rounded-[2.5rem] bg-slate-900 text-white px-3 py-2.5 sm:p-5 shadow-xl flex items-center justify-between gap-2 sm:gap-3 w-full max-w-sm sm:max-w-none">
-            <div className="pr-1 sm:pr-2 min-w-0">
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">{t('common.totalToPay')}</span>
-              <span className="text-lg sm:text-2xl font-black tabular-nums tracking-tight">
+        <div className="mx-auto flex max-w-md justify-center">
+          <div className="flex w-full items-center justify-between gap-3 rounded-full bg-blue-900 px-5 py-3 text-white shadow-lg">
+            <div className="min-w-0">
+              <span className="block text-[11px] font-medium text-white/70">{t('common.totalToPay')}</span>
+              <span className="text-lg font-semibold tabular-nums">
                 ₪{total.toLocaleString('he-IL')}
               </span>
             </div>

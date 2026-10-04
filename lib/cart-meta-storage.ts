@@ -130,6 +130,10 @@ export async function loadCartMeta(userId: string | null | undefined): Promise<C
   return guest;
 }
 
+export async function clearCartMeta(userId: string | null | undefined): Promise<void> {
+  await removeStored(metaKey(userId));
+}
+
 export async function saveCartMeta(
   userId: string | null | undefined,
   meta: CartMeta,

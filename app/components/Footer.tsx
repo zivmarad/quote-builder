@@ -1,14 +1,20 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useLanguage } from '../contexts/LanguageContext';
 
 export default function Footer() {
   const year = new Date().getFullYear();
   const { t, dir } = useLanguage();
+  const home = (usePathname() ?? '') === '/';
   return (
     <footer
-      className="border-t border-slate-200 bg-white/90 mt-auto"
+      className={
+        home
+          ? 'mt-auto border-t border-slate-200/80 bg-[#f3f6fb]'
+          : 'border-t border-slate-200 bg-white/90 mt-auto'
+      }
       dir={dir}
       style={{ paddingBottom: 'var(--safe-area-inset-bottom)' }}
     >

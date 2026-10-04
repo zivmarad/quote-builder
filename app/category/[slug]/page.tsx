@@ -11,7 +11,55 @@ import { SPOTLIGHT_TARGET_CLASS } from '@/lib/spotlight-onboarding';
 import { useSpotlightOnboarding } from '../../hooks/useSpotlightOnboarding';
 import SpotlightOverlay from '../../components/onboarding/SpotlightOverlay';
 import AddCustomServiceModal from '../../components/AddCustomServiceModal';
-import { Search, Plus, Trash2 } from 'lucide-react';
+import {
+  Search,
+  Plus,
+  Trash2,
+  ArrowRight,
+  Palette,
+  Umbrella,
+  Droplet,
+  Layers,
+  Zap,
+  Snowflake,
+  Hammer,
+  Link2,
+  TreePine,
+  Wrench,
+  Building2,
+  DoorOpen,
+  Package,
+  Box,
+  Radio,
+  Cog,
+  Mountain,
+  Sofa,
+  Bath,
+  Home,
+} from 'lucide-react';
+
+const categoryIcons: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+  paint: Palette,
+  sealing: Umbrella,
+  concrete: Box,
+  plumbing: Droplet,
+  tiling: Layers,
+  electricity: Zap,
+  ac: Snowflake,
+  carpentry: Hammer,
+  aluminium: Link2,
+  gardening: TreePine,
+  handyman: Wrench,
+  welder: Cog,
+  drywall: Building2,
+  doors: DoorOpen,
+  communications: Radio,
+  misc: Package,
+  earthwork: Mountain,
+  'sofa-cleaning': Sofa,
+  'shower-renovation': Bath,
+  'home-renovation': Home,
+};
 
 export default function CategoryPage() {
   const { slug } = useParams();
@@ -93,130 +141,130 @@ export default function CategoryPage() {
     );
   }
 
-  return (
-    <main className="min-h-screen bg-slate-50 px-4 py-6 sm:p-6 md:p-10" dir={dir}>
-      <div className="max-w-4xl mx-auto text-right">
-        <button
-          onClick={() => router.push('/')}
-          className="mb-4 sm:mb-6 inline-flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 min-h-[44px] px-2 -mr-2 rounded-xl active:bg-slate-100"
-        >
-          <span>{t('common.back')}</span>
-          <span className="text-lg" aria-hidden="true">
-            ↩
-          </span>
-        </button>
+  const TradeIcon = categoryIcons[category.id] ?? Wrench;
+  const categoryTitle = t(`categoryName.${category.id}`, category.name);
 
-        <header className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 flex items-center gap-2 sm:gap-3 justify-end flex-wrap">
-            <span>{t(`categoryName.${category.id}`, category.name)}</span>
-            <span className="text-2xl sm:text-3xl md:text-4xl" aria-hidden="true">
-              {category.icon}
+  return (
+    <main className="min-h-screen bg-[#f3f6fb] pb-28" dir={dir}>
+      <div className="mx-auto max-w-md text-slate-900">
+        <div className="px-5 pt-4">
+          <button
+            type="button"
+            onClick={() => router.push('/')}
+            className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-slate-500"
+          >
+            <ArrowRight size={18} />
+            {t('common.back')}
+          </button>
+          <div className="flex items-center gap-3">
+            <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-white text-slate-500 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
+              {isCustomProfession && category.icon ? (
+                <span className="text-xl leading-none" aria-hidden>{category.icon}</span>
+              ) : (
+                <TradeIcon size={22} strokeWidth={1.75} aria-hidden />
+              )}
             </span>
-          </h1>
-          <p className="text-slate-500 mt-2 text-sm sm:text-base">{t('category.chooseService')}</p>
+            <div className="min-w-0">
+              <h1 className="text-2xl font-semibold leading-tight tracking-tight text-slate-900">{categoryTitle}</h1>
+              <p className="mt-0.5 text-sm text-slate-500">{t('category.chooseService')}</p>
+            </div>
+          </div>
           {isCustomProfession && (
-            <div className="mt-3 flex flex-wrap items-center gap-2 justify-end">
-              <span className="text-[11px] font-bold text-violet-700 bg-violet-50 px-2.5 py-1 rounded-full">
+            <div className="mt-3 flex items-center gap-2">
+              <span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-slate-600">
                 {t('customCatalog.myProfession', 'מקצוע שלי')}
               </span>
               <button
                 type="button"
                 onClick={handleDeleteProfession}
                 disabled={deletingProfession}
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-1.5 rounded-xl transition-colors disabled:opacity-60"
+                className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium text-slate-500 disabled:opacity-60"
               >
-                <Trash2 size={16} />
+                <Trash2 size={14} />
                 {deletingProfession
                   ? t('requestProfession.saving', 'מוחק...')
                   : t('requestProfession.delete', 'מחק מקצוע')}
               </button>
             </div>
           )}
-          <div className="mt-4">
-            <label htmlFor="service-search" className="sr-only">
-              {t('category.searchLabel')}
-            </label>
-            <div className="relative max-w-md">
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" aria-hidden />
-              <input
-                id="service-search"
-                type="search"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder={t('category.searchPlaceholder')}
-                className="w-full pr-10 pl-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                dir="rtl"
-              />
-            </div>
-          </div>
-        </header>
+        </div>
 
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-          {filteredServices.map((service) => {
-            const isCustom = isCustomServiceId(service.id);
-            const displayName = getServiceDisplayName(t, service);
-            const isSpotlight = spotlightServiceId === service.id;
-            return (
-              <div
-                key={service.id}
-                ref={isSpotlight ? spotlightRef : undefined}
-                role="button"
-                tabIndex={0}
-                onClick={() => navigateToService(service.id)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    navigateToService(service.id);
-                  }
-                }}
-                className={`btn-hover-safe w-full text-right bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl shadow-sm border transition-all active:scale-[0.98] min-h-[72px] cursor-pointer ${
-                  isCustom
-                    ? 'border-violet-200 hover:border-violet-400 hover:shadow-md'
-                    : 'border-slate-100 hover:border-blue-500 hover:shadow-md'
-                } ${isSpotlight ? SPOTLIGHT_TARGET_CLASS : ''}`}
-              >
-                <div className="flex items-start gap-2 mb-1">
-                  <div className="flex-1 flex items-center gap-2 justify-start flex-wrap min-w-0 text-right">
-                    {isCustom && (
-                      <span className="text-[10px] font-bold uppercase tracking-wide text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full shrink-0">
-                        {t('customCatalog.myService')}
+        <div className="px-4 pt-5">
+          <label htmlFor="service-search" className="relative block">
+            <span className="sr-only">{t('category.searchLabel')}</span>
+            <Search className="pointer-events-none absolute end-4 top-1/2 size-5 -translate-y-1/2 text-slate-400" aria-hidden />
+            <input
+              id="service-search"
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t('category.searchPlaceholder')}
+              className="w-full rounded-full border border-white bg-white py-3.5 pe-12 ps-4 text-sm text-slate-900 shadow-[0_8px_24px_rgba(15,23,42,0.06)] placeholder:text-slate-400 focus:border-blue-700 focus:outline-none"
+              dir={dir}
+              autoComplete="off"
+            />
+          </label>
+
+          <div className="mt-4 flex flex-col gap-2">
+            {filteredServices.map((service) => {
+              const isCustom = isCustomServiceId(service.id);
+              const displayName = getServiceDisplayName(t, service);
+              const isSpotlight = spotlightServiceId === service.id;
+              const price = getBasePrice(service.id, service.basePrice).toLocaleString('he-IL');
+              return (
+                <div
+                  key={service.id}
+                  ref={isSpotlight ? spotlightRef : undefined}
+                  className={`flex items-center gap-2 rounded-[28px] bg-white px-2 py-2 shadow-[0_8px_24px_rgba(15,23,42,0.05)] ${isSpotlight ? SPOTLIGHT_TARGET_CLASS : ''}`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => navigateToService(service.id)}
+                    className="flex min-w-0 flex-1 items-center gap-3 px-2 py-1.5 text-right"
+                  >
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-base font-semibold leading-snug text-slate-900">{displayName}</span>
+                      <span className="mt-0.5 block text-xs text-slate-500">
+                        {t('category.perUnit')}
+                        {service.unit}
                       </span>
-                    )}
-                    <h2 className="text-base sm:text-lg font-bold text-slate-900">{displayName}</h2>
-                  </div>
+                    </span>
+                    <span className="shrink-0 whitespace-nowrap text-sm font-semibold tabular-nums text-slate-900">
+                      {t('category.fromPrice')}₪{price}
+                    </span>
+                  </button>
                   {isCustom && (
                     <button
                       type="button"
                       onClick={(e) => handleDeleteService(service.id, e)}
-                      className="shrink-0 p-2 -m-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      className="me-1 shrink-0 rounded-full p-2 text-slate-400 hover:bg-red-50 hover:text-red-600"
                       aria-label={t('customCatalog.deleteService')}
                     >
                       <Trash2 size={16} />
                     </button>
                   )}
                 </div>
-                <p className="text-sm text-slate-500 mb-2">
-                  {t('category.fromPrice')} ₪{getBasePrice(service.id, service.basePrice).toLocaleString('he-IL')}{' '}
-                  {t('category.perUnit')} {service.unit}
-                </p>
-                {service.isCounter && <p className="text-xs text-slate-400">{t('category.quantityNote')}</p>}
-              </div>
-            );
-          })}
+              );
+            })}
 
-          <button
-            type="button"
-            onClick={handleAddServiceClick}
-            className="w-full min-h-[72px] rounded-2xl sm:rounded-3xl border-2 border-dashed border-blue-200 bg-blue-50/40 hover:bg-blue-50 hover:border-blue-400 transition-all flex flex-col items-center justify-center gap-2 p-4 active:scale-[0.98]"
-          >
-            <Plus size={22} className="text-blue-600" />
-            <span className="font-bold text-blue-700 text-sm">{t('customCatalog.addServiceButton')}</span>
-          </button>
+            {filteredServices.length === 0 && search.trim() && (
+              <p className="rounded-[28px] bg-white px-4 py-8 text-center text-sm text-slate-500 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+                {t('category.noResults')}
+              </p>
+            )}
 
-          {filteredServices.length === 0 && search.trim() && (
-            <p className="text-slate-400 text-sm col-span-full">{t('category.noResults')}</p>
-          )}
-        </section>
+            <button
+              type="button"
+              onClick={handleAddServiceClick}
+              className="mt-1 flex w-full items-center gap-3 rounded-[28px] bg-white px-4 py-3.5 text-right shadow-[0_8px_24px_rgba(15,23,42,0.05)] active:scale-[0.99]"
+            >
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-800">
+                <Plus size={18} aria-hidden />
+              </span>
+              <span className="text-sm font-semibold text-slate-900">{t('customCatalog.addServiceButton')}</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       <SpotlightOverlay

@@ -14,7 +14,7 @@ export default function RequireAuth({ children }: { children: React.ReactNode })
   useEffect(() => {
     if (!isLoaded) return;
     if (!user) {
-      const from = pathname ? encodeURIComponent(pathname) : '';
+      const from = pathname ? encodeURIComponent(pathname + window.location.search) : '';
       const loginUrl = from ? `/login?from=${from}` : '/login';
       window.location.href = loginUrl;
     }

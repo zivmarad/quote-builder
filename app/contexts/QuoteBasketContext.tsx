@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useMemo, useRef } from 'react';
 import { fetchSync, postSync } from '../../lib/sync';
+import { clearCartMeta } from '../../lib/cart-meta-storage';
 import { useSettings } from './SettingsContext';
 import {
   basketStorageSet,
@@ -161,6 +162,7 @@ export const QuoteBasketProvider: React.FC<{ children: React.ReactNode; userId?:
     } else {
       void basketStorageRemove(key);
       if (userId) void postSync('/basket', userId, { items: [] });
+      void clearCartMeta(userId);
     }
   }, [items, discount, isLoaded, userId]);
 

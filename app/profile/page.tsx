@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useProfile } from '../contexts/ProfileContext';
 import { useQuoteHistory, type QuoteWorkflowStatus, type SavedQuote } from '../contexts/QuoteHistoryContext';
 import { getQuoteListBadge } from '../../lib/quote-badge';
@@ -14,10 +14,11 @@ import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { usePriceOverrides } from '../contexts/PriceOverridesContext';
 import { useCustomCatalog } from '../contexts/CustomCatalogContext';
+import { useCustomers } from '../contexts/CustomersContext';
 import { getOrderedCategories } from '../service/services';
 import { getServiceDisplayName, isCustomServiceId } from '../../lib/custom-catalog-types';
 import { getDrafts, deleteDraft, syncDraftsForLoggedInUser, type QuoteDraft } from '../../lib/drafts-storage';
-import { ArrowRight, UserCircle, Settings, FileText, ChevronLeft, Download, Trash2, Copy, DollarSign, KeyRound, Eye, ChevronDown, Check, Loader2, Smartphone, Plus, FileEdit, Users } from 'lucide-react';
+import { ArrowRight, UserCircle, Settings, ChevronLeft, Download, Trash2, Copy, DollarSign, KeyRound, Eye, ChevronDown, Check, Loader2, Smartphone, Plus, Search, Users } from 'lucide-react';
 import ConfirmDialog from '../components/ConfirmDialog';
 import InstallManualGuide from '../components/InstallManualGuide';
 import { markAppInstalled } from '../../lib/install-utils';
@@ -30,15 +31,12 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
-type SectionId = 'details' | 'quotes' | 'drafts' | 'customers' | 'settings';
+type DeskView = 'desk' | 'details' | 'settings' | 'prices';
 
-const sectionConfig: { id: SectionId; labelKey: string; labelShortKey?: string; icon: React.ReactNode }[] = [
-  { id: 'details', labelKey: 'profile.details', icon: <UserCircle size={22} /> },
-  { id: 'quotes', labelKey: 'profile.navQuotes', labelShortKey: 'profile.navQuotes', icon: <FileText size={22} /> },
-  { id: 'drafts', labelKey: 'profile.navDrafts', labelShortKey: 'profile.navDrafts', icon: <FileEdit size={22} /> },
-  { id: 'customers', labelKey: 'profile.navCustomers', labelShortKey: 'profile.navCustomers', icon: <Users size={22} /> },
-  { id: 'settings', labelKey: 'profile.settings', icon: <Settings size={22} /> },
-];
+function viewFromParam(value: string | null): DeskView {
+  if (value === 'details' || value === 'settings' || value === 'prices') return value;
+  return 'desk';
+}
 
 const formatPrice = (price: number) =>
   new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(price);
@@ -53,12 +51,14 @@ const quoteStatusKeys: Record<QuoteWorkflowStatus, string> = {
 
 export default function ProfilePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { profile, setProfile, syncStatus } = useProfile();
   const { quotes, deleteQuote, updateQuoteStatus } = useQuoteHistory();
   const { loadBasket } = useQuoteBasket();
   const { defaultQuoteTitle, nextQuoteNumber, validityDays, vatRate, setDefaultQuoteTitle, setNextQuoteNumber, setValidityDays, setVatRate } = useSettings();
   const { getBasePrice, setBasePrice } = usePriceOverrides();
   const { getMergedServices, customCategories } = useCustomCatalog();
+  const { customers } = useCustomers();
   const { user: authUser, changePassword } = useAuth();
   const { t, dir } = useLanguage();
   const quoteStatusLabels: Record<QuoteWorkflowStatus, string> = { draft: t(quoteStatusKeys.draft), sent: t(quoteStatusKeys.sent), approved: t(quoteStatusKeys.approved), paid: t(quoteStatusKeys.paid) };
@@ -69,20 +69,12 @@ export default function ProfilePage() {
     approved: t('profile.quoteStatusApproved'),
     paid: t('profile.quoteStatusPaid'),
   };
-  const [activeSection, setActiveSection] = useState<SectionId>('details');
-  const sectionRefs = useRef<Partial<Record<SectionId, HTMLElement | null>>>({});
-  const ioSkipUntilRef = useRef(0);
+  const [view, setView] = useState<DeskView>(() => viewFromParam(searchParams.get('view')));
+  const [showAllWork, setShowAllWork] = useState(false);
 
-  const assignSectionRef = useCallback((id: SectionId) => (node: HTMLElement | null) => {
-    sectionRefs.current[id] = node;
-  }, []);
-
-  const scrollToSection = useCallback((id: SectionId) => {
-    ioSkipUntilRef.current = Date.now() + 700;
-    setActiveSection(id);
-    const el = sectionRefs.current[id] ?? (typeof document !== 'undefined' ? document.getElementById(`profile-section-${id}`) : null);
-    el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, []);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [view]);
 
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -104,12 +96,9 @@ export default function ProfilePage() {
   const [deleteDraftId, setDeleteDraftId] = useState<string | null>(null);
   const [deleteQuoteId, setDeleteQuoteId] = useState<string | null>(null);
   const [quoteSearch, setQuoteSearch] = useState('');
-  const [quotePage, setQuotePage] = useState(1);
-  const [draftPage, setDraftPage] = useState(1);
+  const [workPage, setWorkPage] = useState(1);
   const [openQuoteId, setOpenQuoteId] = useState<string | null>(null);
-  const [openDraftId, setOpenDraftId] = useState<string | null>(null);
-  const QUOTES_PAGE_SIZE = 12;
-  const DRAFTS_PAGE_SIZE = 10;
+  const WORK_PAGE_SIZE = 12;
 
   const sortedQuotes = useMemo(
     () => [...quotes].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
@@ -134,49 +123,77 @@ export default function ProfilePage() {
       return haystack.includes(q);
     });
   }, [sortedQuotes, quoteSearch]);
-  const quoteTotalPages = Math.max(1, Math.ceil(filteredQuotes.length / QUOTES_PAGE_SIZE));
-  const pagedQuotes = useMemo(() => {
-    const start = (quotePage - 1) * QUOTES_PAGE_SIZE;
-    return filteredQuotes.slice(start, start + QUOTES_PAGE_SIZE);
-  }, [filteredQuotes, quotePage]);
   const sortedDrafts = useMemo(
     () => [...drafts].sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime()),
     [drafts]
   );
-  const draftTotalPages = Math.max(1, Math.ceil(sortedDrafts.length / DRAFTS_PAGE_SIZE));
-  const pagedDrafts = useMemo(() => {
-    const start = (draftPage - 1) * DRAFTS_PAGE_SIZE;
-    return sortedDrafts.slice(start, start + DRAFTS_PAGE_SIZE);
-  }, [sortedDrafts, draftPage]);
+  const filteredDrafts = useMemo(() => {
+    const q = quoteSearch.trim().toLowerCase();
+    if (!q) return sortedDrafts;
+    return sortedDrafts.filter((draft) => {
+      const haystack = [draft.name, draft.customerName, draft.customerPhone, draft.customerEmail, draft.notes]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      return haystack.includes(q);
+    });
+  }, [sortedDrafts, quoteSearch]);
+  const workRows = useMemo(() => {
+    const rows = [
+      ...filteredQuotes.map((quote) => ({
+        kind: 'quote' as const,
+        id: quote.id,
+        at: new Date(quote.createdAt).getTime(),
+        quote,
+      })),
+      ...filteredDrafts.map((draft) => ({
+        kind: 'draft' as const,
+        id: draft.id,
+        at: new Date(draft.savedAt).getTime(),
+        draft,
+      })),
+    ];
+    return rows.sort((a, b) => b.at - a.at);
+  }, [filteredQuotes, filteredDrafts]);
+  const workTotalPages = Math.max(1, Math.ceil(workRows.length / WORK_PAGE_SIZE));
+  const pagedWork = useMemo(() => {
+    const start = (workPage - 1) * WORK_PAGE_SIZE;
+    return workRows.slice(start, start + WORK_PAGE_SIZE);
+  }, [workRows, workPage]);
+  const sentCount = useMemo(
+    () => quotes.filter((quote) => {
+      const workflow = quote.quoteStatus ?? 'draft';
+      if (workflow === 'approved' || workflow === 'paid') return false;
+      return quote.status === 'whatsapp' || quote.status === 'email' || workflow === 'sent';
+    }).length,
+    [quotes]
+  );
+  const approvedCount = useMemo(
+    () => quotes.filter((quote) => quote.quoteStatus === 'approved').length,
+    [quotes]
+  );
+  const businessTitle = profile.businessName?.trim() || profile.contactName?.trim() || t('profile.deskFallback');
+  const attentionRows = workRows.filter((row) => {
+    if (row.kind === 'draft') return true;
+    const workflow = row.quote.quoteStatus ?? 'draft';
+    return workflow === 'sent' || workflow === 'approved';
+  });
 
   useEffect(() => {
-    setQuotePage(1);
+    setWorkPage(1);
   }, [quoteSearch]);
 
   useEffect(() => {
-    setQuotePage((prev) => Math.min(prev, quoteTotalPages));
-  }, [quoteTotalPages]);
-
-  useEffect(() => {
-    setDraftPage((prev) => Math.min(prev, draftTotalPages));
-  }, [draftTotalPages]);
+    setWorkPage((prev) => Math.min(prev, workTotalPages));
+  }, [workTotalPages]);
 
   useEffect(() => {
     setOpenQuoteId((id) => {
       if (!id) return null;
-      const start = (quotePage - 1) * QUOTES_PAGE_SIZE;
-      const onPage = filteredQuotes.slice(start, start + QUOTES_PAGE_SIZE).some((q) => q.id === id);
-      return onPage ? id : null;
+      const start = (workPage - 1) * WORK_PAGE_SIZE;
+      return workRows.slice(start, start + WORK_PAGE_SIZE).some((row) => row.kind === 'quote' && row.id === id) ? id : null;
     });
-  }, [quotePage, filteredQuotes]);
-
-  useEffect(() => {
-    setOpenDraftId((id) => {
-      if (!id) return null;
-      const start = (draftPage - 1) * DRAFTS_PAGE_SIZE;
-      return sortedDrafts.slice(start, start + DRAFTS_PAGE_SIZE).some((d) => d.id === id) ? id : null;
-    });
-  }, [draftPage, sortedDrafts]);
+  }, [workPage, workRows]);
 
   useEffect(() => () => { if (saveToastTimeoutRef.current) clearTimeout(saveToastTimeoutRef.current); }, []);
 
@@ -189,31 +206,6 @@ export default function ProfilePage() {
       getDrafts(null).then(setDrafts);
     }
   }, [authUser?.id]);
-
-  useEffect(() => {
-    const ids: SectionId[] = ['details', 'quotes', 'drafts', 'customers', 'settings'];
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (Date.now() < ioSkipUntilRef.current) return;
-        const visible = entries.filter((e) => e.isIntersecting && e.target instanceof HTMLElement);
-        if (!visible.length) return;
-        const best = visible.reduce((a, b) => (a.intersectionRatio >= b.intersectionRatio ? a : b));
-        const id = best.target.getAttribute('data-section-id') as SectionId | null;
-        if (id && ids.includes(id)) setActiveSection(id);
-      },
-      { root: null, rootMargin: '-10% 0px -42% 0px', threshold: [0, 0.08, 0.15, 0.25, 0.35, 0.5, 0.65, 0.8, 1] }
-    );
-    const t = window.setTimeout(() => {
-      ids.forEach((id) => {
-        const el = sectionRefs.current[id];
-        if (el) io.observe(el);
-      });
-    }, 0);
-    return () => {
-      window.clearTimeout(t);
-      io.disconnect();
-    };
-  }, []);
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -445,65 +437,250 @@ export default function ProfilePage() {
 
   return (
     <RequireAuth>
-    <main className="min-h-screen bg-[#F8FAFC] px-3 py-4 sm:p-4 md:p-8" dir={dir}>
-      <div className="max-w-5xl mx-auto">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 font-medium mb-4 sm:mb-6 min-h-[44px] items-center"
-        >
-          <ArrowRight size={20} /> {t('profile.backHome')}
-        </Link>
+    <main className="min-h-screen bg-[#f3f6fb] pb-12" dir={dir}>
+      <div className="mx-auto max-w-md px-4 pt-4">
+        {view === 'desk' ? (
+          <Link href="/" className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-slate-500">
+            <ArrowRight size={18} /> {t('profile.backHome')}
+          </Link>
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              const next = view === 'prices' ? 'settings' : 'desk';
+              setView(next);
+              router.replace(next === 'desk' ? '/profile' : `/profile?view=${next}`);
+            }}
+            className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-slate-500"
+          >
+            <ArrowRight size={18} /> {t('profile.backToDesk')}
+          </button>
+        )}
 
-        <div className="flex flex-col md:flex-row gap-4 sm:gap-6 md:gap-8">
-          <nav className="md:w-56 shrink-0">
-            <div className="bg-white rounded-xl sm:rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-              <div className="px-3 sm:px-4 py-2.5 sm:py-3 border-b border-slate-100 bg-slate-50/80">
-                <h2 className="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wider">{t('profile.area')}</h2>
-                <p className="text-[11px] text-slate-400 mt-1 leading-snug">{t('profile.scrollFlowHint')}</p>
-              </div>
-              <ul className="p-1.5 sm:p-2 grid grid-cols-2 md:flex md:flex-col gap-1">
-                {sectionConfig.map((section) => (
-                  <li key={section.id}>
-                    <button
-                      type="button"
-                      onClick={() => scrollToSection(section.id)}
-                      className={`w-full flex items-center justify-center md:justify-start gap-1.5 sm:gap-3 px-2 sm:px-4 py-2.5 sm:py-3 rounded-xl text-right font-medium text-xs sm:text-sm transition-colors min-h-[44px] ${
-                        activeSection === section.id
-                          ? 'bg-blue-50 text-blue-700 border border-blue-100'
-                          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border border-transparent'
-                      }`}
-                    >
-                      <span className="text-slate-400 shrink-0 [.button:focus_&]:text-blue-500">
-                        {section.icon}
-                      </span>
-                      <span className="truncate sm:hidden">{section.labelShortKey ? t(section.labelShortKey) : t(section.labelKey)}</span>
-                      <span className="truncate hidden sm:inline">{t(section.labelKey)}</span>
-                      {activeSection === section.id && (
-                        <ChevronLeft size={16} className="mr-auto text-blue-500 hidden md:block shrink-0" />
-                      )}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </nav>
-
-          <div className="flex-1 min-w-0 min-h-0">
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-              <section
-                id="profile-section-details"
-                ref={assignSectionRef('details')}
-                data-section-id="details"
-                className="scroll-mt-28 md:scroll-mt-24 p-6 md:p-8 border-b border-slate-100"
-              >
-                  <h1 className="text-xl font-black text-slate-900 mb-1">{t('profile.details')}</h1>
-                  <p className="text-slate-500 text-sm mb-6">{t('profile.detailsSubtitle')}</p>
-                  {authUser?.email && (
-                    <div className="mb-4 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                      <span className="text-xs font-bold text-slate-500 block mb-1">{t('profile.accountEmailLabel')}</span>
-                      <span className="text-slate-800 font-medium" dir="ltr">{authUser.email}</span>
-                    </div>
+        {view === 'desk' && (
+          <div id="profile-section-quotes">
+            <section className="rounded-[28px] bg-white px-5 py-5 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
+              <div className="flex items-center gap-4">
+                <span className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-slate-100 text-slate-400 ring-1 ring-slate-200">
+                  {profile.logo ? (
+                    <img
+                      src={profile.logo}
+                      alt=""
+                      className="size-full object-cover"
+                      {...(profile.logo.startsWith('http') ? { crossOrigin: 'anonymous' as const } : {})}
+                    />
+                  ) : (
+                    <UserCircle size={34} aria-hidden />
                   )}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-slate-400">{t('profile.area')}</p>
+                  <h1 className="truncate text-[1.65rem] font-semibold leading-tight tracking-tight text-slate-900">{businessTitle}</h1>
+                  {profile.contactName?.trim() && profile.contactName.trim() !== businessTitle && (
+                    <p className="mt-0.5 truncate text-sm text-slate-600">{profile.contactName.trim()}</p>
+                  )}
+                  {profile.phone?.trim() && (
+                    <p className="mt-1 text-sm font-medium text-slate-500" dir="ltr">{profile.phone.trim()}</p>
+                  )}
+                </div>
+              </div>
+            </section>
+
+            <div className="mt-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <button type="button" onClick={() => setView('details')} className="flex min-h-[112px] flex-col items-start justify-between rounded-[24px] bg-white p-4 text-right shadow-[0_10px_28px_rgba(15,23,42,0.05)]">
+                <UserCircle className="text-blue-800" size={22} aria-hidden />
+                <span>
+                  <span className="block text-base font-semibold text-slate-900">{t('profile.details')}</span>
+                  <span className="mt-0.5 block text-xs leading-snug text-slate-500">{t('profile.detailsShort')}</span>
+                </span>
+              </button>
+              <Link href="/customers" className="flex min-h-[112px] flex-col items-start justify-between rounded-[24px] bg-white p-4 text-right shadow-[0_10px_28px_rgba(15,23,42,0.05)]">
+                <Users className="text-blue-800" size={22} aria-hidden />
+                <span>
+                  <span className="block text-base font-semibold text-slate-900">{t('profile.recentCustomers')}</span>
+                  <span className="mt-0.5 block text-xs leading-snug text-slate-500">{customers.length > 0 ? `${customers.length}` : t('profile.customersNone')}</span>
+                </span>
+              </Link>
+              <button type="button" onClick={() => setView('settings')} className="flex min-h-[112px] flex-col items-start justify-between rounded-[24px] bg-white p-4 text-right shadow-[0_10px_28px_rgba(15,23,42,0.05)]">
+                <Settings className="text-slate-600" size={22} aria-hidden />
+                <span>
+                  <span className="block text-base font-semibold text-slate-900">{t('profile.settings')}</span>
+                  <span className="mt-0.5 block text-xs leading-snug text-slate-500">{t('profile.settingsShort')}</span>
+                </span>
+              </button>
+              <button type="button" onClick={() => setView('prices')} className="flex min-h-[112px] flex-col items-start justify-between rounded-[24px] bg-white p-4 text-right shadow-[0_10px_28px_rgba(15,23,42,0.05)]">
+                <DollarSign className="text-emerald-700" size={22} aria-hidden />
+                <span>
+                  <span className="block text-base font-semibold text-slate-900">{t('profile.myPrices')}</span>
+                  <span className="mt-0.5 block text-xs leading-snug text-slate-500">{t('profile.pricesShort')}</span>
+                </span>
+              </button>
+            </div>
+
+            <div className="mb-3 mt-8 flex items-end justify-between gap-3">
+              <h2 className="text-sm font-semibold text-slate-700">
+                {showAllWork ? t('profile.allWork') : t('profile.openWork')}
+                {!showAllWork && attentionRows.length > 0 ? ` · ${attentionRows.length}` : ''}
+              </h2>
+              {workRows.length > 0 && (
+                <button type="button" onClick={() => setShowAllWork((v) => !v)} className="text-sm font-semibold text-blue-800">
+                  {showAllWork ? t('profile.hideWork') : t('profile.allWork')}
+                </button>
+              )}
+            </div>
+            {showAllWork && (
+            <label className="relative mb-3 block">
+              <span className="sr-only">{t('profile.quoteSearchPlaceholder')}</span>
+              <Search className="pointer-events-none absolute end-4 top-1/2 size-5 -translate-y-1/2 text-slate-400" aria-hidden />
+              <input
+                type="search"
+                value={quoteSearch}
+                onChange={(e) => setQuoteSearch(e.target.value)}
+                placeholder={t('profile.quoteSearchPlaceholder')}
+                className="w-full rounded-full border border-white bg-white py-3.5 pe-12 ps-4 text-sm text-slate-900 shadow-[0_8px_24px_rgba(15,23,42,0.06)] placeholder:text-slate-400 focus:border-blue-700 focus:outline-none"
+                dir={dir}
+                autoComplete="off"
+              />
+            </label>
+            )}
+
+            {(showAllWork ? workRows : attentionRows).length === 0 ? (
+              <p className="mt-3 rounded-[28px] bg-white px-4 py-8 text-center text-sm leading-relaxed text-slate-500 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+                {t('profile.workEmpty')}
+              </p>
+            ) : (
+              <ul className="mt-3 flex flex-col gap-2">
+                {(showAllWork ? pagedWork : attentionRows.slice(0, 3)).map((row) => {
+                  if (row.kind === 'draft') {
+                    const d = row.draft;
+                    return (
+                      <li key={d.id} className="flex items-center gap-2 rounded-[28px] bg-white px-3 py-3 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+                        <button type="button" onClick={() => handleLoadDraft(d)} className="min-w-0 flex-1 text-right">
+                          <span className="block truncate font-semibold text-slate-900">{d.customerName?.trim() || d.name}</span>
+                          <span className="mt-0.5 block text-xs text-slate-500">
+                            {formatDraftDate(d.savedAt)} · {formatPrice(getDraftTotal(d))}
+                          </span>
+                        </button>
+                        <span className="shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">{t('profile.draftLabel')}</span>
+                        <button
+                          type="button"
+                          onClick={() => setDeleteDraftId(d.id)}
+                          className="shrink-0 rounded-full p-2 text-slate-400 hover:bg-red-50 hover:text-red-600"
+                          title={t('profile.deleteDraft')}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </li>
+                    );
+                  }
+                  const q = row.quote;
+                  const isOpen = openQuoteId === q.id;
+                  const listBadge = getQuoteListBadge(q, quoteBadgeLabels);
+                  const dateStr = new Date(q.createdAt).toLocaleDateString('he-IL', { day: 'numeric', month: 'short' });
+                  return (
+                    <li key={q.id} className="overflow-hidden rounded-[28px] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+                      <button
+                        type="button"
+                        aria-expanded={isOpen}
+                        onClick={() => {
+                          setOpenQuoteId((prev) => (prev === q.id ? null : q.id));
+                          setStatusDropdownId(null);
+                        }}
+                        className="flex w-full items-center gap-3 px-4 py-3 text-right"
+                      >
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate font-semibold text-slate-900">
+                            {q.customerName?.trim() || t('profile.noCustomerName')}
+                          </span>
+                          <span className="mt-0.5 block text-xs text-slate-500">
+                            {dateStr} · {formatPrice(q.totalWithVAT)}
+                          </span>
+                        </span>
+                        <span className={`max-w-[6.5rem] shrink-0 truncate rounded-full px-2.5 py-1 text-xs font-semibold ${listBadge.colorClass}`}>
+                          {listBadge.label}
+                        </span>
+                        <ChevronDown size={18} className={`shrink-0 text-slate-300 transition-transform ${isOpen ? 'rotate-180' : ''}`} aria-hidden />
+                      </button>
+                      {isOpen && (
+                        <div className="border-t border-slate-100 px-4 pb-4 pt-3">
+                          <div className="relative">
+                            <button
+                              type="button"
+                              onClick={() => setStatusDropdownId(statusDropdownId === q.id ? null : q.id)}
+                              className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${listBadge.colorClass}`}
+                            >
+                              {listBadge.label}
+                              <ChevronDown size={14} />
+                            </button>
+                            {statusDropdownId === q.id && (
+                              <>
+                                <div className="fixed inset-0 z-40" onClick={() => setStatusDropdownId(null)} aria-hidden />
+                                <div className="absolute top-full z-50 mt-1 min-w-[120px] rounded-2xl border border-slate-100 bg-white py-1 shadow-lg">
+                                  {(['draft', 'sent', 'approved', 'paid'] as const).map((st) => (
+                                    <button
+                                      key={st}
+                                      type="button"
+                                      onClick={() => {
+                                        updateQuoteStatus(q.id, st);
+                                        setStatusDropdownId(null);
+                                      }}
+                                      className={`block w-full px-3 py-2 text-right text-sm ${q.quoteStatus === st ? 'font-bold text-blue-700' : 'text-slate-700'}`}
+                                    >
+                                      {quoteStatusLabels[st]}
+                                    </button>
+                                  ))}
+                                </div>
+                              </>
+                            )}
+                          </div>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <button type="button" onClick={() => setPreviewQuoteId(q.id)} className="inline-flex items-center gap-1.5 rounded-full bg-[#f3f6fb] px-3 py-2 text-sm font-semibold text-slate-700">
+                              <Eye size={15} /> {t('profile.preview')}
+                            </button>
+                            <button type="button" onClick={() => handleDuplicateQuote(q.id)} className="inline-flex items-center gap-1.5 rounded-full bg-[#f3f6fb] px-3 py-2 text-sm font-semibold text-slate-700">
+                              <Copy size={15} /> {t('profile.duplicate')}
+                            </button>
+                            <button type="button" onClick={() => handleDownloadQuote(q.id)} disabled={downloadingId === q.id} className="inline-flex items-center gap-1.5 rounded-full bg-blue-800 px-3 py-2 text-sm font-semibold text-white disabled:opacity-60">
+                              <Download size={15} /> {downloadingId === q.id ? t('profile.downloading') : t('profile.downloadPdf')}
+                            </button>
+                            <button type="button" onClick={() => setDeleteQuoteId(q.id)} className="rounded-full p-2 text-slate-400 hover:bg-red-50 hover:text-red-600" title={t('profile.deleteFromHistory')}>
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+
+            {showAllWork && workTotalPages > 1 && (
+              <div className="mt-4 flex items-center justify-between gap-3">
+                <button type="button" onClick={() => setWorkPage((p) => Math.max(1, p - 1))} disabled={workPage <= 1} className="rounded-full bg-white px-3 py-2 text-sm disabled:opacity-40">
+                  {t('profile.paginationPrev')}
+                </button>
+                <span className="text-sm text-slate-500">{workPage} / {workTotalPages}</span>
+                <button type="button" onClick={() => setWorkPage((p) => Math.min(workTotalPages, p + 1))} disabled={workPage >= workTotalPages} className="rounded-full bg-white px-3 py-2 text-sm disabled:opacity-40">
+                  {t('profile.paginationNext')}
+                </button>
+              </div>
+            )}
+
+          </div>
+        )}
+
+        {view === 'details' && (
+          <section>
+            <h1 className="text-2xl font-semibold text-slate-900">{t('profile.details')}</h1>
+            <p className="mt-1 text-sm text-slate-500">{t('profile.detailsSubtitle')}</p>
+            {authUser?.email && (
+              <div className="mt-4 rounded-[24px] bg-white px-4 py-3">
+                <span className="block text-xs font-medium text-slate-500">{t('profile.accountEmailLabel')}</span>
+                <span className="font-medium text-slate-800" dir="ltr">{authUser.email}</span>
+              </div>
+            )}
+            <div className="mt-4">
                   <form onSubmit={(e) => e.preventDefault()} className="space-y-5">
                     <div>
                       <label className="block text-sm font-bold text-slate-700 mb-2">{t('profile.logo')}</label>
@@ -628,345 +805,15 @@ export default function ProfilePage() {
                       {t('profile.detailsNote')}
                     </p>
                   </form>
-              </section>
 
-              <section
-                id="profile-section-quotes"
-                ref={assignSectionRef('quotes')}
-                data-section-id="quotes"
-                className="scroll-mt-28 md:scroll-mt-24 p-6 md:p-8 border-b border-slate-100"
-              >
-                  <h1 className="text-xl font-black text-slate-900 mb-1">{t('profile.savedQuotesTitle')}</h1>
-                  <p className="text-slate-500 text-sm mb-2">{t('profile.savedQuotesSubtitle')}</p>
-                  <p className="text-slate-400 text-xs mb-6">{t('profile.listExpandHint')}</p>
-                  <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="text-sm text-slate-500">
-                      <span>{t('profile.quotesTotalLabel')}</span>{' '}
-                      <span className="font-semibold text-slate-700">{filteredQuotes.length}</span>{' '}
-                      <span>{t('profile.quotesTotalUnit')}</span>
-                    </div>
-                    <input
-                      type="search"
-                      value={quoteSearch}
-                      onChange={(e) => setQuoteSearch(e.target.value)}
-                      placeholder={t('profile.quoteSearchPlaceholder')}
-                      className="w-full sm:w-80 px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                    />
-                  </div>
-                  {filteredQuotes.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-14 text-center bg-slate-50/50 rounded-2xl border border-slate-100">
-                      <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mb-3 text-slate-400">
-                        <FileText size={28} />
-                      </div>
-                      <p className="text-slate-500 text-sm max-w-xs">{t('profile.noSavedQuotes')}</p>
-                    </div>
-                  ) : (
-                    <ul className="space-y-2">
-                      {pagedQuotes.map((q) => {
-                        const dateStr = new Date(q.createdAt).toLocaleDateString('he-IL', {
-                          day: '2-digit',
-                          month: '2-digit',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        });
-                        const isOpen = openQuoteId === q.id;
-                        const listBadge = getQuoteListBadge(q, quoteBadgeLabels);
-                        return (
-                          <li
-                            key={q.id}
-                            className="rounded-xl border border-slate-200 bg-slate-50/50 overflow-hidden"
-                          >
-                            <button
-                              type="button"
-                              aria-expanded={isOpen}
-                              onClick={() => {
-                                setOpenQuoteId((prev) => {
-                                  const next = prev === q.id ? null : q.id;
-                                  if (prev === q.id || next !== q.id) setStatusDropdownId(null);
-                                  return next;
-                                });
-                              }}
-                              className="w-full flex items-center gap-3 px-3 py-3 text-right hover:bg-slate-50/80 transition-colors min-h-[52px]"
-                            >
-                              <ChevronDown
-                                size={20}
-                                className={`shrink-0 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
-                                aria-hidden
-                              />
-                              <div className="min-w-0 flex-1 text-end">
-                                <div className="flex items-center gap-2 flex-wrap justify-end">
-                                  <span className="font-bold text-slate-900 truncate max-w-[min(100%,14rem)] sm:max-w-md">
-                                    {q.customerName?.trim() || t('profile.noCustomerName')}
-                                  </span>
-                                  {q.quoteNumber != null && (
-                                    <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded shrink-0">
-                                      #{q.quoteNumber}
-                                    </span>
-                                  )}
-                                </div>
-                                <div className="text-xs text-slate-500 mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 justify-end">
-                                  <span>{dateStr}</span>
-                                  <span className="text-slate-300">·</span>
-                                  <span className="font-semibold text-blue-600">{formatPrice(q.totalWithVAT)}</span>
-                                </div>
-                              </div>
-                              <span
-                                className={`text-xs font-medium px-2.5 py-1 rounded-full shrink-0 max-w-[6.5rem] truncate ${listBadge.colorClass}`}
-                              >
-                                {listBadge.label}
-                              </span>
-                            </button>
-                            {isOpen && (
-                              <div className="px-3 pb-3 pt-0 border-t border-slate-200/80 bg-white/60">
-                                <div className="flex items-center gap-2 mt-3 flex-wrap">
-                                  <div className="relative">
-                                    <button
-                                      type="button"
-                                      onClick={() => setStatusDropdownId(statusDropdownId === q.id ? null : q.id)}
-                                      className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full transition-colors ${listBadge.colorClass} hover:opacity-90`}
-                                    >
-                                      {listBadge.label}
-                                      <ChevronDown size={14} className="opacity-70" />
-                                    </button>
-                                    {statusDropdownId === q.id && (
-                                      <>
-                                        <div className="fixed inset-0 z-40" onClick={() => setStatusDropdownId(null)} aria-hidden />
-                                        <div className="absolute top-full right-0 mt-1 z-50 py-1 bg-white rounded-lg shadow-lg border border-slate-200 min-w-[100px]">
-                                          {(['draft', 'sent', 'approved', 'paid'] as const).map((st) => (
-                                            <button
-                                              key={st}
-                                              type="button"
-                                              onClick={() => {
-                                                updateQuoteStatus(q.id, st);
-                                                setStatusDropdownId(null);
-                                              }}
-                                              className={`block w-full text-right px-3 py-2 text-sm hover:bg-slate-50 ${q.quoteStatus === st ? 'font-bold text-blue-600' : 'text-slate-700'}`}
-                                            >
-                                              {quoteStatusLabels[st]}
-                                            </button>
-                                          ))}
-                                        </div>
-                                      </>
-                                    )}
-                                  </div>
-                                </div>
-                                <div className="flex flex-wrap items-center gap-2 mt-3">
-                                  <button
-                                    type="button"
-                                    onClick={() => setPreviewQuoteId(q.id)}
-                                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-sm border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors shrink-0"
-                                    title={t('profile.preview')}
-                                  >
-                                    <Eye size={16} />
-                                    {t('profile.preview')}
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleDuplicateQuote(q.id)}
-                                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-sm border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors shrink-0"
-                                    title={t('profile.duplicate')}
-                                  >
-                                    <Copy size={16} />
-                                    {t('profile.duplicate')}
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleDownloadQuote(q.id)}
-                                    disabled={downloadingId === q.id}
-                                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-bold text-sm bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 transition-colors shrink-0"
-                                  >
-                                    <Download size={16} />
-                                    {downloadingId === q.id ? t('profile.downloading') : t('profile.downloadPdf')}
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => setDeleteQuoteId(q.id)}
-                                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors shrink-0"
-                                    title={t('profile.deleteFromHistory')}
-                                  >
-                                    <Trash2 size={18} />
-                                  </button>
-                                </div>
-                              </div>
-                            )}
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )}
-                  {quoteTotalPages > 1 && (
-                    <div className="mt-5 flex items-center justify-between gap-3">
-                      <button
-                        type="button"
-                        onClick={() => setQuotePage((p) => Math.max(1, p - 1))}
-                        disabled={quotePage <= 1}
-                        className="px-3 py-2 rounded-lg border border-slate-200 text-sm disabled:opacity-50"
-                      >
-                        {t('profile.paginationPrev')}
-                      </button>
-                      <span className="text-sm text-slate-600">
-                        {t('profile.paginationPage')} {quotePage} {t('profile.paginationOf')} {quoteTotalPages}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setQuotePage((p) => Math.min(quoteTotalPages, p + 1))}
-                        disabled={quotePage >= quoteTotalPages}
-                        className="px-3 py-2 rounded-lg border border-slate-200 text-sm disabled:opacity-50"
-                      >
-                        {t('profile.paginationNext')}
-                      </button>
-                    </div>
-                  )}
-              </section>
+            </div>
+          </section>
+        )}
 
-              <section
-                id="profile-section-drafts"
-                ref={assignSectionRef('drafts')}
-                data-section-id="drafts"
-                className="scroll-mt-28 md:scroll-mt-24 p-6 md:p-8 border-b border-slate-100"
-              >
-                  <h1 className="text-xl font-black text-slate-900 mb-1">{t('profile.draftsSectionTitle')}</h1>
-                  <p className="text-slate-500 text-sm mb-2">{t('profile.draftsSectionSubtitle')}</p>
-                  <p className="text-slate-400 text-xs mb-6">{t('profile.listExpandHint')}</p>
-                  {sortedDrafts.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-14 text-center bg-amber-50/30 rounded-2xl border border-amber-100">
-                      <div className="w-14 h-14 rounded-2xl bg-amber-100/80 flex items-center justify-center mb-3 text-amber-600">
-                        <FileEdit size={28} />
-                      </div>
-                      <p className="text-slate-600 text-sm max-w-xs">{t('profile.noDraftsYet')}</p>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="text-sm text-slate-500 mb-4">
-                        <span>{t('profile.draftsTotalLabel')}</span>{' '}
-                        <span className="font-semibold text-slate-700">{sortedDrafts.length}</span>{' '}
-                        <span>{t('profile.draftsTotalUnit')}</span>
-                      </div>
-                      <ul className="space-y-2">
-                        {pagedDrafts.map((d) => {
-                          const isOpen = openDraftId === d.id;
-                          return (
-                            <li
-                              key={d.id}
-                              className="rounded-xl border border-amber-200 bg-amber-50/40 overflow-hidden"
-                            >
-                              <button
-                                type="button"
-                                aria-expanded={isOpen}
-                                onClick={() => setOpenDraftId((prev) => (prev === d.id ? null : d.id))}
-                                className="w-full flex items-center gap-3 px-3 py-3 text-right hover:bg-amber-50/70 transition-colors min-h-[52px]"
-                              >
-                                <ChevronDown
-                                  size={20}
-                                  className={`shrink-0 text-amber-600/70 transition-transform ${isOpen ? 'rotate-180' : ''}`}
-                                  aria-hidden
-                                />
-                                <div className="min-w-0 flex-1 text-end">
-                                  <div className="font-bold text-slate-900 truncate flex items-center gap-2 justify-end">
-                                    <FileEdit size={14} className="shrink-0 text-amber-700 opacity-80" aria-hidden />
-                                    <span className="truncate max-w-[min(100%,16rem)] sm:max-w-lg">{d.name}</span>
-                                  </div>
-                                  <div className="text-xs text-slate-600 mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 justify-end">
-                                    <span>{formatDraftDate(d.savedAt)}</span>
-                                    <span className="text-amber-200">·</span>
-                                    <span className="font-semibold text-amber-800">{formatPrice(getDraftTotal(d))}</span>
-                                    <span className="text-amber-200">·</span>
-                                    <span>{d.items.length} {t('profile.itemsCount')}</span>
-                                  </div>
-                                </div>
-                              </button>
-                              {isOpen && (
-                                <div className="px-3 pb-3 pt-0 border-t border-amber-200/80 bg-white/50">
-                                  <p className="text-sm text-slate-600 mt-3">{getDraftSummary(d)}</p>
-                                  <div className="flex items-center gap-2 mt-2 flex-wrap text-xs text-slate-500">
-                                    {d.customerName?.trim() && (
-                                      <span>{t('profile.customer')}: {d.customerName}</span>
-                                    )}
-                                  </div>
-                                  <div className="flex flex-wrap items-center gap-2 mt-3">
-                                    <button
-                                      type="button"
-                                      onClick={() => handleLoadDraft(d)}
-                                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm bg-blue-600 text-white hover:bg-blue-700 transition-colors shrink-0"
-                                    >
-                                      {t('profile.loadToCart')}
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => setDeleteDraftId(d.id)}
-                                      className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors shrink-0"
-                                      title={t('profile.deleteDraft')}
-                                    >
-                                      <Trash2 size={18} />
-                                    </button>
-                                  </div>
-                                </div>
-                              )}
-                            </li>
-                          );
-                        })}
-                      </ul>
-                      {draftTotalPages > 1 && (
-                        <div className="mt-5 flex items-center justify-between gap-3">
-                          <button
-                            type="button"
-                            onClick={() => setDraftPage((p) => Math.max(1, p - 1))}
-                            disabled={draftPage <= 1}
-                            className="px-3 py-2 rounded-lg border border-slate-200 text-sm disabled:opacity-50"
-                          >
-                            {t('profile.paginationPrev')}
-                          </button>
-                          <span className="text-sm text-slate-600">
-                            {t('profile.paginationPage')} {draftPage} {t('profile.paginationOf')} {draftTotalPages}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => setDraftPage((p) => Math.min(draftTotalPages, p + 1))}
-                            disabled={draftPage >= draftTotalPages}
-                            className="px-3 py-2 rounded-lg border border-slate-200 text-sm disabled:opacity-50"
-                          >
-                            {t('profile.paginationNext')}
-                          </button>
-                        </div>
-                      )}
-                    </>
-                  )}
-              </section>
-
-              <section
-                id="profile-section-customers"
-                ref={assignSectionRef('customers')}
-                data-section-id="customers"
-                className="scroll-mt-28 md:scroll-mt-24 p-6 md:p-8 border-b border-slate-100"
-              >
-                <h1 className="text-xl font-black text-slate-900 mb-1">{t('profile.customersSectionTitle')}</h1>
-                <p className="text-slate-500 text-sm mb-6">{t('profile.customersSectionSubtitle')}</p>
-                <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                  <div className="flex items-start gap-3 min-w-0">
-                    <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
-                      <Users size={24} aria-hidden />
-                    </div>
-                    <p className="text-slate-600 text-sm leading-relaxed">{t('profile.customersSectionBlurb')}</p>
-                  </div>
-                  <Link
-                    href="/customers"
-                    className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-sm bg-blue-600 text-white hover:bg-blue-700 transition-colors shrink-0"
-                  >
-                    {t('profile.customersOpenPage')}
-                    <ArrowRight size={18} className="shrink-0 rtl:rotate-180" aria-hidden />
-                  </Link>
-                </div>
-              </section>
-
-              <section
-                id="profile-section-settings"
-                ref={assignSectionRef('settings')}
-                data-section-id="settings"
-                className="scroll-mt-28 md:scroll-mt-24 p-6 md:p-8 pb-10 md:pb-12"
-              >
-                  <h1 className="text-xl font-black text-slate-900 mb-1">{t('profile.settingsTitle')}</h1>
-                  <p className="text-slate-500 text-sm mb-8">{t('profile.settingsSubtitle')}</p>
+        {view === 'settings' && (
+          <section>
+            <h1 className="text-2xl font-semibold text-slate-900">{t('profile.settingsTitle')}</h1>
+            <p className="mt-1 mb-4 text-sm text-slate-500">{t('profile.settingsSubtitle')}</p>
                   <form onSubmit={(e) => e.preventDefault()} className="space-y-5 max-w-md">
                     <div>
                       <label htmlFor="defaultQuoteTitle" className="block text-sm font-bold text-slate-700 mb-2">
@@ -1042,6 +889,21 @@ export default function ProfilePage() {
                     <p className="text-slate-500 text-sm pt-2">{t('profile.settingsAutoSave')}</p>
                   </form>
 
+            <button
+              type="button"
+              onClick={() => setView('prices')}
+              className="mt-4 flex w-full items-center gap-3 rounded-[28px] bg-white px-4 py-4 text-right shadow-[0_8px_24px_rgba(15,23,42,0.05)]"
+            >
+              <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-700">
+                <DollarSign size={20} aria-hidden />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block font-semibold text-slate-900">{t('profile.myPrices')}</span>
+                <span className="mt-0.5 block text-sm text-slate-500">{t('profile.basePricesDesc')}</span>
+              </span>
+              <ChevronLeft className="shrink-0 text-slate-300" size={18} aria-hidden />
+            </button>
+            <div className="mt-8 space-y-8 text-slate-600">
                   <div className="mt-10 pt-8 border-t border-slate-200">
                     <h2 className="text-lg font-black text-slate-900 mb-1 flex items-center gap-2">
                       <Smartphone size={22} /> {t('profile.addToHomeScreenTitle')}
@@ -1139,11 +1001,14 @@ export default function ProfilePage() {
                     </form>
                   </div>
 
-                  <div className="mt-10 pt-8 border-t border-slate-200">
-                    <h2 className="text-lg font-black text-slate-900 mb-1 flex items-center gap-2">
-                      <DollarSign size={22} /> {t('profile.basePricesTitle')}
-                    </h2>
-                    <p className="text-slate-500 text-sm mb-4">{t('profile.basePricesDesc')}</p>
+            </div>
+          </section>
+        )}
+
+        {view === 'prices' && (
+          <section>
+            <h1 className="text-2xl font-semibold text-slate-900">{t('profile.basePricesTitle')}</h1>
+            <p className="mt-1 mb-4 text-sm text-slate-500">{t('profile.basePricesDesc')}</p>
                     <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
                       {[
                         ...getOrderedCategories(),
@@ -1203,11 +1068,9 @@ export default function ProfilePage() {
                         );
                       })}
                     </div>
-                  </div>
-              </section>
-            </div>
-          </div>
-        </div>
+
+          </section>
+        )}
       </div>
 
       {downloadingId && (

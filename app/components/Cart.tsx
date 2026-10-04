@@ -19,6 +19,7 @@ import GoogleAuthButton, { AuthMethodDivider } from './GoogleAuthButton';
 import CartNotesEditor from './CartNotesEditor';
 import {
   deleteQuoteNoteTemplate,
+  clearCartMeta,
   loadCartMeta,
   loadSavedQuoteNotes,
   saveCartMeta,
@@ -272,6 +273,7 @@ export default function Cart() {
     clearItemPriceOverride,
     clearBasket,
     reorderItems,
+    isLoaded: basketLoaded,
     subtotalBeforeDiscount,
     discount,
     setDiscount,
@@ -336,6 +338,19 @@ export default function Cart() {
     customerEmail,
     customerAddress,
     customerCompanyId,
+  };
+  const itemCountRef = useRef(items.length);
+  itemCountRef.current = items.length;
+
+  const resetCustomerForNewQuote = () => {
+    setCustomerName('');
+    setCustomerPhone('');
+    setCustomerEmail('');
+    setCustomerAddress('');
+    setCustomerCompanyId('');
+    setNotes('');
+    setShowCustomerDetails(false);
+    void clearCartMeta(user?.id ?? null);
   };
 
   const filteredCustomers = useMemo(() => {
@@ -521,6 +536,15 @@ export default function Cart() {
         }
       }
 
+      if (!basketLoaded) return;
+      if (items.length === 0) {
+        if (cancelled) return;
+        resetCustomerForNewQuote();
+        metaHydratedRef.current = true;
+        setMetaHydrated(true);
+        return;
+      }
+
       const meta = await loadCartMeta(userId);
       if (cancelled) return;
       const keepLocal = metaHydratedRef.current;
@@ -540,12 +564,28 @@ export default function Cart() {
     return () => {
       cancelled = true;
     };
-  }, [user?.id, setDiscount]);
+  }, [user?.id, setDiscount, basketLoaded]);
+
+  const hadQuoteItemsRef = useRef(false);
+  useEffect(() => {
+    if (!basketLoaded || !metaHydrated) return;
+    if (items.length > 0) {
+      hadQuoteItemsRef.current = true;
+      return;
+    }
+    if (!hadQuoteItemsRef.current) return;
+    hadQuoteItemsRef.current = false;
+    resetCustomerForNewQuote();
+  }, [basketLoaded, metaHydrated, items.length, user?.id]);
 
   useEffect(() => {
     if (!metaHydrated) return;
     const userId = user?.id ?? null;
     const persistNow = () => {
+      if (itemCountRef.current === 0) {
+        void clearCartMeta(userId);
+        return;
+      }
       void saveCartMeta(userId, cartMetaRef.current);
     };
     const timer = window.setTimeout(persistNow, 200);
