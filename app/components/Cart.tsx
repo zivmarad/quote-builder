@@ -28,6 +28,7 @@ import {
 
 const PENDING_DRAFT_KEY = 'quoteBuilder_pendingDraft';
 import { getQuotePreviewHtml } from './utils/quotePreview';
+import { savePdfBlob } from './utils/savePdf';
 import {
   buildCartPreviewParams,
   GUEST_PREVIEW_WATERMARK_BANNER,
@@ -896,23 +897,19 @@ export default function Cart() {
       });
       if (!jobId) throw new Error('job_create_failed');
       const fileUrl = await waitForJobFile(jobId);
-      const url = fileUrl;
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `hatzaat-mechir-${new Date().toISOString().slice(0, 10)}.pdf`;
-      a.click();
-      completeQuoteExport('ה-PDF הורד וההצעה נשמרה', 'download');
+      const response = await fetch(fileUrl);
+      if (!response.ok) throw new Error('pdf_fetch_failed');
+      const blob = await response.blob();
+      setIsDownloading(false);
+      const saved = await savePdfBlob(blob, `hatzaat-mechir-${new Date().toISOString().slice(0, 10)}.pdf`);
+      if (saved) completeQuoteExport('ה-PDF הורד וההצעה נשמרה', 'download');
     } catch (e) {
       await updateExportJob(jobId, 'failed', e instanceof Error ? e.message : 'pdf_export_failed');
       try {
         const blob = await generateClientPdfFallback(reservedQuoteNumber);
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `hatzaat-mechir-${new Date().toISOString().slice(0, 10)}.pdf`;
-        a.click();
-        URL.revokeObjectURL(url);
-        completeQuoteExport('נוצר PDF בגיבוי מקומי', 'fallback');
+        setIsDownloading(false);
+        const saved = await savePdfBlob(blob, `hatzaat-mechir-${new Date().toISOString().slice(0, 10)}.pdf`);
+        if (saved) completeQuoteExport('נוצר PDF בגיבוי מקומי', 'fallback');
       } catch {
         setToast('שגיאה בהפקת ה-PDF');
       }
@@ -1006,30 +1003,25 @@ export default function Cart() {
   /** במובייל תמיד מציגים "שתף עכשיו" כדי לנסות לפתוח מסך שיתוף; במחשב רק אם הדפדפן תומך. */
   const showShareNowButton = canNativeShare || isMobile;
 
-  const handleDownloadFromModal = () => {
+  const handleDownloadFromModal = async () => {
     const blob = lastShareBlobRef.current;
     if (!blob) return;
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'hatzaat-mechir.pdf';
-    a.click();
-    URL.revokeObjectURL(url);
+    setShowWhatsAppModal(false);
+    const saved = await savePdfBlob(blob, 'hatzaat-mechir.pdf');
+    if (!saved) {
+      setShowWhatsAppModal(true);
+      return;
+    }
     lastShareBlobRef.current = null;
     setShareError(null);
-    setShowWhatsAppModal(false);
     completeQuoteExport('ה-PDF הורד וההצעה נשמרה', 'download');
   };
 
-  const handleDownloadAndOpenWhatsAppWeb = () => {
+  const handleDownloadAndOpenWhatsAppWeb = async () => {
     const blob = lastShareBlobRef.current;
     if (blob) {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'hatzaat-mechir.pdf';
-      a.click();
-      URL.revokeObjectURL(url);
+      const saved = await savePdfBlob(blob, 'hatzaat-mechir.pdf');
+      if (!saved) return;
     }
     lastShareBlobRef.current = null;
     window.open('https://web.whatsapp.com', '_blank');

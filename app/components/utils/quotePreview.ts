@@ -261,7 +261,7 @@ export function getQuotePreviewHtml(params: {
 /** עיצוב מקצועי להצעת מחיר – RTL, Heebo/Assistant, Navy header, טבלה, סיכום צהוב בולט, הערות כרשימה, קווי חתימה. */
 export function getQuoteStyles(fontFamily = "'Heebo', 'Assistant', 'Segoe UI', Tahoma, sans-serif") {
   return `
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    .quote-pdf-body, .quote-pdf-body * { margin: 0; padding: 0; box-sizing: border-box; }
     .quote-pdf-body {
       font-family: ${fontFamily};
       direction: rtl;

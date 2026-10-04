@@ -36,6 +36,7 @@ import {
   Home,
   type LucideIcon,
 } from 'lucide-react';
+import { savePdfBlob } from './components/utils/savePdf';
 import { categories, splitOrderedCategories } from './service/services';
 import type { Category } from './service/services';
 import { useLanguage } from './contexts/LanguageContext';
@@ -322,12 +323,8 @@ export default function HomePage() {
         quote.discountAmount,
         quote.discount
       );
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `hatzaat-mechir-${quote.createdAt.slice(0, 10)}.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
+      setDownloadingId(null);
+      await savePdfBlob(blob, `hatzaat-mechir-${quote.createdAt.slice(0, 10)}.pdf`);
     } finally {
       setDownloadingId(null);
     }

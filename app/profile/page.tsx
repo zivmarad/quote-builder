@@ -23,6 +23,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import InstallManualGuide from '../components/InstallManualGuide';
 import { markAppInstalled } from '../../lib/install-utils';
 import { recordProductMetric } from '../../lib/product-metrics-client';
+import { savePdfBlob } from '../components/utils/savePdf';
 
 const PENDING_DRAFT_KEY = 'quoteBuilder_pendingDraft';
 
@@ -311,13 +312,9 @@ function ProfileDesk() {
         quote.discountAmount,
         quote.discount
       );
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `hatzaat-mechir-${quote.createdAt.slice(0, 10)}.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
-      recordProductMetric('quote_pdf');
+      setDownloadingId(null);
+      const saved = await savePdfBlob(blob, `hatzaat-mechir-${quote.createdAt.slice(0, 10)}.pdf`);
+      if (saved) recordProductMetric('quote_pdf');
     } finally {
       setDownloadingId(null);
     }

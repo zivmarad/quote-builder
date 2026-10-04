@@ -8,6 +8,7 @@ import { useQuoteHistory, type SavedQuote } from '../contexts/QuoteHistoryContex
 import { useQuoteBasket } from '../contexts/QuoteBasketContext';
 import { useProfile } from '../contexts/ProfileContext';
 import { useSettings } from '../contexts/SettingsContext';
+import { savePdfBlob } from '../components/utils/savePdf';
 
 type TrackFilter = 'all' | 'waiting' | 'approved';
 
@@ -93,12 +94,8 @@ export default function PastQuotesPage() {
         quote.discountAmount,
         quote.discount,
       );
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `hatzaat-mechir-${quote.createdAt.slice(0, 10)}.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
+      setDownloadingId(null);
+      await savePdfBlob(blob, `hatzaat-mechir-${quote.createdAt.slice(0, 10)}.pdf`);
     } finally {
       setDownloadingId(null);
     }

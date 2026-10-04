@@ -13,6 +13,67 @@ import {
 
 export type { BasketItem, QuoteProfile } from './quotePreview';
 
+function collectFontFaces(): string {
+  const faces: string[] = [];
+  for (const sheet of document.styleSheets) {
+    let rules: CSSRuleList;
+    try {
+      rules = sheet.cssRules;
+    } catch {
+      continue;
+    }
+    for (const rule of rules) {
+      if (rule instanceof CSSFontFaceRule) faces.push(rule.cssText);
+    }
+  }
+  return faces.join('\n');
+}
+
+async function canvasFromQuoteHtml(styles: string, bodyHtml: string): Promise<HTMLCanvasElement> {
+  const iframe = document.createElement('iframe');
+  iframe.setAttribute('aria-hidden', 'true');
+  iframe.style.cssText = 'position:fixed;left:-10000px;top:0;width:595px;height:1600px;border:0;';
+  const ready = new Promise<void>((resolve) => {
+    iframe.onload = () => resolve();
+  });
+  document.body.appendChild(iframe);
+  await ready;
+  const frameDoc = iframe.contentDocument ?? iframe.contentWindow?.document ?? null;
+  if (!frameDoc?.body) {
+    iframe.remove();
+    throw new Error('pdf_no_doc');
+  }
+  const parsed = new DOMParser().parseFromString(bodyHtml, 'text/html');
+  const root = parsed.querySelector('.quote-pdf-body');
+  if (!root) {
+    iframe.remove();
+    throw new Error(`pdf_no_root:${parsed.body.childElementCount}:${bodyHtml.length}`);
+  }
+  const styleEl = frameDoc.createElement('style');
+  styleEl.textContent = styles;
+  frameDoc.head.appendChild(styleEl);
+  frameDoc.body.style.cssText = 'margin:0;background:#fff;width:595px';
+  frameDoc.body.replaceChildren(frameDoc.importNode(root, true));
+  const target = frameDoc.querySelector('.quote-pdf-body');
+  if (!target) {
+    iframe.remove();
+    throw new Error('pdf_frame');
+  }
+  iframe.style.height = `${Math.max(target.scrollHeight, 800)}px`;
+  if (frameDoc.fonts?.ready) await frameDoc.fonts.ready;
+  try {
+    return await html2canvas(target as HTMLElement, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+      logging: false,
+    });
+  } finally {
+    iframe.remove();
+  }
+}
+
 /** מייצר את הצעת המחיר כ-PDF ומחזיר Blob – תומך במספר דפים בלתי מוגבל, שורת חתימות בדף האחרון */
 export async function generateQuotePDFAsBlob(
   items: BasketItem[],
@@ -90,7 +151,8 @@ export async function generateQuotePDFAsBlob(
 
   if (typeof document !== 'undefined' && document.fonts?.ready) await document.fonts.ready;
 
-  const styles = getQuoteStyles("'Heebo', 'Assistant', 'Segoe UI', Tahoma, sans-serif");
+  const fontFamily = getComputedStyle(document.body).fontFamily || "'Heebo', sans-serif";
+  const styles = `${collectFontFaces()}\n${getQuoteStyles(fontFamily)}`;
 
   for (let i = 0; i < chunks.length; i++) {
     const chunk = chunks[i];
@@ -115,8 +177,7 @@ export async function generateQuotePDFAsBlob(
       pageContent += footerBlock;
     }
 
-    const fragment = `
-      <style>${styles}</style>
+    const bodyHtml = `
       <div class="quote-pdf-body" dir="rtl">
         <div class="container">
           ${pageContent}
@@ -124,21 +185,7 @@ export async function generateQuotePDFAsBlob(
       </div>
     `;
 
-    const wrap = document.createElement('div');
-    wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:595px;background:#fff;z-index:-1;overflow:visible;';
-    wrap.innerHTML = fragment;
-    document.body.appendChild(wrap);
-
-    await new Promise((r) => setTimeout(r, 200));
-
-    const canvas = await html2canvas(wrap, {
-      scale: 2,
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: '#ffffff',
-      logging: false,
-    });
-    document.body.removeChild(wrap);
+    const canvas = await canvasFromQuoteHtml(styles, bodyHtml);
 
     const imgW = pageW;
     const imgH = (pageW * canvas.height) / canvas.width;
