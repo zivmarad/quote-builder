@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, Search } from 'lucide-react';
+import ConfirmDialog from '../components/ConfirmDialog';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useQuoteHistory, type SavedQuote } from '../contexts/QuoteHistoryContext';
 import { useQuoteBasket } from '../contexts/QuoteBasketContext';
@@ -19,13 +20,14 @@ function isApproved(quote: SavedQuote) {
 export default function PastQuotesPage() {
   const router = useRouter();
   const { t, dir, locale } = useLanguage();
-  const { quotes, isLoaded, updateQuoteStatus } = useQuoteHistory();
+  const { quotes, isLoaded, updateQuoteStatus, deleteQuote } = useQuoteHistory();
   const { loadBasket } = useQuoteBasket();
   const { profile } = useProfile();
   const { vatRate, validityDays } = useSettings();
   const [filter, setFilter] = useState<TrackFilter>('all');
   const [query, setQuery] = useState('');
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const dateLocale = locale === 'he' ? 'he-IL' : locale === 'ar' ? 'ar' : locale === 'ru' ? 'ru-RU' : 'en';
 
   const ordered = useMemo(
@@ -215,6 +217,13 @@ export default function PastQuotesPage() {
                     >
                       {t('profile.duplicate')}
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => setDeleteId(quote.id)}
+                      className="rounded-full bg-[#f3f6fb] px-3 py-1.5 text-xs font-semibold text-red-600"
+                    >
+                      {t('profile.confirmDelete')}
+                    </button>
                   </div>
                 </li>
               );
@@ -222,6 +231,19 @@ export default function PastQuotesPage() {
           </ul>
         )}
       </div>
+      <ConfirmDialog
+        open={!!deleteId}
+        title={t('profile.deleteQuoteConfirmTitle')}
+        message={t('profile.deleteQuoteConfirmMessage')}
+        confirmLabel={t('profile.confirmDelete')}
+        cancelLabel={t('profile.cancel')}
+        danger
+        onConfirm={() => {
+          if (deleteId) deleteQuote(deleteId);
+          setDeleteId(null);
+        }}
+        onCancel={() => setDeleteId(null)}
+      />
     </main>
   );
 }
