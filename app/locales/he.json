@@ -35,7 +35,7 @@
     "quickQuoteCardHint": "בלי המקצועות\nשבחרת",
     "quickQuoteSubtitle": "בלי לבחור תחום — כותבים עבודה ומחיר",
     "tradesSection": "בעלי מקצוע",
-    "tradesFullHint": "החוויה המלאה, לפי התחום",
+    "tradesFullHint": "הצעה מלאה לפי התחום — מחיר, שאלות וסיכום.",
     "personalHint": "העסק שלך, במקום אחד",
     "customersPocket": "לשימוש חוזר בהצעות",
     "projectsSection": "פרויקטים מורכבים",
@@ -83,7 +83,7 @@
     "quotesEmpty": "עדיין אין הצעות קודמות",
     "quotesNoMatch": "אין הצעות במעקב הזה",
     "quotesSearch": "חפש לפי לקוח",
-    "quotesFile": "הקובץ",
+    "quotesFile": "הורדה",
     "priceTrade": "תמחור"
   },
   "welcome": {

@@ -419,9 +419,10 @@ export default function HomePage() {
               </div>
             </section>
 
-            <section className="mt-7 px-4">
-              <h2 className="text-sm font-semibold text-slate-700">{t('home.tradesSection')}</h2>
-              <p className="mb-3 mt-0.5 text-sm font-medium text-slate-500">{t('home.tradesFullHint')}</p>
+            <section className="mt-8 px-4">
+              <div className="rounded-[28px] bg-white px-4 py-4 shadow-[0_16px_40px_rgba(15,23,42,0.06)] ring-1 ring-blue-100">
+              <h2 className="text-lg font-semibold tracking-tight text-slate-900">{t('home.tradesSection')}</h2>
+              <p className="mb-3.5 mt-1 text-sm leading-snug text-slate-600">{t('home.tradesFullHint')}</p>
               <div className="flex flex-wrap gap-2">
                 {visibleTrades.map((cat) => {
                   const isSpotlight = showCategorySpotlight && cat.id === suggestedCategoryId;
@@ -433,13 +434,14 @@ export default function HomePage() {
                       onClick={() => {
                         if (showCategorySpotlight) dismissPage('home');
                       }}
-                      className={`inline-flex items-center gap-2 rounded-full bg-white/90 py-1.5 pe-4 ps-1.5 shadow-[0_8px_24px_rgba(15,23,42,0.06)] ring-1 ring-white active:scale-[0.98] ${isSpotlight ? SPOTLIGHT_TARGET_CLASS : ''}`}
+                      className={`inline-flex items-center gap-2 rounded-full bg-[#f3f6fb] py-2 pe-4 ps-1.5 active:scale-[0.98] ${isSpotlight ? SPOTLIGHT_TARGET_CLASS : ''}`}
                     >
                       <TradeFace cat={cat} label={displayName(cat)} pill />
                     </Link>
                   );
                 })}
                 <MoreTradesButton onClick={() => setEditingTrades(true)} label={t('home.moreTrades')} pill />
+              </div>
               </div>
             </section>
 
@@ -602,7 +604,7 @@ function MoreTradesButton({
       onClick={onClick}
       className={
         pill
-          ? 'inline-flex items-center gap-2 rounded-full bg-white/70 py-1.5 pe-4 ps-1.5 text-slate-800 ring-1 ring-slate-200/80 active:scale-[0.98]'
+          ? 'inline-flex items-center gap-2 rounded-full bg-[#f3f6fb] py-2 pe-4 ps-1.5 text-slate-800 active:scale-[0.98]'
           : tileClass
       }
     >
