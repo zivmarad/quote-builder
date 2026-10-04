@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../contexts/AuthContext';
 import { useQuoteBasket } from '../contexts/QuoteBasketContext';
@@ -342,7 +342,7 @@ export default function Cart() {
   const itemCountRef = useRef(items.length);
   itemCountRef.current = items.length;
 
-  const resetCustomerForNewQuote = () => {
+  const resetCustomerForNewQuote = useCallback(() => {
     setCustomerName('');
     setCustomerPhone('');
     setCustomerEmail('');
@@ -351,7 +351,7 @@ export default function Cart() {
     setNotes('');
     setShowCustomerDetails(false);
     void clearCartMeta(user?.id ?? null);
-  };
+  }, [user?.id]);
 
   const filteredCustomers = useMemo(() => {
     const q = customerComboQuery.trim().toLowerCase();
@@ -537,7 +537,7 @@ export default function Cart() {
       }
 
       if (!basketLoaded) return;
-      if (items.length === 0) {
+      if (itemCountRef.current === 0) {
         if (cancelled) return;
         resetCustomerForNewQuote();
         metaHydratedRef.current = true;
@@ -564,7 +564,7 @@ export default function Cart() {
     return () => {
       cancelled = true;
     };
-  }, [user?.id, setDiscount, basketLoaded]);
+  }, [user?.id, setDiscount, basketLoaded, resetCustomerForNewQuote]);
 
   const hadQuoteItemsRef = useRef(false);
   useEffect(() => {
@@ -576,7 +576,7 @@ export default function Cart() {
     if (!hadQuoteItemsRef.current) return;
     hadQuoteItemsRef.current = false;
     resetCustomerForNewQuote();
-  }, [basketLoaded, metaHydrated, items.length, user?.id]);
+  }, [basketLoaded, metaHydrated, items.length, resetCustomerForNewQuote]);
 
   useEffect(() => {
     if (!metaHydrated) return;

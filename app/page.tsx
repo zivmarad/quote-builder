@@ -1,6 +1,6 @@
 'use client';
 
-import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -34,6 +34,7 @@ import {
   Sofa,
   Bath,
   Home,
+  type LucideIcon,
 } from 'lucide-react';
 import { categories, splitOrderedCategories } from './service/services';
 import type { Category } from './service/services';
@@ -63,7 +64,7 @@ import {
   type TradeInterests,
 } from '@/lib/trade-interests';
 
-const categoryIcons: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+const categoryIcons: Record<string, LucideIcon> = {
   paint: Palette,
   sealing: Umbrella,
   concrete: Box,
@@ -98,12 +99,6 @@ type SearchResult = {
 const tradeGridStyle = {
   display: 'grid',
   gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-  gap: 12,
-} as const;
-
-const homeTradeGridStyle = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
   gap: 12,
 } as const;
 
@@ -211,8 +206,10 @@ export default function HomePage() {
   const catalogOff = Boolean(interests?.catalogOff) && selectedIds.length === 0;
   const needsPick = interests === null || editingTrades;
 
-  const displayName = (cat: Category) =>
-    isCustomCategoryId(cat.id) ? cat.name : t(`categoryName.${cat.id}`, cat.name);
+  const displayName = useCallback(
+    (cat: Category) => (isCustomCategoryId(cat.id) ? cat.name : t(`categoryName.${cat.id}`, cat.name)),
+    [t],
+  );
 
   const catById = useMemo(() => {
     const map = new Map<string, Category>();
@@ -268,7 +265,7 @@ export default function HomePage() {
     }
 
     return results.slice(0, 12);
-  }, [deferredSearch, t, getMergedServices, myProfessionCategories]);
+  }, [deferredSearch, t, getMergedServices, myProfessionCategories, displayName]);
 
   const saveInterests = (next: TradeInterests, close = true) => {
     writeTradeInterests(userId, next);

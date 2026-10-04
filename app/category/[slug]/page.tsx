@@ -36,9 +36,10 @@ import {
   Sofa,
   Bath,
   Home,
+  type LucideIcon,
 } from 'lucide-react';
 
-const categoryIcons: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+const categoryIcons: Record<string, LucideIcon> = {
   paint: Palette,
   sealing: Umbrella,
   concrete: Box,
