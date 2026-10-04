@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState, useEffect, useMemo } from 'react';
+import React, { Suspense, useRef, useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useProfile } from '../contexts/ProfileContext';
@@ -49,7 +49,7 @@ const quoteStatusKeys: Record<QuoteWorkflowStatus, string> = {
   paid: 'profile.quoteStatusPaid',
 };
 
-export default function ProfilePage() {
+function ProfileDesk() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { profile, setProfile, syncStatus } = useProfile();
@@ -160,18 +160,6 @@ export default function ProfilePage() {
     const start = (workPage - 1) * WORK_PAGE_SIZE;
     return workRows.slice(start, start + WORK_PAGE_SIZE);
   }, [workRows, workPage]);
-  const sentCount = useMemo(
-    () => quotes.filter((quote) => {
-      const workflow = quote.quoteStatus ?? 'draft';
-      if (workflow === 'approved' || workflow === 'paid') return false;
-      return quote.status === 'whatsapp' || quote.status === 'email' || workflow === 'sent';
-    }).length,
-    [quotes]
-  );
-  const approvedCount = useMemo(
-    () => quotes.filter((quote) => quote.quoteStatus === 'approved').length,
-    [quotes]
-  );
   const businessTitle = profile.businessName?.trim() || profile.contactName?.trim() || t('profile.deskFallback');
   const attentionRows = workRows.filter((row) => {
     if (row.kind === 'draft') return true;
@@ -278,11 +266,6 @@ export default function ProfilePage() {
   const formatDraftDate = (iso: string) => {
     const d = new Date(iso);
     return d.toLocaleDateString('he-IL', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-  };
-
-  const getDraftSummary = (d: QuoteDraft) => {
-    const names = d.items.slice(0, 2).map((i) => i.name);
-    return names.length > 0 ? names.join(', ') : '—';
   };
 
   const getDraftTotal = (d: QuoteDraft) => {
@@ -1169,5 +1152,13 @@ export default function ProfilePage() {
       />
     </main>
     </RequireAuth>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-[#f3f6fb]" />}>
+      <ProfileDesk />
+    </Suspense>
   );
 }
