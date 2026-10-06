@@ -277,6 +277,7 @@ export default function HomePage() {
     if (!close) return;
     setEditingTrades(false);
     setSearch('');
+    window.scrollTo(0, 0);
   };
 
   const quoteWasIssued = (quote: SavedQuote) => {
@@ -395,7 +396,7 @@ export default function HomePage() {
               return created != null;
             }}
             onSkip={() => saveInterests({ ids: [], catalogOff: true })}
-            onCancel={editingTrades ? () => setEditingTrades(false) : undefined}
+            onCancel={editingTrades ? () => { setEditingTrades(false); window.scrollTo(0, 0); } : undefined}
           />
           </div>
         ) : (
@@ -721,8 +722,9 @@ function TradePicker({
 
   const toggle = (id: string) => {
     setPicked((curr) => {
-      const next = curr.includes(id) ? curr.filter((x) => x !== id) : [...curr, id];
-      if (isEdit) onSave(next, false);
+      const adding = !curr.includes(id);
+      const next = adding ? [...curr, id] : curr.filter((x) => x !== id);
+      if (isEdit) onSave(next, adding);
       return next;
     });
   };

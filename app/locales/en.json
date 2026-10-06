@@ -45,7 +45,7 @@
     "projectsSection": "Large projects",
     "pickTitle": "What do you do?",
     "pickSubtitle": "Pick one or more trades. Home will show only those.",
-    "pickEditSubtitle": "Tap the name to open a trade. “Favorite” keeps it on the home screen.",
+    "pickEditSubtitle": "Tap the name to open a trade. “Favorite” saves it and returns home.",
     "pickMine": "My trades",
     "pickCommon": "Common",
     "pickRest": "More",
