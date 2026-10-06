@@ -204,7 +204,7 @@ export default function HomePage() {
     return interests.ids.filter((id) => knownIds.has(id));
   }, [interests, knownIds]);
 
-  const showFullCatalog = selectedIds.length === 0;
+  const showStarterTrades = selectedIds.length === 0 && myProfessionCategories.length === 0;
   const needsPick = editingTrades;
 
   const displayName = useCallback(
@@ -221,11 +221,8 @@ export default function HomePage() {
   }, [tradeCategories, projectCategories, myProfessionCategories]);
 
   const visibleTrades = useMemo(() => {
-    if (showFullCatalog) {
-      const starter = STARTER_TRADE_IDS.map((id) => catById.get(id)).filter(
-        (cat): cat is Category => Boolean(cat),
-      );
-      return [...myProfessionCategories, ...starter];
+    if (showStarterTrades) {
+      return STARTER_TRADE_IDS.map((id) => catById.get(id)).filter((cat): cat is Category => Boolean(cat));
     }
     const picked = selectedIds
       .map((id) => catById.get(id))
@@ -234,7 +231,7 @@ export default function HomePage() {
         return !isCustomCategoryId(cat.id);
       });
     return [...myProfessionCategories, ...picked];
-  }, [showFullCatalog, selectedIds, catById, myProfessionCategories]);
+  }, [showStarterTrades, selectedIds, catById, myProfessionCategories]);
 
   const searchResults = useMemo((): SearchResult[] => {
     const q = deferredSearch.trim().toLowerCase();
@@ -344,6 +341,14 @@ export default function HomePage() {
   );
   const dateLocale = locale === 'he' ? 'he-IL' : locale === 'ar' ? 'ar' : locale === 'ru' ? 'ru-RU' : 'en';
 
+  useEffect(() => {
+    if (!editingTrades) return;
+    const toTop = () => window.scrollTo(0, 0);
+    toTop();
+    const frame = requestAnimationFrame(toTop);
+    return () => cancelAnimationFrame(frame);
+  }, [editingTrades]);
+
   const inferredIds = useMemo(() => {
     const ids: string[] = [];
     for (const item of items) {
@@ -366,7 +371,11 @@ export default function HomePage() {
   const greetingName = firstName || t('header.guest');
 
   return (
-    <main className={`bg-[#f3f6fb] ${!needsPick && itemCount > 0 ? 'pb-28' : 'pb-8'}`} dir={dir}>
+    <main
+      className={`bg-[#f3f6fb] ${!needsPick && itemCount > 0 ? 'pb-28' : 'pb-8'}`}
+      dir={dir}
+      style={editingTrades ? { overflowAnchor: 'none' } : undefined}
+    >
       <div className="mx-auto max-w-md text-slate-900">
         <h1 className="sr-only">{t('home.title')}</h1>
 
@@ -443,7 +452,7 @@ export default function HomePage() {
                   </button>
                 </div>
               ) : (
-                (showFullCatalog || visibleTrades.length !== 1) && (
+                (showStarterTrades || visibleTrades.length !== 1) && (
                   <p className="mb-3.5 mt-1 text-sm leading-snug text-slate-500">{t('home.tradesFullHint')}</p>
                 )
               )}
@@ -610,7 +619,11 @@ function TradeHomeRow({
       </span>
       <span className="min-w-0 flex-1">
         <span className="block truncate text-base font-semibold text-slate-900">{label}</span>
-        {lead && <span className="mt-0.5 block text-sm text-slate-500">{t('home.tradeRowHint')}</span>}
+        {lead && (
+          <span className="mt-0.5 block text-sm text-slate-500">
+            {isCustomCategoryId(cat.id) ? t('home.ownTradeHint') : t('home.tradeRowHint')}
+          </span>
+        )}
       </span>
       <ChevronLeft className="shrink-0 text-slate-300" size={20} aria-hidden />
     </Link>

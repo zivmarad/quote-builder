@@ -9,6 +9,9 @@ import { useQuoteHistory, type QuoteDataSnapshot } from '../contexts/QuoteHistor
 import { useSettings } from '../contexts/SettingsContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCustomers, type Customer } from '../contexts/CustomersContext';
+import { useCustomCatalog } from '../contexts/CustomCatalogContext';
+import { categories } from '../service/services';
+import { getCategoryDisplayName } from '../../lib/custom-catalog-types';
 import { saveDraft } from '../../lib/drafts-storage';
 import { formatDiscountLabel } from '../../lib/quote-discount';
 import { Trash2, Edit2, Check, X, ShoppingBag, Plus, FileText, Share2, Eye, Loader2, ChevronDown, ChevronUp, Save, UserPlus } from 'lucide-react';
@@ -50,6 +53,7 @@ interface CartItemRowProps {
   onDelete: (id: string) => void;
   onRemoveExtra: (itemId: string, extraIndex: number) => void;
   formatPrice: (price: number) => string;
+  categoryLabel: string;
 }
 
 function CartItemRow({
@@ -63,6 +67,7 @@ function CartItemRow({
   onDelete,
   onRemoveExtra,
   formatPrice,
+  categoryLabel,
 }: CartItemRowProps) {
   const dragControls = useDragControls();
   const [isPickedUp, setIsPickedUp] = useState(false);
@@ -157,7 +162,11 @@ function CartItemRow({
         <div className="flex flex-col gap-3 flex-1 min-w-0">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
               <div className="flex-1 text-right min-w-0">
-                <span className={`text-[10px] font-bold uppercase tracking-wider mb-1 block ${item.category === FREE_QUOTE_CATEGORY ? 'text-emerald-600' : 'text-blue-600'}`}>{item.category}</span>
+                {categoryLabel ? (
+                  <span className={`mb-1 block text-[11px] font-semibold ${item.category === FREE_QUOTE_CATEGORY ? 'text-emerald-600' : 'text-blue-800'}`}>
+                    {categoryLabel}
+                  </span>
+                ) : null}
                 <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
                   {item.name}
                   {item.quantity != null && item.quantity > 1 && (
@@ -287,6 +296,15 @@ export default function Cart() {
   const { addQuote } = useQuoteHistory();
   const { defaultQuoteTitle, nextQuoteNumber, setNextQuoteNumber, validityDays, vatRate } = useSettings();
   const { t } = useLanguage();
+  const { getCategoryById } = useCustomCatalog();
+  const categoryLabel = useCallback(
+    (categoryId: string) => {
+      if (categoryId === FREE_QUOTE_CATEGORY) return categoryId;
+      const cat = getCategoryById(categoryId, categories);
+      return cat ? getCategoryDisplayName(t, cat) : '';
+    },
+    [getCategoryById, t],
+  );
   const { customers, isLoaded: customersLoaded } = useCustomers();
 
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -1236,6 +1254,7 @@ export default function Cart() {
               onDelete={setDeleteItemId}
               onRemoveExtra={removeExtraFromItem}
               formatPrice={formatPrice}
+              categoryLabel={categoryLabel(item.category)}
             />
           ))}
         </Reorder.Group>
