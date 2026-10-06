@@ -6,7 +6,7 @@ import { useQuoteBasket, BasketExtra } from '../contexts/QuoteBasketContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useSpotlightOnboarding } from '../hooks/useSpotlightOnboarding';
 import { trackEvent, AnalyticsEvents } from '@/lib/analytics';
-import { ShoppingCart } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 
 interface AddToBasketButtonProps {
   service: {
@@ -55,10 +55,10 @@ export default function AddToBasketButton({ service }: AddToBasketButtonProps) {
   return (
     <button
       onClick={handleAdd}
-      className="w-full py-3 px-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all active:scale-95 bg-white text-slate-900 hover:bg-blue-50 shadow-sm"
+      className="w-full min-h-12 py-3 px-4 rounded-full font-bold flex items-center justify-center gap-1.5 transition-all active:scale-[0.98] bg-white text-blue-900 shadow-sm"
     >
-      <ShoppingCart size={18} />
-      <span>{t('common.addToCart', 'הוסף לסל')}</span>
+      <span>{t('common.addToCart', 'הוסף להצעה')}</span>
+      <ChevronLeft size={18} aria-hidden />
     </button>
   );
 }

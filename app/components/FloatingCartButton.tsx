@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useQuoteBasket } from '../contexts/QuoteBasketContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { ShoppingCart } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useSpotlightOnboarding } from '../hooks/useSpotlightOnboarding';
 import { SPOTLIGHT_RING_CLASS } from '@/lib/spotlight-onboarding';
@@ -28,7 +28,7 @@ export default function FloatingCartButton() {
   const { itemCount, totalWithVAT } = useQuoteBasket();
   const router = useRouter();
   const pathname = usePathname();
-  const { t } = useLanguage();
+  const { t, dir } = useLanguage();
   const { shouldShow, dismissPage, complete, seenPages } = useSpotlightOnboarding();
   const prevCountRef = useRef(itemCount);
   const cartButtonRef = useRef<HTMLButtonElement>(null);
@@ -71,6 +71,12 @@ export default function FloatingCartButton() {
     }).format(price);
   };
 
+  const ForwardIcon = dir === 'rtl' ? ChevronLeft : ChevronRight;
+  const jobsLabel =
+    itemCount === 1
+      ? t('common.quoteJobOne', 'עבודה אחת')
+      : `${itemCount} ${t('common.quoteJobs', 'עבודות')}`;
+
   return (
     <>
       <button
@@ -83,19 +89,17 @@ export default function FloatingCartButton() {
           }
           router.push('/cart');
         }}
-        className={`fixed flex items-center justify-between gap-3 sm:gap-4 text-white rounded-full active:scale-[0.98] transition-all duration-300 group min-h-[64px] pl-5 pr-5 sm:pl-6 sm:pr-6 py-4 bottom-5 left-5 right-5 sm:left-auto sm:right-6 sm:min-w-[200px] ${pathname === '/' || isServiceSelectionPage ? 'bg-blue-900 shadow-lg' : 'bg-[#2563EB] shadow-xl hover:shadow-blue-500/40 sm:hover:scale-105'} ${showGoCartSpotlight ? `z-[53] ${SPOTLIGHT_RING_CLASS}` : 'z-[52]'} ${bounce ? 'cart-bump' : ''}`}
-        style={{ marginBottom: 'max(20px, env(safe-area-inset-bottom, 0px))' }}
+        className={`fixed bottom-5 left-4 right-4 mx-auto flex max-w-md items-center gap-3 rounded-full bg-blue-900 px-3 py-2.5 text-white shadow-lg active:scale-[0.98] transition-all duration-300 ${showGoCartSpotlight ? `z-[53] ${SPOTLIGHT_RING_CLASS}` : 'z-[52]'} ${bounce ? 'cart-bump' : ''}`}
+        style={{ marginBottom: 'max(0px, env(safe-area-inset-bottom, 0px))' }}
       >
-        <div className="text-right flex-1 min-w-0 flex flex-col items-end gap-0.5">
-          <div className="text-[10px] sm:text-xs opacity-90 leading-tight">סה״כ הצעת מחיר</div>
-          <div className="text-base sm:text-lg font-bold tabular-nums leading-tight">{formatPrice(totalWithVAT)}</div>
+        <div className="min-w-0 ps-2 text-start">
+          <span className="block text-[11px] font-medium leading-tight text-white/70">{jobsLabel}</span>
+          <span className="text-lg font-semibold tabular-nums leading-tight">{formatPrice(totalWithVAT)}</span>
         </div>
-        <div className="relative shrink-0 flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/25 sm:bg-white">
-          <ShoppingCart size={22} className="text-white group-hover:scale-110 transition-transform sm:text-[#2563EB]" />
-          <span className="absolute -top-1 -right-1 bg-violet-400 text-white text-xs font-bold rounded-full h-5 w-5 min-w-[20px] flex items-center justify-center shadow-sm">
-            {itemCount}
-          </span>
-        </div>
+        <span className="flex min-h-12 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full bg-white px-4 text-sm font-bold text-blue-900">
+          {t('common.continueToQuote', 'המשך להצעה')}
+          <ForwardIcon size={18} aria-hidden />
+        </span>
       </button>
 
       <SpotlightOverlay

@@ -99,6 +99,12 @@ const tradeGridStyle = {
   gap: 12,
 } as const;
 
+const choiceGridStyle = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+  gap: 10,
+} as const;
+
 const tileClass =
   'flex flex-col items-center justify-center gap-2.5 min-h-[118px] rounded-[32px] border border-white/80 bg-white/80 px-3 py-4 text-center shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur-sm transition-all active:scale-[0.98]';
 
@@ -718,21 +724,21 @@ function TradePicker({
       );
     }
     return (
-      <div key={cat.id} className="flex items-center gap-2 rounded-2xl bg-white py-1 pe-1.5 ps-2 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+      <div key={cat.id} className="flex flex-col overflow-hidden rounded-[28px] bg-white shadow-[0_10px_28px_rgba(15,23,42,0.06)]">
         <button
           type="button"
           onClick={() => router.push(`/category/${cat.id}`)}
-          className="flex min-w-0 flex-1 items-center gap-2.5 py-1 text-start active:opacity-70"
+          className="flex flex-col items-center gap-2.5 px-3 pb-2 pt-4 text-center active:opacity-70"
         >
-          <TradeFace cat={cat} label={displayName(cat)} row />
+          <TradeFace cat={cat} label={displayName(cat)} />
         </button>
         <button
           type="button"
           aria-pressed={on}
           onClick={() => toggle(cat.id)}
-          className={`flex h-11 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-sm font-semibold ${on ? 'bg-blue-800 text-white' : 'bg-[#f3f6fb] text-slate-700'}`}
+          className={`mx-2 mb-2 flex h-9 items-center justify-center gap-1 rounded-full text-xs font-semibold ${on ? 'bg-blue-800 text-white' : 'bg-[#f3f6fb] text-slate-600'}`}
         >
-          <Star size={15} className={on ? 'fill-white text-white' : 'text-slate-500'} aria-hidden />
+          <Star size={13} className={on ? 'fill-white text-white' : 'text-slate-400'} aria-hidden />
           {on ? t('home.pickOnHome') : t('home.pickAddHome')}
         </button>
       </div>
@@ -776,30 +782,9 @@ function TradePicker({
 
       {searching && matches && matches.length === 0 ? (
         <p className="mt-4 text-center text-sm leading-relaxed text-slate-500">{t('home.pickNoTrade')}</p>
-      ) : searching ? (
-        <div className="mt-1 flex flex-col gap-2">{(matches ?? []).map(tile)}</div>
-      ) : isEdit ? (
-        <div className="mt-1 flex flex-col gap-5">
-          {custom.length > 0 && (
-            <section>
-              <h3 className="mb-2 text-xs font-semibold text-slate-500">{t('home.pickMine')}</h3>
-              <div className="flex flex-col gap-2">{custom.map(tile)}</div>
-            </section>
-          )}
-          <section>
-            <h3 className="mb-2 text-xs font-semibold text-slate-500">{t('home.pickCommon')}</h3>
-            <div className="flex flex-col gap-2">{featured.map(tile)}</div>
-          </section>
-          {rest.length > 0 && (
-            <section>
-              <h3 className="mb-2 text-xs font-semibold text-slate-500">{t('home.pickRest')}</h3>
-              <div className="flex flex-col gap-2">{rest.map(tile)}</div>
-            </section>
-          )}
-        </div>
       ) : (
-        <div className="mt-4" style={tradeGridStyle}>
-          {[...custom, ...list].map(tile)}
+        <div className="mt-3" style={isEdit ? choiceGridStyle : tradeGridStyle}>
+          {(searching ? matches ?? [] : [...custom, ...list]).map(tile)}
         </div>
       )}
 

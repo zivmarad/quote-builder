@@ -412,7 +412,7 @@ export default function ServiceWizardPage() {
             </div>
             <div
               ref={addButtonRef}
-              className={`w-36 sm:w-48 shrink-0 min-w-0 ${showAddSpotlight ? `${SPOTLIGHT_TARGET_CLASS} rounded-2xl` : ''}`}
+              className={`min-w-0 flex-1 ${showAddSpotlight ? `${SPOTLIGHT_TARGET_CLASS} rounded-full` : ''}`}
             >
               <AddToBasketButton
                 service={{
