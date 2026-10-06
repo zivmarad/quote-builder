@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -48,7 +48,6 @@ import { useQuoteHistory, type SavedQuote } from './contexts/QuoteHistoryContext
 import { useSettings } from './contexts/SettingsContext';
 import { getServiceDisplayName, isCustomCategoryId } from '../lib/custom-catalog-types';
 import { useSpotlightOnboarding } from './hooks/useSpotlightOnboarding';
-import SpotlightOverlay from './components/onboarding/SpotlightOverlay';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { trackEvent, AnalyticsEvents } from '@/lib/analytics';
@@ -141,11 +140,10 @@ export default function HomePage() {
   const { vatRate, validityDays } = useSettings();
   const { items, totalWithVAT, itemCount, isLoaded: basketLoaded, loadBasket } = useQuoteBasket();
   const { quotes, isLoaded: historyLoaded } = useQuoteHistory();
-  const { getMergedServices, customCategories } = useCustomCatalog();
+  const { getMergedServices, customCategories, addCustomCategory } = useCustomCatalog();
   const { shouldShow, dismissPage } = useSpotlightOnboarding();
   const [search, setSearch] = useState('');
   const deferredSearch = useDeferredValue(search);
-  const tradesCardRef = useRef<HTMLDivElement>(null);
   const [interests, setInterests] = useState<TradeInterests | null | undefined>(undefined);
   const [editingTrades, setEditingTrades] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
@@ -376,6 +374,10 @@ export default function HomePage() {
             isEdit={editingTrades}
             displayName={displayName}
             onSave={(ids, close) => saveInterests({ ids, catalogOff: false }, close)}
+            onAddProfession={async (name) => {
+              const created = await addCustomCategory({ name });
+              return created != null;
+            }}
             onSkip={() => saveInterests({ ids: [], catalogOff: true })}
             onCancel={editingTrades ? () => setEditingTrades(false) : undefined}
           />
@@ -421,14 +423,23 @@ export default function HomePage() {
             </section>
 
             <section className="mt-8 px-4">
-              <div
-                ref={tradesCardRef}
-                className="rounded-[28px] bg-white px-4 py-4 shadow-[0_16px_40px_rgba(15,23,42,0.06)] ring-1 ring-blue-100"
-              >
-              {showCategorySpotlight && <div className="h-36" aria-hidden />}
+              <div className="rounded-[28px] bg-white px-4 py-4 shadow-[0_16px_40px_rgba(15,23,42,0.06)] ring-1 ring-blue-100">
               <h2 className="text-2xl font-bold tracking-tight text-slate-900">{t('home.tradesSection')}</h2>
-              {(showFullCatalog || visibleTrades.length !== 1) && (
-                <p className="mb-3.5 mt-1 text-sm leading-snug text-slate-500">{t('home.tradesFullHint')}</p>
+              {showCategorySpotlight ? (
+                <div className="mb-3.5 mt-1">
+                  <p className="text-sm leading-relaxed text-slate-600">{t('spotlight.homeQuiet')}</p>
+                  <button
+                    type="button"
+                    onClick={() => dismissPage('home')}
+                    className="mt-1.5 text-sm font-semibold text-blue-800"
+                  >
+                    {t('spotlight.gotIt')}
+                  </button>
+                </div>
+              ) : (
+                (showFullCatalog || visibleTrades.length !== 1) && (
+                  <p className="mb-3.5 mt-1 text-sm leading-snug text-slate-500">{t('home.tradesFullHint')}</p>
+                )
               )}
               <div className={`flex flex-col gap-2 ${visibleTrades.length === 1 ? 'mt-3' : ''}`}>
                 {visibleTrades.map((cat) => (
@@ -553,19 +564,6 @@ export default function HomePage() {
         )}
       </div>
 
-      {!needsPick && (
-        <SpotlightOverlay
-          open={showCategorySpotlight && visibleTrades.length > 0}
-          targetRef={tradesCardRef}
-          scrollBlock="nearest"
-          anchor="start"
-          title={t('spotlight.homeTitle')}
-          body={t('spotlight.homeBody')}
-          skipLabel={t('spotlight.skip')}
-          step={1}
-          onDismiss={() => dismissPage('home')}
-        />
-      )}
     </main>
   );
 }
@@ -651,6 +649,7 @@ function TradePicker({
   isEdit,
   displayName,
   onSave,
+  onAddProfession,
   onSkip,
   onCancel,
 }: {
@@ -661,6 +660,7 @@ function TradePicker({
   isEdit: boolean;
   displayName: (cat: Category) => string;
   onSave: (ids: string[], close?: boolean) => void;
+  onAddProfession: (name: string) => Promise<boolean>;
   onSkip: () => void;
   onCancel?: () => void;
 }) {
@@ -672,6 +672,9 @@ function TradePicker({
     return [...ids];
   });
   const [query, setQuery] = useState('');
+  const [ownName, setOwnName] = useState('');
+  const [ownTouched, setOwnTouched] = useState(false);
+  const [adding, setAdding] = useState(false);
 
   const featured = FEATURED_TRADE_IDS.map((id) => trades.find((cat) => cat.id === id)).filter(
     (cat): cat is Category => Boolean(cat),
@@ -688,6 +691,8 @@ function TradePicker({
       })
     : null;
   const quoteHref = quickQuoteHref(query);
+  const suggestedOwn = searching && matches && matches.length === 0 ? query.trim() : '';
+  const ownValue = ownTouched ? ownName : suggestedOwn;
 
   const toggle = (id: string) => {
     setPicked((curr) => {
@@ -713,11 +718,11 @@ function TradePicker({
       );
     }
     return (
-      <div key={cat.id} className="flex items-center gap-2 rounded-[22px] bg-white py-2 pe-2 ps-2.5 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+      <div key={cat.id} className="flex items-center gap-2 rounded-2xl bg-white py-1 pe-1.5 ps-2 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
         <button
           type="button"
           onClick={() => router.push(`/category/${cat.id}`)}
-          className="flex min-w-0 flex-1 items-center gap-3 py-1.5 text-start active:opacity-70"
+          className="flex min-w-0 flex-1 items-center gap-2.5 py-1 text-start active:opacity-70"
         >
           <TradeFace cat={cat} label={displayName(cat)} row />
         </button>
@@ -750,7 +755,8 @@ function TradePicker({
         {isEdit ? t('home.pickEditSubtitle') : t('home.pickSubtitle')}
       </p>
 
-      <label className="relative mt-5 block">
+      <div className="sticky top-0 z-10 -mx-5 mt-4 bg-[#f3f6fb] px-5 pb-3 pt-1">
+      <label className="relative block">
         <span className="sr-only">{t('home.pickSearchLabel')}</span>
         <Search
           className="pointer-events-none absolute end-4 top-1/2 size-5 -translate-y-1/2 text-slate-400"
@@ -766,27 +772,81 @@ function TradePicker({
           autoComplete="off"
         />
       </label>
+      </div>
 
       {searching && matches && matches.length === 0 ? (
-        <p className="mt-4 text-center text-sm text-slate-500">{t('home.pickNoTrade')}</p>
+        <p className="mt-4 text-center text-sm leading-relaxed text-slate-500">{t('home.pickNoTrade')}</p>
+      ) : searching ? (
+        <div className="mt-1 flex flex-col gap-2">{(matches ?? []).map(tile)}</div>
+      ) : isEdit ? (
+        <div className="mt-1 flex flex-col gap-5">
+          {custom.length > 0 && (
+            <section>
+              <h3 className="mb-2 text-xs font-semibold text-slate-500">{t('home.pickMine')}</h3>
+              <div className="flex flex-col gap-2">{custom.map(tile)}</div>
+            </section>
+          )}
+          <section>
+            <h3 className="mb-2 text-xs font-semibold text-slate-500">{t('home.pickCommon')}</h3>
+            <div className="flex flex-col gap-2">{featured.map(tile)}</div>
+          </section>
+          {rest.length > 0 && (
+            <section>
+              <h3 className="mb-2 text-xs font-semibold text-slate-500">{t('home.pickRest')}</h3>
+              <div className="flex flex-col gap-2">{rest.map(tile)}</div>
+            </section>
+          )}
+        </div>
       ) : (
-        <div className={isEdit ? 'mt-4 flex flex-col gap-2' : 'mt-4'} style={isEdit ? undefined : tradeGridStyle}>
-          {(matches ?? [...custom, ...list]).map(tile)}
+        <div className="mt-4" style={tradeGridStyle}>
+          {[...custom, ...list].map(tile)}
         </div>
       )}
 
-      <Link
-        href={quoteHref}
-        className="mt-4 flex items-center gap-3 rounded-[28px] bg-white px-4 py-3.5 shadow-[0_10px_30px_rgba(15,23,42,0.06)] ring-1 ring-white active:scale-[0.99]"
+      <form
+        className="mt-6"
+        onSubmit={(e) => {
+          e.preventDefault();
+          const name = ownValue.trim();
+          if (!name || adding) return;
+          setAdding(true);
+          void onAddProfession(name).then((ok) => {
+            setAdding(false);
+            if (!ok) return;
+            setOwnName('');
+            setOwnTouched(false);
+            setQuery('');
+            onCancel?.();
+          });
+        }}
       >
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-800">
-          <Plus size={20} aria-hidden />
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-base font-semibold leading-tight text-slate-900">{t('home.pickAddTitle')}</span>
-          <span className="mt-0.5 block text-sm text-slate-500">{t('home.pickAddHint')}</span>
-        </span>
-      </Link>
+        <p className="text-sm font-semibold text-slate-900">{t('home.pickOwnTitle')}</p>
+        <div className="mt-2 flex gap-2">
+          <input
+            type="text"
+            value={ownValue}
+            onChange={(e) => {
+              setOwnTouched(true);
+              setOwnName(e.target.value);
+            }}
+            placeholder={t('home.pickOwnPlaceholder')}
+            maxLength={60}
+            dir={dir}
+            className="min-w-0 flex-1 rounded-full border border-white bg-white px-4 py-3 text-sm text-slate-900 shadow-[0_8px_24px_rgba(15,23,42,0.06)] placeholder:text-slate-400 focus:border-blue-700 focus:outline-none"
+          />
+          <button
+            type="submit"
+            disabled={adding}
+            className="shrink-0 rounded-full bg-blue-800 px-4 text-sm font-semibold text-white disabled:opacity-50"
+          >
+            {t('home.pickOwnAdd')}
+          </button>
+        </div>
+        <p className="mt-2 text-xs leading-relaxed text-slate-500">{t('home.pickOwnHint')}</p>
+        <Link href={quoteHref} className="mt-2 inline-block text-sm font-semibold text-blue-800">
+          {t('home.pickOwnQuote')}
+        </Link>
+      </form>
 
       {!isEdit && (
         <Button
