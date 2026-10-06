@@ -11,6 +11,9 @@ type SpotlightOverlayProps = {
   skipLabel: string;
   step?: number;
   totalSteps?: number;
+  scrollBlock?: ScrollLogicalPosition;
+  /** start = הבועה בתוך ראש האזור המודגש, בלי לכסות מה שמעליו */
+  anchor?: 'outside' | 'start';
   onDismiss: () => void;
 };
 
@@ -38,7 +41,7 @@ type SpotlightLayout = {
 const PAD = 6;
 const TOOLTIP_GAP = 12;
 
-function computeLayout(el: HTMLElement): SpotlightLayout {
+function computeLayout(el: HTMLElement, anchor: 'outside' | 'start'): SpotlightLayout {
   const rect = el.getBoundingClientRect();
   const hole: HoleRect = {
     top: Math.max(4, rect.top - PAD),
@@ -50,14 +53,18 @@ function computeLayout(el: HTMLElement): SpotlightLayout {
 
   const tooltipWidth = Math.min(280, window.innerWidth - 32);
   const spaceBelow = window.innerHeight - hole.top - hole.height;
-  const placement: 'above' | 'below' = spaceBelow > 130 ? 'below' : 'above';
+  const placement: 'above' | 'below' = anchor === 'start' ? 'below' : spaceBelow > 130 ? 'below' : 'above';
   const centerX = hole.left + hole.width / 2;
   const left = Math.min(
     Math.max(16, centerX - tooltipWidth / 2),
     window.innerWidth - tooltipWidth - 16,
   );
   const top =
-    placement === 'below' ? hole.top + hole.height + TOOLTIP_GAP : hole.top - TOOLTIP_GAP;
+    anchor === 'start'
+      ? hole.top + 10
+      : placement === 'below'
+        ? hole.top + hole.height + TOOLTIP_GAP
+        : hole.top - TOOLTIP_GAP;
   const arrowLeft = Math.min(Math.max(16, centerX - left), tooltipWidth - 16);
 
   return { hole, tooltip: { top, left, width: tooltipWidth, placement, arrowLeft } };
@@ -89,6 +96,7 @@ function useIsClient(): boolean {
 function useSpotlightLayout(
   targetRef: RefObject<HTMLElement | null>,
   open: boolean,
+  anchor: 'outside' | 'start',
 ): SpotlightLayout | null {
   const cachedRef = useRef<SpotlightLayout | null>(null);
 
@@ -123,7 +131,7 @@ function useSpotlightLayout(
         cachedRef.current = null;
         return null;
       }
-      const next = computeLayout(targetRef.current);
+      const next = computeLayout(targetRef.current, anchor);
       if (layoutEqual(cachedRef.current, next)) return cachedRef.current;
       cachedRef.current = next;
       return next;
@@ -140,10 +148,12 @@ export default function SpotlightOverlay({
   skipLabel,
   step,
   totalSteps = 4,
+  scrollBlock = 'center',
+  anchor = 'outside',
   onDismiss,
 }: SpotlightOverlayProps) {
   const mounted = useIsClient();
-  const layout = useSpotlightLayout(targetRef, open);
+  const layout = useSpotlightLayout(targetRef, open, anchor);
   const tooltipRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -151,10 +161,10 @@ export default function SpotlightOverlay({
     const el = targetRef.current;
     if (!el) return;
     const id = window.setTimeout(() => {
-      el.scrollIntoView({ block: 'center', behavior: 'smooth', inline: 'nearest' });
+      el.scrollIntoView({ block: scrollBlock, behavior: 'smooth', inline: 'nearest' });
     }, 80);
     return () => window.clearTimeout(id);
-  }, [open, targetRef]);
+  }, [open, scrollBlock, targetRef]);
 
   useEffect(() => {
     if (!open) return;
@@ -200,14 +210,15 @@ export default function SpotlightOverlay({
         aria-labelledby="spotlight-title"
         className="spotlight-tooltip fixed z-[55]"
         style={{
-          top: tooltip.placement === 'below' ? tooltip.top : undefined,
+          top: anchor === 'start' || tooltip.placement === 'below' ? tooltip.top : undefined,
           bottom:
-            tooltip.placement === 'above' ? window.innerHeight - tooltip.top : undefined,
+            anchor !== 'start' && tooltip.placement === 'above' ? window.innerHeight - tooltip.top : undefined,
           left: tooltip.left,
           width: tooltip.width,
         }}
       >
         <div className="relative rounded-2xl border border-slate-700 bg-slate-900 px-3.5 py-3 shadow-xl shadow-slate-900/40 text-right">
+          {anchor !== 'start' && (
           <span
             aria-hidden
             className={`absolute w-2.5 h-2.5 bg-slate-900 border-slate-700 rotate-45 ${
@@ -217,6 +228,7 @@ export default function SpotlightOverlay({
             }`}
             style={{ left: tooltip.arrowLeft - 5 }}
           />
+          )}
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <h3 id="spotlight-title" className="text-sm font-black text-white leading-snug">
               {title}

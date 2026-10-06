@@ -41,6 +41,9 @@
     "projectsSection": "Large projects",
     "pickTitle": "What do you do?",
     "pickSubtitle": "Pick one or more trades. Home will show only those.",
+    "pickEditSubtitle": "Tap the name to open a trade. “To home” shows it on the home screen.",
+    "pickAddHome": "To home",
+    "pickOnHome": "On home",
     "pickSearchPlaceholder": "Search a trade...",
     "pickSearchLabel": "Search trades",
     "pickAddTitle": "Your trade isn't listed?",
@@ -133,7 +136,7 @@
   },
   "spotlight": {
     "homeTitle": "Start here",
-    "homeBody": "Search your trade, or add a new one — no signup needed.",
+    "homeBody": "Tap a trade to open its price list. Find the rest in search, or under more trades.",
     "categoryTitle": "Choose a job",
     "categoryBody": "Tap a service to set extras and price.",
     "serviceTitle": "Add to quote",

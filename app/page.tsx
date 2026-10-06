@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState, type Ref } from 'react';
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -47,10 +47,6 @@ import { useQuoteBasket } from './contexts/QuoteBasketContext';
 import { useQuoteHistory, type SavedQuote } from './contexts/QuoteHistoryContext';
 import { useSettings } from './contexts/SettingsContext';
 import { getServiceDisplayName, isCustomCategoryId } from '../lib/custom-catalog-types';
-import {
-  SPOTLIGHT_SUGGESTED_HOME_CATEGORY_ID,
-  SPOTLIGHT_TARGET_CLASS,
-} from '@/lib/spotlight-onboarding';
 import { useSpotlightOnboarding } from './hooks/useSpotlightOnboarding';
 import SpotlightOverlay from './components/onboarding/SpotlightOverlay';
 import { Button } from '@/components/ui/button';
@@ -59,6 +55,7 @@ import { trackEvent, AnalyticsEvents } from '@/lib/analytics';
 import { recordProductMetric } from '@/lib/product-metrics-client';
 import {
   FEATURED_TRADE_IDS,
+  STARTER_TRADE_IDS,
   migrateGuestTradeInterests,
   readTradeInterests,
   writeTradeInterests,
@@ -148,13 +145,12 @@ export default function HomePage() {
   const { shouldShow, dismissPage } = useSpotlightOnboarding();
   const [search, setSearch] = useState('');
   const deferredSearch = useDeferredValue(search);
-  const spotlightRef = useRef<HTMLAnchorElement>(null);
+  const tradesCardRef = useRef<HTMLDivElement>(null);
   const [interests, setInterests] = useState<TradeInterests | null | undefined>(undefined);
   const [editingTrades, setEditingTrades] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   const showCategorySpotlight = shouldShow('home');
-  const suggestedCategoryId = SPOTLIGHT_SUGGESTED_HOME_CATEGORY_ID;
   const userId = user?.id ?? null;
 
   useEffect(() => {
@@ -222,12 +218,10 @@ export default function HomePage() {
 
   const visibleTrades = useMemo(() => {
     if (showFullCatalog) {
-      const featuredSet = new Set<string>(FEATURED_TRADE_IDS);
-      const featured = FEATURED_TRADE_IDS.map((id) => catById.get(id)).filter(
+      const starter = STARTER_TRADE_IDS.map((id) => catById.get(id)).filter(
         (cat): cat is Category => Boolean(cat),
       );
-      const restTrades = tradeCategories.filter((cat) => !featuredSet.has(cat.id));
-      return [...myProfessionCategories, ...featured, ...restTrades, ...projectCategories];
+      return [...myProfessionCategories, ...starter];
     }
     const picked = selectedIds
       .map((id) => catById.get(id))
@@ -236,7 +230,7 @@ export default function HomePage() {
         return !isCustomCategoryId(cat.id);
       });
     return [...myProfessionCategories, ...picked];
-  }, [showFullCatalog, selectedIds, catById, myProfessionCategories, tradeCategories, projectCategories]);
+  }, [showFullCatalog, selectedIds, catById, myProfessionCategories]);
 
   const searchResults = useMemo((): SearchResult[] => {
     const q = deferredSearch.trim().toLowerCase();
@@ -427,63 +421,36 @@ export default function HomePage() {
             </section>
 
             <section className="mt-8 px-4">
-              <div className="rounded-[28px] bg-white px-4 py-4 shadow-[0_16px_40px_rgba(15,23,42,0.06)] ring-1 ring-blue-100">
+              <div
+                ref={tradesCardRef}
+                className="rounded-[28px] bg-white px-4 py-4 shadow-[0_16px_40px_rgba(15,23,42,0.06)] ring-1 ring-blue-100"
+              >
+              {showCategorySpotlight && <div className="h-36" aria-hidden />}
               <h2 className="text-2xl font-bold tracking-tight text-slate-900">{t('home.tradesSection')}</h2>
               {(showFullCatalog || visibleTrades.length !== 1) && (
                 <p className="mb-3.5 mt-1 text-sm leading-snug text-slate-500">{t('home.tradesFullHint')}</p>
               )}
-              {showFullCatalog ? (
-                <div className="flex flex-wrap gap-2">
-                  {visibleTrades.map((cat) => {
-                    const isSpotlight = showCategorySpotlight && cat.id === suggestedCategoryId;
-                    return (
-                      <Link
-                        key={cat.id}
-                        ref={isSpotlight ? spotlightRef : undefined}
-                        href={`/category/${cat.id}`}
-                        onClick={() => {
-                          if (showCategorySpotlight) dismissPage('home');
-                        }}
-                        className={`inline-flex items-center gap-2 rounded-full bg-[#f3f6fb] py-2 pe-4 ps-1.5 active:scale-[0.98] ${isSpotlight ? SPOTLIGHT_TARGET_CLASS : ''}`}
-                      >
-                        <TradeFace cat={cat} label={displayName(cat)} pill />
-                      </Link>
-                    );
-                  })}
-                  <MoreTradesButton
-                    onClick={() => setEditingTrades(true)}
-                    label={t('home.chooseHomeTrades')}
-                    pill
+              <div className={`flex flex-col gap-2 ${visibleTrades.length === 1 ? 'mt-3' : ''}`}>
+                {visibleTrades.map((cat) => (
+                  <TradeHomeRow
+                    key={cat.id}
+                    cat={cat}
+                    label={displayName(cat)}
+                    lead={visibleTrades.length === 1}
+                    onClick={() => {
+                      if (showCategorySpotlight) dismissPage('home');
+                    }}
                   />
-                </div>
-              ) : (
-                <div className={`flex flex-col gap-2 ${visibleTrades.length === 1 ? 'mt-3' : ''}`}>
-                  {visibleTrades.map((cat) => {
-                    const isSpotlight = showCategorySpotlight && cat.id === suggestedCategoryId;
-                    return (
-                      <TradeHomeRow
-                        key={cat.id}
-                        cat={cat}
-                        label={displayName(cat)}
-                        lead={visibleTrades.length === 1}
-                        spotlight={isSpotlight}
-                        linkRef={isSpotlight ? spotlightRef : undefined}
-                        onClick={() => {
-                          if (showCategorySpotlight) dismissPage('home');
-                        }}
-                      />
-                    );
-                  })}
-                  <button
-                    type="button"
-                    onClick={() => setEditingTrades(true)}
-                    className="mt-1 flex w-full items-center justify-center gap-1.5 py-2 text-sm font-semibold text-blue-800"
-                  >
-                    <Plus size={16} aria-hidden />
-                    {t('home.moreTrades')}
-                  </button>
-                </div>
-              )}
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setEditingTrades(true)}
+                  className="mt-1 flex w-full items-center justify-center gap-1.5 py-2 text-sm font-semibold text-blue-800"
+                >
+                  <Plus size={16} aria-hidden />
+                  {t('home.moreTrades')}
+                </button>
+              </div>
               </div>
             </section>
 
@@ -588,8 +555,10 @@ export default function HomePage() {
 
       {!needsPick && (
         <SpotlightOverlay
-          open={showCategorySpotlight && visibleTrades.some((cat) => cat.id === suggestedCategoryId)}
-          targetRef={spotlightRef}
+          open={showCategorySpotlight && visibleTrades.length > 0}
+          targetRef={tradesCardRef}
+          scrollBlock="nearest"
+          anchor="start"
           title={t('spotlight.homeTitle')}
           body={t('spotlight.homeBody')}
           skipLabel={t('spotlight.skip')}
@@ -611,25 +580,20 @@ function TradeHomeRow({
   cat,
   label,
   lead,
-  spotlight,
-  linkRef,
   onClick,
 }: {
   cat: Category;
   label: string;
   lead: boolean;
-  spotlight: boolean;
-  linkRef?: Ref<HTMLAnchorElement>;
   onClick: () => void;
 }) {
   const { t } = useLanguage();
   const Icon = categoryIcons[cat.id] ?? Wrench;
   return (
     <Link
-      ref={linkRef}
       href={`/category/${cat.id}`}
       onClick={onClick}
-      className={`flex items-center gap-3 rounded-[22px] bg-[#f3f6fb] pe-3 ps-2.5 active:scale-[0.99] ${lead ? 'py-3.5' : 'py-2.5'} ${spotlight ? SPOTLIGHT_TARGET_CLASS : ''}`}
+      className={`flex items-center gap-3 rounded-[22px] bg-[#f3f6fb] pe-3 ps-2.5 active:scale-[0.99] ${lead ? 'py-3.5' : 'py-2.5'}`}
     >
       <span className={`flex size-11 shrink-0 items-center justify-center rounded-full ${tradeTone(cat.id)}`}>
         {isCustomCategoryId(cat.id) && cat.icon ? (
@@ -672,39 +636,10 @@ function TradeFace({
           <Icon size={pill ? 16 : 22} strokeWidth={1.75} aria-hidden />
         )}
       </span>
-      <span className={pill || row ? 'truncate text-sm font-medium text-slate-900' : 'line-clamp-2 text-[13px] font-medium leading-tight text-stone-800'}>
+      <span className={pill || row ? 'min-w-0 flex-1 truncate text-start text-sm font-medium text-slate-900' : 'line-clamp-2 text-[13px] font-medium leading-tight text-stone-800'}>
         {label}
       </span>
     </>
-  );
-}
-
-function MoreTradesButton({
-  onClick,
-  label,
-  pill = false,
-}: {
-  onClick: () => void;
-  label: string;
-  pill?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={
-        pill
-          ? 'inline-flex items-center gap-2 rounded-full bg-[#f3f6fb] py-2 pe-4 ps-1.5 text-slate-800 active:scale-[0.98]'
-          : tileClass
-      }
-    >
-      <span className={`flex shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-800 ${pill ? 'size-9' : 'size-11'}`}>
-        <Plus size={pill ? 16 : 20} aria-hidden />
-      </span>
-      <span className={pill ? 'text-sm font-medium' : 'line-clamp-2 text-[13px] font-medium leading-tight text-slate-800'}>
-        {label}
-      </span>
-    </button>
   );
 }
 
@@ -778,22 +713,22 @@ function TradePicker({
       );
     }
     return (
-      <div key={cat.id} className={`${tileClass} relative ${on ? 'ring-2 ring-blue-800' : ''}`}>
+      <div key={cat.id} className="flex items-center gap-2 rounded-[22px] bg-white py-2 pe-2 ps-2.5 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
         <button
           type="button"
           onClick={() => router.push(`/category/${cat.id}`)}
-          className="flex w-full flex-col items-center justify-center gap-2.5"
+          className="flex min-w-0 flex-1 items-center gap-3 py-1.5 text-start active:opacity-70"
         >
-          <TradeFace cat={cat} label={displayName(cat)} />
+          <TradeFace cat={cat} label={displayName(cat)} row />
         </button>
         <button
           type="button"
           aria-pressed={on}
-          aria-label={on ? t('home.pickFavoriteRemove') : t('home.pickFavoriteAdd')}
           onClick={() => toggle(cat.id)}
-          className="absolute top-2 start-2 flex size-8 items-center justify-center rounded-full bg-white/90"
+          className={`flex h-11 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-sm font-semibold ${on ? 'bg-blue-800 text-white' : 'bg-[#f3f6fb] text-slate-700'}`}
         >
-          <Star size={16} className={on ? 'fill-blue-800 text-blue-800' : 'text-slate-300'} aria-hidden />
+          <Star size={15} className={on ? 'fill-white text-white' : 'text-slate-500'} aria-hidden />
+          {on ? t('home.pickOnHome') : t('home.pickAddHome')}
         </button>
       </div>
     );
@@ -835,7 +770,7 @@ function TradePicker({
       {searching && matches && matches.length === 0 ? (
         <p className="mt-4 text-center text-sm text-slate-500">{t('home.pickNoTrade')}</p>
       ) : (
-        <div className="mt-4" style={tradeGridStyle}>
+        <div className={isEdit ? 'mt-4 flex flex-col gap-2' : 'mt-4'} style={isEdit ? undefined : tradeGridStyle}>
           {(matches ?? [...custom, ...list]).map(tile)}
         </div>
       )}

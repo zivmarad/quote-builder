@@ -8,6 +8,9 @@ export type TradeInterests = {
   catalogOff: boolean;
 };
 
+/** ארבעה תחומים נפוצים שמופיעים בבית לפני בחירה. */
+export const STARTER_TRADE_IDS = ['paint', 'plumbing', 'electricity', 'tiling'] as const;
+
 /** שמונה תחומים נפוצים. השאר נפתחים רק מ«עוד תחומים». */
 export const FEATURED_TRADE_IDS = [
   'paint',
