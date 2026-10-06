@@ -1,8 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowRight, Plus, Trash2 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useQuoteBasket, type BasketItem } from '../contexts/QuoteBasketContext';
@@ -168,7 +168,16 @@ function SavedRow({
 }
 
 export default function QuickQuotePage() {
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-[#F8FAFC]" />}>
+      <QuickQuoteDesk />
+    </Suspense>
+  );
+}
+
+function QuickQuoteDesk() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { t, dir } = useLanguage();
   const { vatRate } = useSettings();
   const {
@@ -182,7 +191,7 @@ export default function QuickQuotePage() {
     discount,
   } = useQuoteBasket();
 
-  const [draftName, setDraftName] = useState('');
+  const [draftName, setDraftName] = useState(() => searchParams.get('work')?.trim().slice(0, 80) ?? '');
   const [draftQty, setDraftQty] = useState('1');
   const [draftPrice, setDraftPrice] = useState('');
   const [draftNotes, setDraftNotes] = useState('');
@@ -203,11 +212,6 @@ export default function QuickQuotePage() {
 
   useEffect(() => {
     trackEvent(AnalyticsEvents.QuickQuoteOpened);
-  }, []);
-
-  useEffect(() => {
-    const work = new URLSearchParams(window.location.search).get('work')?.trim();
-    if (work) setDraftName(work.slice(0, 80));
   }, []);
 
   useEffect(() => {
