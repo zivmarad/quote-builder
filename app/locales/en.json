@@ -143,6 +143,7 @@
   "installPrompt": {
     "title": "Add the app to your device",
     "subtitle": "You created your first quote! Add the site to your home screen for quick access in the field",
+    "privateHint": "Private mode cannot install the app. Leave it, open the site in a normal Chrome window, and tap download again.",
     "subtitleManual": "Add the app to your home screen for quick access in the field.",
     "close": "Close",
     "later": "Maybe later",

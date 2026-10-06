@@ -5,7 +5,7 @@ import { Download } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { requestOpenInstallPrompt } from '../../lib/first-quote-install';
 import { promptNativeInstall } from '../../lib/deferred-install';
-import { shouldOfferInstall, markAppInstalled } from '../../lib/install-utils';
+import { clearAppInstalledMark, isStandaloneDisplay, shouldOfferInstall } from '../../lib/install-utils';
 
 interface InstallAppButtonProps {
   className?: string;
@@ -26,19 +26,18 @@ export default function InstallAppButton({
   const [show, setShow] = useState(false);
 
   useEffect(() => {
+    if (!isStandaloneDisplay()) clearAppInstalledMark();
     const update = () => setShow(shouldOfferInstall());
     update();
     const mql = window.matchMedia?.('(display-mode: standalone)');
     mql?.addEventListener?.('change', update);
-    window.addEventListener('appinstalled', () => {
-      markAppInstalled();
-      update();
-    });
-    window.addEventListener('storage', update);
+    const onInstalled = () => {
+      setShow(false);
+    };
+    window.addEventListener('appinstalled', onInstalled);
     return () => {
       mql?.removeEventListener?.('change', update);
-      window.removeEventListener('appinstalled', update);
-      window.removeEventListener('storage', update);
+      window.removeEventListener('appinstalled', onInstalled);
     };
   }, []);
 
@@ -51,7 +50,6 @@ export default function InstallAppButton({
         void (async () => {
           const outcome = await promptNativeInstall();
           if (outcome === 'accepted') {
-            markAppInstalled();
             setShow(false);
             return;
           }

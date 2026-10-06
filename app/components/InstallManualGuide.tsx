@@ -8,7 +8,7 @@ import {
   isAndroidDevice,
   isIosDevice,
   isLikelyInAppBrowser,
-  isAppMarkedInstalled,
+  isStandaloneDisplay,
 } from '../../lib/install-utils';
 
 export default function InstallManualGuide() {
@@ -17,7 +17,7 @@ export default function InstallManualGuide() {
   const inApp = isLikelyInAppBrowser();
   const ios = isIosDevice();
   const android = isAndroidDevice();
-  const alreadyInstalled = isAppMarkedInstalled();
+  const alreadyInstalled = isStandaloneDisplay();
   const siteUrl = getSiteUrl();
 
   const handleCopy = async () => {
@@ -56,6 +56,11 @@ export default function InstallManualGuide() {
   return (
     <div className="rounded-xl bg-slate-50 border border-slate-100 p-4 text-right space-y-4">
       <p className="font-bold text-slate-800 text-sm">{t('installPrompt.manualTitle')}</p>
+      {android && !ios && (
+        <p className="text-sm text-amber-900 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5">
+          {t('installPrompt.privateHint')}
+        </p>
+      )}
 
       {inApp && (
         <div className="space-y-2">

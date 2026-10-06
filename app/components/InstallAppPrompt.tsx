@@ -12,7 +12,7 @@ import {
   markAppInstalled,
   type InstallPromptMode,
 } from '../../lib/first-quote-install';
-import { isAppMarkedInstalled } from '../../lib/install-utils';
+import { isStandaloneDisplay } from '../../lib/install-utils';
 import {
   hasNativeInstallPrompt,
   promptNativeInstall,
@@ -91,7 +91,7 @@ export default function InstallAppPrompt() {
 
   const isCelebration = mode === 'celebration';
   const handleClose = isCelebration ? closeCelebration : close;
-  const showNativeInstall = nativeReady && !isAppMarkedInstalled();
+  const showNativeInstall = nativeReady && !isStandaloneDisplay();
 
   return (
     <div

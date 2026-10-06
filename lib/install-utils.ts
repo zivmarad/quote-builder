@@ -49,6 +49,15 @@ export function markAppInstalled(): void {
   }
 }
 
+export function clearAppInstalledMark(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.removeItem(APP_INSTALLED_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
 export function isAppMarkedInstalled(): boolean {
   if (typeof window === 'undefined') return false;
   try {
@@ -58,9 +67,9 @@ export function isAppMarkedInstalled(): boolean {
   }
 }
 
-/** האם להציג כפתור/הצעת התקנה (לא במצב standalone ולא אחרי התקנה מוצלחת). */
+/** כפתור ההורדה נשאר בדפדפן. הוא נעלם רק כשהאפליקציה כבר פתוחה מהאייקון. */
 export function shouldOfferInstall(): boolean {
-  return !isStandaloneDisplay() && !isAppMarkedInstalled();
+  return !isStandaloneDisplay();
 }
 
 export function getSiteUrl(): string {

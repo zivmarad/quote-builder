@@ -410,12 +410,12 @@ export default function HomePage() {
                   <br />
                   {t('home.heroAsk')}
                 </h2>
-                <InstallAppButton
-                  label={t('home.installHint')}
-                  labelClassName="whitespace-nowrap"
-                  className="absolute end-6 top-7 z-10 inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-1.5 text-sm font-semibold text-blue-900 shadow-[0_8px_20px_rgba(15,23,42,0.18)] active:scale-[0.98]"
-                />
               </div>
+              <InstallAppButton
+                label={t('home.installHint')}
+                labelClassName="whitespace-nowrap"
+                className="absolute end-6 top-7 z-20 inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-1.5 text-sm font-semibold text-blue-900 shadow-[0_8px_20px_rgba(15,23,42,0.18)] active:scale-[0.98]"
+              />
               <div
                 className="relative z-10 -mt-6 mx-auto w-[72%] md:-mt-7 md:w-[78%]"
                 style={{ display: 'grid', gridTemplateColumns: '0.82fr 1.14fr', gap: 10 }}
