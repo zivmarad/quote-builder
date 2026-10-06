@@ -264,7 +264,7 @@ export default function HomePage() {
             categoryName,
             serviceId: svc.id,
             serviceName,
-            href: `/category/${cat.id}/${svc.id}`,
+            href: isCustomCategoryId(cat.id) ? `/category/${cat.id}` : `/category/${cat.id}/${svc.id}`,
           });
         }
       }

@@ -5,7 +5,9 @@ import { useParams, useRouter } from 'next/navigation';
 import { categories } from '../../service/services';
 import { usePriceOverrides } from '../../contexts/PriceOverridesContext';
 import { useCustomCatalog } from '../../contexts/CustomCatalogContext';
+import { useQuoteBasket } from '../../contexts/QuoteBasketContext';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { trackEvent, AnalyticsEvents } from '@/lib/analytics';
 import { getServiceDisplayName, isCustomCategoryId, isCustomServiceId } from '../../../lib/custom-catalog-types';
 import { SPOTLIGHT_TARGET_CLASS } from '@/lib/spotlight-onboarding';
 import { useSpotlightOnboarding } from '../../hooks/useSpotlightOnboarding';
@@ -79,6 +81,9 @@ export default function CategoryPage() {
   const deferredSearch = useDeferredValue(search);
   const [showAddService, setShowAddService] = useState(false);
   const [deletingProfession, setDeletingProfession] = useState(false);
+  const [addedServiceId, setAddedServiceId] = useState<string | null>(null);
+  const addedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { addItem } = useQuoteBasket();
   const spotlightRef = useRef<HTMLDivElement>(null);
   const categoryId = Array.isArray(slug) ? slug[0] : slug;
   const category = getCategoryById(categoryId ?? '', categories);
@@ -134,6 +139,23 @@ export default function CategoryPage() {
     router.push(`/category/${category!.id}/${serviceId}`);
   };
 
+  const addOwnService = (serviceId: string) => {
+    const service = allServices.find((item) => item.id === serviceId);
+    if (!service || !category) return;
+    if (showServiceSpotlight) dismissPage('category');
+    addItem({
+      name: getServiceDisplayName(t, service),
+      category: category.id,
+      basePrice: getBasePrice(service.id, service.basePrice),
+      extras: [],
+      description: '',
+    });
+    trackEvent(AnalyticsEvents.AddToCart, { category: category.id });
+    setAddedServiceId(service.id);
+    if (addedTimer.current) clearTimeout(addedTimer.current);
+    addedTimer.current = setTimeout(() => setAddedServiceId(null), 1400);
+  };
+
   if (!category) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-slate-50" dir={dir}>
@@ -167,7 +189,9 @@ export default function CategoryPage() {
             </span>
             <div className="min-w-0">
               <h1 className="text-2xl font-semibold leading-tight tracking-tight text-slate-900">{categoryTitle}</h1>
-              <p className="mt-0.5 text-sm text-slate-500">{t('category.chooseService')}</p>
+              <p className="mt-0.5 text-sm text-slate-500">
+                {isCustomProfession ? t('category.tapAdds') : t('category.chooseService')}
+              </p>
             </div>
           </div>
           {isCustomProfession && (
@@ -220,7 +244,7 @@ export default function CategoryPage() {
                 >
                   <button
                     type="button"
-                    onClick={() => navigateToService(service.id)}
+                    onClick={() => (isCustomProfession ? addOwnService(service.id) : navigateToService(service.id))}
                     className="flex min-w-0 flex-1 items-center gap-3 px-2 py-1.5 text-right"
                   >
                     <span className="min-w-0 flex-1">
@@ -230,8 +254,10 @@ export default function CategoryPage() {
                         {service.unit}
                       </span>
                     </span>
-                    <span className="shrink-0 whitespace-nowrap text-sm font-semibold tabular-nums text-slate-900">
-                      {t('category.fromPrice')}₪{price}
+                    <span className={`shrink-0 whitespace-nowrap text-sm font-semibold tabular-nums ${addedServiceId === service.id ? 'text-blue-800' : 'text-slate-900'}`}>
+                      {addedServiceId === service.id
+                        ? t('category.added')
+                        : `${isCustomProfession ? '' : t('category.fromPrice')}₪${price}`}
                     </span>
                   </button>
                   {isCustom && (
@@ -272,7 +298,7 @@ export default function CategoryPage() {
         open={!!spotlightServiceId}
         targetRef={spotlightRef}
         title={t('spotlight.categoryTitle')}
-        body={t('spotlight.categoryBody')}
+        body={isCustomProfession ? t('spotlight.customCategoryBody') : t('spotlight.categoryBody')}
         skipLabel={t('spotlight.skip')}
         step={2}
         onDismiss={() => dismissPage('category')}

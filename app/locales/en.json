@@ -152,6 +152,7 @@
     "gotIt": "Got it",
     "categoryTitle": "Choose a job",
     "categoryBody": "Tap a service to set extras and price.",
+    "customCategoryBody": "Tap a service to add it to the quote.",
     "serviceTitle": "Add to quote",
     "serviceBody": "After your choices, tap here. The job joins the quote, and the button below opens it.",
     "goCartTitle": "Your quote is ready",
@@ -363,6 +364,8 @@
     "noResults": "No services match your search.",
     "noServices": "No services in this category yet.",
     "fromPrice": "From ",
+    "tapAdds": "Tap a service to add it to the quote.",
+    "added": "Added",
     "perUnit": " per ",
     "quantityNote": "You can enter quantity in the questions step"
   },

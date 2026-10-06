@@ -19,6 +19,7 @@ import SpotlightOverlay from '../../../components/onboarding/SpotlightOverlay';
 import {
   getQuestionDisplayText,
   getServiceDisplayName,
+  isCustomCategoryId,
   isCustomQuestionId,
 } from '../../../../lib/custom-catalog-types';
 import { calculateQuestionExtraPrice, formatImpactLabel } from '../../../../lib/quote-pricing';
@@ -278,6 +279,7 @@ export default function ServiceWizardPage() {
 
   const serviceName = getServiceDisplayName(t, service);
   const editHint = t('serviceWizard.tapToEditPrice');
+  const ownProfession = isCustomCategoryId(category.id);
 
   const showAddSpotlight = shouldShow('service');
 
@@ -349,12 +351,14 @@ export default function ServiceWizardPage() {
               </div>
             )}
 
+            {!ownProfession && (
             <div className="px-5 pb-1 pt-4">
               <h2 className="text-sm font-semibold text-slate-700">{t('serviceWizard.customizeTitle')}</h2>
               <p className="mt-0.5 text-xs text-slate-500">{t('serviceWizard.customizeHint')}</p>
             </div>
+            )}
 
-            {questions.map((q) => {
+            {!ownProfession && questions.map((q) => {
               const impactValue = getImpactValue(service.id, q.id, q.impact.value);
               return (
                 <QuestionCard
@@ -384,6 +388,7 @@ export default function ServiceWizardPage() {
               );
             })}
 
+            {!ownProfession && (
             <button
               type="button"
               onClick={handleAddQuestionClick}
@@ -394,6 +399,7 @@ export default function ServiceWizardPage() {
               </span>
               {t('customCatalog.addQuestionButton')}
             </button>
+            )}
           </section>
         </div>
       </div>
