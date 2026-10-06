@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState, type Ref } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -204,8 +204,8 @@ export default function HomePage() {
     return interests.ids.filter((id) => knownIds.has(id));
   }, [interests, knownIds]);
 
-  const catalogOff = Boolean(interests?.catalogOff) && selectedIds.length === 0;
-  const needsPick = interests === null || editingTrades;
+  const showFullCatalog = selectedIds.length === 0;
+  const needsPick = editingTrades;
 
   const displayName = useCallback(
     (cat: Category) => (isCustomCategoryId(cat.id) ? cat.name : t(`categoryName.${cat.id}`, cat.name)),
@@ -221,7 +221,14 @@ export default function HomePage() {
   }, [tradeCategories, projectCategories, myProfessionCategories]);
 
   const visibleTrades = useMemo(() => {
-    if (catalogOff) return myProfessionCategories;
+    if (showFullCatalog) {
+      const featuredSet = new Set<string>(FEATURED_TRADE_IDS);
+      const featured = FEATURED_TRADE_IDS.map((id) => catById.get(id)).filter(
+        (cat): cat is Category => Boolean(cat),
+      );
+      const restTrades = tradeCategories.filter((cat) => !featuredSet.has(cat.id));
+      return [...myProfessionCategories, ...featured, ...restTrades, ...projectCategories];
+    }
     const picked = selectedIds
       .map((id) => catById.get(id))
       .filter((cat): cat is Category => {
@@ -229,7 +236,7 @@ export default function HomePage() {
         return !isCustomCategoryId(cat.id);
       });
     return [...myProfessionCategories, ...picked];
-  }, [selectedIds, catById, myProfessionCategories, catalogOff]);
+  }, [showFullCatalog, selectedIds, catById, myProfessionCategories, tradeCategories, projectCategories]);
 
   const searchResults = useMemo((): SearchResult[] => {
     const q = deferredSearch.trim().toLowerCase();
@@ -421,27 +428,62 @@ export default function HomePage() {
 
             <section className="mt-8 px-4">
               <div className="rounded-[28px] bg-white px-4 py-4 shadow-[0_16px_40px_rgba(15,23,42,0.06)] ring-1 ring-blue-100">
-              <h2 className="text-lg font-semibold tracking-tight text-slate-900">{t('home.tradesSection')}</h2>
-              <p className="mb-3.5 mt-1 text-sm leading-snug text-slate-600">{t('home.tradesFullHint')}</p>
-              <div className="flex flex-wrap gap-2">
-                {visibleTrades.map((cat) => {
-                  const isSpotlight = showCategorySpotlight && cat.id === suggestedCategoryId;
-                  return (
-                    <Link
-                      key={cat.id}
-                      ref={isSpotlight ? spotlightRef : undefined}
-                      href={`/category/${cat.id}`}
-                      onClick={() => {
-                        if (showCategorySpotlight) dismissPage('home');
-                      }}
-                      className={`inline-flex items-center gap-2 rounded-full bg-[#f3f6fb] py-2 pe-4 ps-1.5 active:scale-[0.98] ${isSpotlight ? SPOTLIGHT_TARGET_CLASS : ''}`}
-                    >
-                      <TradeFace cat={cat} label={displayName(cat)} pill />
-                    </Link>
-                  );
-                })}
-                <MoreTradesButton onClick={() => setEditingTrades(true)} label={t('home.moreTrades')} pill />
-              </div>
+              <h2 className="text-2xl font-bold tracking-tight text-slate-900">{t('home.tradesSection')}</h2>
+              {(showFullCatalog || visibleTrades.length !== 1) && (
+                <p className="mb-3.5 mt-1 text-sm leading-snug text-slate-500">{t('home.tradesFullHint')}</p>
+              )}
+              {showFullCatalog ? (
+                <div className="flex flex-wrap gap-2">
+                  {visibleTrades.map((cat) => {
+                    const isSpotlight = showCategorySpotlight && cat.id === suggestedCategoryId;
+                    return (
+                      <Link
+                        key={cat.id}
+                        ref={isSpotlight ? spotlightRef : undefined}
+                        href={`/category/${cat.id}`}
+                        onClick={() => {
+                          if (showCategorySpotlight) dismissPage('home');
+                        }}
+                        className={`inline-flex items-center gap-2 rounded-full bg-[#f3f6fb] py-2 pe-4 ps-1.5 active:scale-[0.98] ${isSpotlight ? SPOTLIGHT_TARGET_CLASS : ''}`}
+                      >
+                        <TradeFace cat={cat} label={displayName(cat)} pill />
+                      </Link>
+                    );
+                  })}
+                  <MoreTradesButton
+                    onClick={() => setEditingTrades(true)}
+                    label={t('home.chooseHomeTrades')}
+                    pill
+                  />
+                </div>
+              ) : (
+                <div className={`flex flex-col gap-2 ${visibleTrades.length === 1 ? 'mt-3' : ''}`}>
+                  {visibleTrades.map((cat) => {
+                    const isSpotlight = showCategorySpotlight && cat.id === suggestedCategoryId;
+                    return (
+                      <TradeHomeRow
+                        key={cat.id}
+                        cat={cat}
+                        label={displayName(cat)}
+                        lead={visibleTrades.length === 1}
+                        spotlight={isSpotlight}
+                        linkRef={isSpotlight ? spotlightRef : undefined}
+                        onClick={() => {
+                          if (showCategorySpotlight) dismissPage('home');
+                        }}
+                      />
+                    );
+                  })}
+                  <button
+                    type="button"
+                    onClick={() => setEditingTrades(true)}
+                    className="mt-1 flex w-full items-center justify-center gap-1.5 py-2 text-sm font-semibold text-blue-800"
+                  >
+                    <Plus size={16} aria-hidden />
+                    {t('home.moreTrades')}
+                  </button>
+                </div>
+              )}
               </div>
             </section>
 
@@ -559,6 +601,54 @@ export default function HomePage() {
   );
 }
 
+function quickQuoteHref(work?: string) {
+  const name = work?.trim().slice(0, 60) ?? '';
+  if (!name) return '/quick-quote';
+  return `/quick-quote?work=${encodeURIComponent(name)}`;
+}
+
+function TradeHomeRow({
+  cat,
+  label,
+  lead,
+  spotlight,
+  linkRef,
+  onClick,
+}: {
+  cat: Category;
+  label: string;
+  lead: boolean;
+  spotlight: boolean;
+  linkRef?: Ref<HTMLAnchorElement>;
+  onClick: () => void;
+}) {
+  const { t } = useLanguage();
+  const Icon = categoryIcons[cat.id] ?? Wrench;
+  return (
+    <Link
+      ref={linkRef}
+      href={`/category/${cat.id}`}
+      onClick={onClick}
+      className={`flex items-center gap-3 rounded-[22px] bg-[#f3f6fb] pe-3 ps-2.5 active:scale-[0.99] ${lead ? 'py-3.5' : 'py-2.5'} ${spotlight ? SPOTLIGHT_TARGET_CLASS : ''}`}
+    >
+      <span className={`flex size-11 shrink-0 items-center justify-center rounded-full ${tradeTone(cat.id)}`}>
+        {isCustomCategoryId(cat.id) && cat.icon ? (
+          <span className="text-xl leading-none" aria-hidden>
+            {cat.icon}
+          </span>
+        ) : (
+          <Icon size={20} strokeWidth={1.75} aria-hidden />
+        )}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-base font-semibold text-slate-900">{label}</span>
+        {lead && <span className="mt-0.5 block text-sm text-slate-500">{t('home.tradeRowHint')}</span>}
+      </span>
+      <ChevronLeft className="shrink-0 text-slate-300" size={20} aria-hidden />
+    </Link>
+  );
+}
+
 function TradeFace({
   cat,
   label,
@@ -646,7 +736,6 @@ function TradePicker({
     for (const cat of custom) ids.add(cat.id);
     return [...ids];
   });
-  const [showAll, setShowAll] = useState(false);
   const [query, setQuery] = useState('');
 
   const featured = FEATURED_TRADE_IDS.map((id) => trades.find((cat) => cat.id === id)).filter(
@@ -654,18 +743,16 @@ function TradePicker({
   );
   const featuredSet = new Set(featured.map((cat) => cat.id));
   const rest = [...trades.filter((cat) => !featuredSet.has(cat.id)), ...projects];
-  const list = showAll ? [...featured, ...rest] : featured;
+  const list = [...featured, ...rest];
   const q = query.trim().toLowerCase();
   const searching = q.length > 0;
   const matches = searching
-    ? [...custom, ...trades].filter((cat) => {
+    ? [...custom, ...trades, ...projects].filter((cat) => {
         const name = displayName(cat).toLowerCase();
         return name.includes(q) || cat.name.toLowerCase().includes(q);
       })
     : null;
-  const addHref = q
-    ? `/request-profession?name=${encodeURIComponent(query.trim().slice(0, 60))}`
-    : '/request-profession';
+  const quoteHref = quickQuoteHref(query);
 
   const toggle = (id: string) => {
     setPicked((curr) => {
@@ -753,18 +840,8 @@ function TradePicker({
         </div>
       )}
 
-      {!searching && rest.length > 0 && (
-        <button
-          type="button"
-          onClick={() => setShowAll((v) => !v)}
-          className="mt-4 text-sm font-semibold text-blue-800"
-        >
-          {showAll ? t('home.pickLess') : t('home.pickMore')}
-        </button>
-      )}
-
       <Link
-        href={addHref}
+        href={quoteHref}
         className="mt-4 flex items-center gap-3 rounded-[28px] bg-white px-4 py-3.5 shadow-[0_10px_30px_rgba(15,23,42,0.06)] ring-1 ring-white active:scale-[0.99]"
       >
         <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-800">
@@ -786,13 +863,15 @@ function TradePicker({
           {t('home.pickContinue')}
         </Button>
       )}
-      <button
-        type="button"
-        onClick={onSkip}
-        className="mt-3 w-full py-2 text-sm font-medium text-stone-500"
-      >
-        {t('home.pickSkip')}
-      </button>
+      {!isEdit && (
+        <button
+          type="button"
+          onClick={onSkip}
+          className="mt-3 w-full py-2 text-sm font-medium text-stone-500"
+        >
+          {t('home.pickSkip')}
+        </button>
+      )}
     </div>
   );
 }
@@ -811,9 +890,7 @@ function SearchBox({
   onPick: (href: string) => void;
 }) {
   const { t, dir } = useLanguage();
-  const addProfessionHref = search.trim()
-    ? `/request-profession?name=${encodeURIComponent(search.trim().slice(0, 60))}`
-    : '/request-profession';
+  const missedTradeHref = quickQuoteHref(search);
 
   return (
     <div className="relative mt-4">
@@ -860,28 +937,21 @@ function SearchBox({
                 ))}
               </ul>
               <Link
-                href={addProfessionHref}
+                href={missedTradeHref}
                 className="flex items-center justify-center gap-1.5 border-t border-slate-100 px-4 py-3 text-sm font-semibold text-blue-700 hover:bg-slate-50"
               >
                 <Plus size={15} />
-                {t('home.noResultsAddProfession')}
+                {t('home.pickAddTitle')}
               </Link>
             </>
           ) : (
             <div className="px-4 py-4 space-y-3">
-              <p className="text-sm text-slate-500 text-center">{t('home.noResults')}</p>
+              <p className="text-sm text-slate-600 text-center leading-relaxed">{t('home.pickNoTrade')}</p>
               <Link
-                href="/quick-quote"
-                className="flex items-center justify-center w-full px-4 py-3 rounded-xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-700"
+                href={missedTradeHref}
+                className="flex items-center justify-center w-full px-4 py-3 rounded-xl bg-blue-800 text-white font-bold text-sm"
               >
                 {t('home.noResultsQuickQuote')}
-              </Link>
-              <Link
-                href={addProfessionHref}
-                className="flex items-center justify-center gap-1.5 w-full px-4 py-2 text-sm font-medium text-slate-600"
-              >
-                <Plus size={15} />
-                {t('home.noResultsAddProfession')}
               </Link>
             </div>
           )}

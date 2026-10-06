@@ -206,6 +206,11 @@ export default function QuickQuotePage() {
   }, []);
 
   useEffect(() => {
+    const work = new URLSearchParams(window.location.search).get('work')?.trim();
+    if (work) setDraftName(work.slice(0, 80));
+  }, []);
+
+  useEffect(() => {
     const vv = window.visualViewport;
     if (!vv) return;
     const sync = () => {
