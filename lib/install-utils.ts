@@ -65,5 +65,5 @@ export function shouldOfferInstall(): boolean {
 
 export function getSiteUrl(): string {
   if (typeof window === 'undefined') return 'https://hatzaot.co.il';
-  return window.location.origin + window.location.pathname;
+  return window.location.origin + window.location.pathname + window.location.search;
 }

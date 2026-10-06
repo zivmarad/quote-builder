@@ -143,8 +143,26 @@
   "installPrompt": {
     "title": "Add the app to your device",
     "subtitle": "You created your first quote! Add the site to your home screen for quick access in the field",
+    "subtitleManual": "Add the app to your home screen for quick access in the field.",
     "close": "Close",
-    "later": "Maybe later"
+    "later": "Maybe later",
+    "manualTitle": "How do you add it to the home screen?",
+    "step1Label": "First, leave the app",
+    "step1InApp": "This page opened inside WhatsApp or another app. Install works in Safari on iPhone, and in Chrome on Android.",
+    "step1Ios": "In the page menu ⋮, choose Open in Safari.",
+    "step1Android": "In the page menu ⋮, choose Open in Chrome or Open in browser.",
+    "step2Label": "Then add it to the home screen",
+    "step2IosTitle": "iPhone (Safari)",
+    "step2Ios": "At the bottom of Safari, tap Share (□↑). If Share isn’t there, tap ⋯ first. Scroll and choose Add to Home Screen. If it’s missing, scroll to the end and choose Edit Actions. Confirm, and leave Open as Web App on if you see it.",
+    "step2AndroidTitle": "Android (Chrome)",
+    "step2Android": "In Chrome, tap ⋮ at the top, then Install app or Add to Home screen.",
+    "copyLinkLabel": "Or copy this address",
+    "copyLinkLabelAlt": "Or copy this address",
+    "copyLinkHint": "Copy it. On iPhone open Safari, on Android open Chrome, paste it in the address bar, and go.",
+    "copyLink": "Copy",
+    "copied": "Copied!",
+    "alreadyInstalledTitle": "Already on your home screen",
+    "alreadyInstalledDesc": "Open it from the icon on your home screen. You don’t need to install it again."
   },
   "spotlight": {
     "homeTitle": "Start here",
@@ -301,8 +319,8 @@
     "addToHomeScreenTitle": "Add to home screen",
     "addToHomeScreenDesc": "Add the site almost as an app – quick access from your phone home screen, without the browser bar.",
     "compatibility": "Compatibility",
-    "compatibilityAndroid": "Android (Chrome): The install button works after a short scroll. If you opened from WhatsApp – open the site in Chrome and try again.",
-    "compatibilityIos": "iPhone (Safari): No automatic button – always use Share → \"Add to Home Screen\".",
+    "compatibilityAndroid": "Android (Chrome): Download opens the phone install. If it doesn’t, tap ⋮ at the top → Install app or Add to Home screen. From WhatsApp: ⋮ → Open in Chrome.",
+    "compatibilityIos": "iPhone (Safari): There is no one-tap install. Tap Share (□↑) at the bottom, or ⋯ first, then Add to Home Screen.",
     "addedToHomeScreen": "Added to home screen",
     "addToHomeScreen": "Add to home screen",
     "installing": "Installing...",
@@ -395,7 +413,7 @@
     "cartPick": "Select a customer",
     "cartSearch": "Search customers...",
     "cartClear": "Clear selection",
-    "cartHint": "Fills customer fields automatically (you can edit after)"
+    "cartHint": "This fills the name on the quote. You can edit it after."
   },
   "requireAuth": {
     "redirecting": "Redirecting to login..."

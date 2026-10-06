@@ -78,9 +78,10 @@ export default function InstallManualGuide() {
         </div>
       )}
 
+      {inApp && (
       <div className="space-y-2">
         <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">
-          {inApp ? t('installPrompt.copyLinkLabel') : t('installPrompt.copyLinkLabelAlt')}
+          {t('installPrompt.copyLinkLabel')}
         </p>
         <p className="text-xs text-slate-500">{t('installPrompt.copyLinkHint')}</p>
         <div className="flex items-stretch gap-2">
@@ -101,11 +102,14 @@ export default function InstallManualGuide() {
           </button>
         </div>
       </div>
+      )}
 
-      <div className="space-y-2 pt-1 border-t border-slate-200">
+      <div className={`space-y-2 ${inApp ? 'pt-1 border-t border-slate-200' : ''}`}>
+        {inApp && (
         <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">
           {t('installPrompt.step2Label')}
         </p>
+        )}
         <ul className="text-sm text-slate-700 space-y-2 list-none">
           {ios && (
             <li className="bg-white rounded-lg px-3 py-2.5 border border-slate-200">

@@ -13,17 +13,17 @@ import {
   type InstallPromptMode,
 } from '../../lib/first-quote-install';
 import { isAppMarkedInstalled } from '../../lib/install-utils';
-
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
-}
+import {
+  hasNativeInstallPrompt,
+  promptNativeInstall,
+  subscribeInstallPrompt,
+} from '../../lib/deferred-install';
 
 export default function InstallAppPrompt() {
   const { t, dir } = useLanguage();
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<InstallPromptMode>('celebration');
-  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [nativeReady, setNativeReady] = useState(false);
   const [installSuccess, setInstallSuccess] = useState(false);
   const [installLoading, setInstallLoading] = useState(false);
 
@@ -56,11 +56,12 @@ export default function InstallAppPrompt() {
   }, []);
 
   useEffect(() => {
-    const handler = (e: Event) => {
-      e.preventDefault();
-      setInstallPrompt(e as BeforeInstallPromptEvent);
-    };
-    window.addEventListener('beforeinstallprompt', handler);
+    const sync = () => setNativeReady(hasNativeInstallPrompt());
+    sync();
+    return subscribeInstallPrompt(sync);
+  }, []);
+
+  useEffect(() => {
     const onInstalled = () => {
       markAppInstalled();
       setInstallSuccess(true);
@@ -68,18 +69,13 @@ export default function InstallAppPrompt() {
       dismissInstallPrompt();
     };
     window.addEventListener('appinstalled', onInstalled);
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handler);
-      window.removeEventListener('appinstalled', onInstalled);
-    };
+    return () => window.removeEventListener('appinstalled', onInstalled);
   }, []);
 
   const handleInstall = async () => {
-    if (!installPrompt) return;
     setInstallLoading(true);
     try {
-      await installPrompt.prompt();
-      const { outcome } = await installPrompt.userChoice;
+      const outcome = await promptNativeInstall();
       if (outcome === 'accepted') {
         markAppInstalled();
         setInstallSuccess(true);
@@ -95,7 +91,7 @@ export default function InstallAppPrompt() {
 
   const isCelebration = mode === 'celebration';
   const handleClose = isCelebration ? closeCelebration : close;
-  const showNativeInstall = !!installPrompt && !isAppMarkedInstalled();
+  const showNativeInstall = nativeReady && !isAppMarkedInstalled();
 
   return (
     <div
@@ -150,12 +146,6 @@ export default function InstallAppPrompt() {
           </button>
         ) : (
           <InstallManualGuide />
-        )}
-
-        {!showNativeInstall && !installSuccess && (
-          <p className="text-xs text-slate-400 text-center -mt-2">
-            {t('profile.installFailedHint')}
-          </p>
         )}
 
         <button

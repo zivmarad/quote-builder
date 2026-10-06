@@ -37,6 +37,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { savePdfBlob } from './components/utils/savePdf';
+import InstallAppButton from './components/InstallAppButton';
 import { categories, splitOrderedCategories } from './service/services';
 import type { Category } from './service/services';
 import { useLanguage } from './contexts/LanguageContext';
@@ -408,6 +409,11 @@ export default function HomePage() {
                   <br />
                   {t('home.heroAsk')}
                 </h2>
+                <InstallAppButton
+                  label={t('home.installHint')}
+                  labelClassName="whitespace-nowrap"
+                  className="absolute end-6 top-7 z-10 inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-1.5 text-sm font-semibold text-blue-900 shadow-[0_8px_20px_rgba(15,23,42,0.18)] active:scale-[0.98]"
+                />
               </div>
               <div
                 className="relative z-10 -mt-6 mx-auto w-[72%] md:-mt-7 md:w-[78%]"

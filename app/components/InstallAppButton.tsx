@@ -4,18 +4,23 @@ import { useEffect, useState } from 'react';
 import { Download } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { requestOpenInstallPrompt } from '../../lib/first-quote-install';
+import { promptNativeInstall } from '../../lib/deferred-install';
 import { shouldOfferInstall, markAppInstalled } from '../../lib/install-utils';
 
 interface InstallAppButtonProps {
   className?: string;
   showLabel?: boolean;
   showHint?: boolean;
+  label?: string;
+  labelClassName?: string;
 }
 
 export default function InstallAppButton({
   className = 'inline-flex items-center justify-center shrink-0 gap-1.5 w-10 h-10 sm:w-auto sm:h-auto sm:px-3 sm:py-2 rounded-xl text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-100 font-bold text-xs sm:text-sm transition-colors',
   showLabel = true,
   showHint = false,
+  label,
+  labelClassName = 'hidden sm:inline',
 }: InstallAppButtonProps) {
   const { t } = useLanguage();
   const [show, setShow] = useState(false);
@@ -42,13 +47,23 @@ export default function InstallAppButton({
   const button = (
     <button
       type="button"
-      onClick={() => requestOpenInstallPrompt('manual')}
+      onClick={() => {
+        void (async () => {
+          const outcome = await promptNativeInstall();
+          if (outcome === 'accepted') {
+            markAppInstalled();
+            setShow(false);
+            return;
+          }
+          if (outcome === 'unavailable') requestOpenInstallPrompt('manual');
+        })();
+      }}
       className={className}
       aria-label={t('header.installApp')}
       title={t('header.installApp')}
     >
       <Download size={18} className="shrink-0" />
-      {showLabel && <span className="hidden sm:inline">{t('header.installApp')}</span>}
+      {showLabel && <span className={labelClassName}>{label ?? t('header.installApp')}</span>}
     </button>
   );
 

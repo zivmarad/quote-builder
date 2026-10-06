@@ -334,6 +334,7 @@ export default function Cart() {
   const [showClearBasketConfirm, setShowClearBasketConfirm] = useState(false);
   const [loginWallAction, setLoginWallAction] = useState<'download_pdf' | 'share_whatsapp' | 'save_draft' | null>(null);
   const [customerComboOpen, setCustomerComboOpen] = useState(false);
+  const [savedCustomerOpen, setSavedCustomerOpen] = useState(false);
   const [customerComboQuery, setCustomerComboQuery] = useState('');
   const [discountType, setDiscountType] = useState<'percent' | 'fixed'>(discount?.type ?? 'percent');
   const [discountInput, setDiscountInput] = useState(discount?.value ? String(discount.value) : '');
@@ -477,6 +478,7 @@ export default function Cart() {
     setShowCustomerDetails(true);
     setCustomerComboOpen(false);
     setCustomerComboQuery('');
+    setSavedCustomerOpen(false);
   };
 
   const clearCustomerFields = () => {
@@ -487,6 +489,7 @@ export default function Cart() {
     setCustomerCompanyId('');
     setCustomerComboQuery('');
     setCustomerComboOpen(false);
+    setSavedCustomerOpen(false);
   };
 
   useEffect(() => {
@@ -1341,61 +1344,10 @@ export default function Cart() {
           )}
         </div>
 
-        {/* פרטי לקוח – שם תמיד גלוי, השאר מתקפל */}
+        {/* פרטי לקוח – השם להצעה קודם, רשימה שמורה מתחתיו */}
         <div className="px-6 py-4 bg-white border-t border-slate-100">
           <div className="flex flex-col gap-3">
-            {user && (
-              <div ref={customerComboRef} className="relative pb-2 border-b border-slate-100 mb-1">
-                <p className="text-xs font-bold text-slate-500 mb-1.5 text-right">{t('customers.cartPick')}</p>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <div className="relative flex-1 min-w-0">
-                    <input
-                      type="search"
-                      value={customerComboQuery}
-                      onChange={(e) => {
-                        setCustomerComboQuery(e.target.value);
-                        setCustomerComboOpen(true);
-                      }}
-                      onFocus={() => setCustomerComboOpen(true)}
-                      placeholder={t('customers.cartSearch')}
-                      disabled={!customersLoaded}
-                      className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-right text-sm disabled:opacity-60"
-                    />
-                    {customerComboOpen && customersLoaded && filteredCustomers.length > 0 && (
-                      <ul
-                        className="absolute z-30 mt-1 w-full max-h-48 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg py-1 text-right"
-                        role="listbox"
-                      >
-                        {filteredCustomers.map((c) => (
-                          <li key={c.id}>
-                            <button
-                              type="button"
-                              className="w-full px-3 py-2 text-sm text-slate-800 hover:bg-blue-50 text-right"
-                              onMouseDown={(e) => e.preventDefault()}
-                              onClick={() => applyCustomerFromCrm(c)}
-                            >
-                              <span className="font-bold block truncate">{c.full_name}</span>
-                              <span className="text-xs text-slate-500 truncate block">
-                                {[c.phone, c.email].filter(Boolean).join(' · ') || '—'}
-                              </span>
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={clearCustomerFields}
-                    className="shrink-0 px-3 py-2.5 rounded-xl border border-slate-200 text-sm font-bold text-slate-600 hover:bg-slate-50"
-                  >
-                    {t('customers.cartClear')}
-                  </button>
-                </div>
-                <p className="text-[11px] text-slate-400 mt-1.5 text-right">{t('customers.cartHint')}</p>
-              </div>
-            )}
-            <label htmlFor="customerName" className="block text-sm font-bold text-slate-700 text-right">שם הלקוח</label>
+            <label htmlFor="customerName" className="block text-sm font-bold text-slate-700 text-right">שם הלקוח להצעה</label>
             <input
               id="customerName"
               type="text"
@@ -1404,6 +1356,69 @@ export default function Cart() {
               placeholder="ישראל ישראלי או חברה בע״מ"
               className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
             />
+            {user && (
+              <div ref={customerComboRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => setSavedCustomerOpen((open) => !open)}
+                  className="flex w-full items-center justify-between gap-2 rounded-xl bg-[#f3f6fb] px-3 py-2.5 text-sm font-semibold text-slate-700"
+                  aria-expanded={savedCustomerOpen}
+                >
+                  <span>{t('customers.cartPick')}</span>
+                  {savedCustomerOpen ? <ChevronUp size={18} aria-hidden /> : <ChevronDown size={18} aria-hidden />}
+                </button>
+                {savedCustomerOpen && (
+                  <div className="mt-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <div className="relative flex-1 min-w-0">
+                        <input
+                          type="search"
+                          value={customerComboQuery}
+                          onChange={(e) => {
+                            setCustomerComboQuery(e.target.value);
+                            setCustomerComboOpen(true);
+                          }}
+                          onFocus={() => setCustomerComboOpen(true)}
+                          placeholder={t('customers.cartSearch')}
+                          disabled={!customersLoaded}
+                          className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-right text-sm disabled:opacity-60"
+                        />
+                        {customerComboOpen && customersLoaded && filteredCustomers.length > 0 && (
+                          <ul
+                            className="absolute z-30 mt-1 w-full max-h-48 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg py-1 text-right"
+                            role="listbox"
+                          >
+                            {filteredCustomers.map((c) => (
+                              <li key={c.id}>
+                                <button
+                                  type="button"
+                                  className="w-full px-3 py-2 text-sm text-slate-800 hover:bg-blue-50 text-right"
+                                  onMouseDown={(e) => e.preventDefault()}
+                                  onClick={() => applyCustomerFromCrm(c)}
+                                >
+                                  <span className="font-bold block truncate">{c.full_name}</span>
+                                  <span className="text-xs text-slate-500 truncate block">
+                                    {[c.phone, c.email].filter(Boolean).join(' · ') || '—'}
+                                  </span>
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={clearCustomerFields}
+                        className="shrink-0 px-3 py-2.5 rounded-xl border border-slate-200 text-sm font-bold text-slate-600 hover:bg-slate-50"
+                      >
+                        {t('customers.cartClear')}
+                      </button>
+                    </div>
+                    <p className="text-[11px] text-slate-400 mt-1.5 text-right">{t('customers.cartHint')}</p>
+                  </div>
+                )}
+              </div>
+            )}
             <button
               type="button"
               onClick={() => setShowCustomerDetails((v) => !v)}
