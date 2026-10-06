@@ -8,6 +8,7 @@ import ClarityAnalytics from './components/ClarityAnalytics';
 import { AuthProvider } from './contexts/AuthContext';
 import LanguageWrapper from './components/LanguageWrapper';
 import AppChrome from './components/AppChrome';
+import Script from 'next/script';
 import { cn } from "@/lib/utils";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
@@ -42,6 +43,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="he" dir="rtl" className={cn("font-sans", geist.variable)}>
       <body className={`${heebo.className} antialiased bg-[#F8FAFC]`}>
+        <Script
+          id="qb-install-capture"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `(function(){if(window.__qbInstallCapture)return;window.__qbInstallCapture=1;window.addEventListener('beforeinstallprompt',function(event){event.preventDefault();window.__qbDeferredInstall=event;window.dispatchEvent(new Event('qb-install-ready'));});if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(function(){});}})();`,
+          }}
+        />
         <AuthProvider>
           <LanguageWrapper>
             <AppChrome>{children}</AppChrome>
