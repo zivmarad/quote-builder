@@ -53,6 +53,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { trackEvent, AnalyticsEvents } from '@/lib/analytics';
 import { recordProductMetric } from '@/lib/product-metrics-client';
+import { rememberQuoteIssuedAt } from '@/lib/quote-issued-at';
 import {
   FEATURED_TRADE_IDS,
   STARTER_TRADE_IDS,
@@ -298,6 +299,7 @@ export default function HomePage() {
       discountValue: quote.discount?.value != null ? String(quote.discount.value) : '',
     }));
     loadBasket(quote.items, quote.discount);
+    rememberQuoteIssuedAt(quote.createdAt);
     router.push('/cart');
   };
 
@@ -325,7 +327,8 @@ export default function HomePage() {
         snap?.vatRate ?? vatRate,
         quote.subtotalBeforeDiscount,
         quote.discountAmount,
-        quote.discount
+        quote.discount,
+        quote.createdAt
       );
       setDownloadingId(null);
       await savePdfBlob(blob, `hatzaat-mechir-${quote.createdAt.slice(0, 10)}.pdf`);

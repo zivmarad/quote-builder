@@ -71,7 +71,13 @@ function itemFinalPrice(item: ServerQuoteItem): number {
 }
 
 export async function generateServerQuotePdf(snapshot: ServerQuoteSnapshot): Promise<Buffer> {
-  const quoteDate = new Date(snapshot.createdAt || Date.now()).toLocaleDateString('he-IL');
+  const parsedIssued = snapshot.createdAt ? new Date(snapshot.createdAt) : new Date();
+  const issued = Number.isNaN(parsedIssued.getTime()) ? new Date() : parsedIssued;
+  const quoteDate = issued.toLocaleDateString('he-IL', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
   const vatLabel = snapshot.vatRate === 0 ? 'עוסק פטור' : `מע"מ (${Math.round(snapshot.vatRate * 100)}%)`;
 
   const doc = (

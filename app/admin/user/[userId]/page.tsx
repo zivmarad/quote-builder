@@ -627,6 +627,7 @@ export default function AdminUserPage({ params }: { params: Promise<{ userId: st
                   quoteNumber: previewQuote.quoteNumber,
                   validityDays: previewQuote.quoteData?.validityDays ?? validityDays,
                   vatRate: previewQuote.quoteData?.vatRate ?? vatRate,
+                  issuedAt: previewQuote.createdAt,
                 }),
               }}
             />

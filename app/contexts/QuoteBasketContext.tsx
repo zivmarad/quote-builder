@@ -13,6 +13,7 @@ import {
   calculateQuoteTotals,
   type QuoteDiscount,
 } from '../../lib/quote-discount';
+import { forgetQuoteIssuedAt } from '../../lib/quote-issued-at';
 
 export type { QuoteDiscount } from '../../lib/quote-discount';
 
@@ -215,6 +216,7 @@ export const QuoteBasketProvider: React.FC<{ children: React.ReactNode; userId?:
   const clearBasket = () => {
     setItems([]);
     setDiscountState(null);
+    forgetQuoteIssuedAt();
   };
 
   const setDiscount = (next: QuoteDiscount | null) => {

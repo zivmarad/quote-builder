@@ -98,10 +98,14 @@ export function buildQuoteContent(params: {
   subtotalBeforeDiscount?: number;
   discountAmount?: number;
   discount?: QuoteDiscount | null;
+  /** תאריך ההצעה המקורי (ISO). בלי ערך — תאריך היום, להצעה חדשה. */
+  issuedAt?: string | null;
 }) {
-  const { items, totalBeforeVAT, totalWithVAT, profile, customerName, customerPhone, customerEmail, customerAddress, customerCompanyId, notes, quoteTitle, quoteNumber, validityDays, vatRate: rateParam, subtotalBeforeDiscount, discountAmount, discount } = params;
+  const { items, totalBeforeVAT, totalWithVAT, profile, customerName, customerPhone, customerEmail, customerAddress, customerCompanyId, notes, quoteTitle, quoteNumber, validityDays, vatRate: rateParam, subtotalBeforeDiscount, discountAmount, discount, issuedAt } = params;
   const vatRate = rateParam ?? 0.18;
-  const today = new Date().toLocaleDateString('he-IL', {
+  const parsedIssued = issuedAt ? new Date(issuedAt) : new Date();
+  const issuedDate = Number.isNaN(parsedIssued.getTime()) ? new Date() : parsedIssued;
+  const today = issuedDate.toLocaleDateString('he-IL', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit'
@@ -189,6 +193,7 @@ export function getQuotePreviewHtml(params: {
   subtotalBeforeDiscount?: number;
   discountAmount?: number;
   discount?: QuoteDiscount | null;
+  issuedAt?: string | null;
 }): string {
   const content = buildQuoteContent(params);
   const { profileBlock, notesBlock, footerBlock, items: contentItems, VAT, subtotalBeforeDiscount, discountAmount, discount } = content;

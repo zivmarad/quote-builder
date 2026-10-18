@@ -10,10 +10,7 @@ import {
   UserPlus,
   FileText,
   TrendingUp,
-  DollarSign,
   BarChart3,
-  ShoppingCart,
-  Percent,
   LogOut,
   Eye,
   Trash2,
@@ -26,11 +23,6 @@ import {
   Menu,
   X,
   Briefcase,
-  MousePointerClick,
-  Download,
-  MessageCircle,
-  Printer,
-  FileSpreadsheet,
 } from 'lucide-react';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { isAdminWireKeyHeaderSafe } from '../../lib/admin-header-key-safe';
@@ -75,55 +67,27 @@ function formatMoney(n: number) {
   }).format(n);
 }
 
-function ClickStat({
+function GrowthStat({
   label,
-  count,
-  icon,
-  iconClass,
+  week,
+  month,
+  hint,
 }: {
   label: string;
-  count: ProductEventCount;
-  icon: React.ReactNode;
-  iconClass: string;
+  week: number;
+  month: number;
+  hint?: string;
 }) {
   return (
-    <div className="rounded-2xl bg-white/[0.07] border border-white/10 p-4 md:p-5 text-right">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-slate-300 text-xs md:text-sm font-medium">{label}</p>
-          <p className="text-3xl md:text-[2.35rem] font-black text-white tabular-nums mt-1 tracking-tight leading-none">
-            {formatCount(count.total)}
-          </p>
-          <p className="text-slate-400 text-xs mt-2">{formatCount(count.last7d)} בשבעה ימים</p>
-        </div>
-        <div className={`p-2.5 rounded-xl shrink-0 ${iconClass}`}>{icon}</div>
-      </div>
-    </div>
-  );
-}
-
-function QuietStat({
-  label,
-  value,
-  icon,
-  iconClass,
-}: {
-  label: string;
-  value: React.ReactNode;
-  icon: React.ReactNode;
-  iconClass: string;
-}) {
-  return (
-    <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm text-right">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <p className="text-slate-500 text-xs font-medium">{label}</p>
-          <p className="text-xl md:text-2xl font-black text-slate-900 tabular-nums mt-1.5 leading-tight">
-            {value}
-          </p>
-        </div>
-        <div className={`p-2 rounded-lg shrink-0 ${iconClass}`}>{icon}</div>
-      </div>
+    <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 px-4 py-4 text-right">
+      <p className="text-sm font-medium text-slate-600">{label}</p>
+      <p className="mt-1 text-3xl font-black tabular-nums tracking-tight text-slate-900 leading-none">
+        {formatCount(week)}
+      </p>
+      <p className="mt-2 text-xs text-slate-500">
+        30 יום: {formatCount(month)}
+        {hint ? ` · ${hint}` : ''}
+      </p>
     </div>
   );
 }
@@ -441,7 +405,10 @@ export default function AdminPage() {
   const templateClicks: ProductEventCount = {
     total: clicks.templateWord.total + clicks.templateExcel.total + clicks.templatePdf.total,
     last7d: clicks.templateWord.last7d + clicks.templateExcel.last7d + clicks.templatePdf.last7d,
+    last30d: clicks.templateWord.last30d + clicks.templateExcel.last30d + clicks.templatePdf.last30d,
   };
+  const weekIssued = clicks.quotePdf.last7d + clicks.quoteWhatsapp.last7d;
+  const monthIssued = clicks.quotePdf.last30d + clicks.quoteWhatsapp.last30d;
   const todayLabel = new Date().toLocaleDateString('he-IL', {
     weekday: 'long',
     day: 'numeric',
@@ -556,7 +523,7 @@ export default function AdminPage() {
                 <div>
                   <p className="text-slate-500 text-xs font-medium mb-0.5">{todayLabel}</p>
                   <h2 className="text-xl md:text-2xl font-black text-slate-900">דשבורד מנהלים</h2>
-                  <p className="text-slate-500 text-sm mt-0.5 hidden sm:block">קליקים, משתמשים והצעות במקום אחד</p>
+                  <p className="text-slate-500 text-sm mt-0.5">מה זז השבוע, כדי לראות אם האתר גדל</p>
                 </div>
                 <button
                   type="button"
@@ -569,87 +536,63 @@ export default function AdminPage() {
               </header>
 
               <section
-                className="rounded-3xl bg-[#0b1220] text-white p-5 md:p-7 mb-6 md:mb-8 shadow-xl shadow-slate-900/10"
-                aria-label="קליקים במוצר"
+                className="rounded-3xl border border-slate-200/80 bg-white p-5 md:p-6 mb-6 md:mb-8 shadow-sm"
+                aria-label="השבוע"
               >
-                <div className="flex flex-wrap items-start justify-between gap-3 mb-5">
-                  <div>
-                    <h3 className="text-lg md:text-xl font-black flex items-center gap-2">
-                      <MousePointerClick size={22} className="text-blue-300" />
-                      קליקים במוצר
-                    </h3>
-                    <p className="text-slate-400 text-sm mt-1">
-                      ספירה מדויקת מהאתר — מתעדכנת אוטומטית, גם מהטלפון
-                    </p>
-                  </div>
+                <h3 className="text-lg font-black text-slate-900">השבוע</h3>
+                <p className="text-sm text-slate-500 mt-1 leading-relaxed">
+                  המספר הגדול הוא 7 הימים האחרונים. מתחתיו: 30 יום, כולל את השבוע.
+                </p>
+                <div
+                  className="mt-4"
+                  style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(148px, 1fr))', gap: 12 }}
+                >
+                  <GrowthStat label="נרשמו" week={stats?.newUsers7d ?? 0} month={stats?.newUsers30d ?? 0} />
+                  <GrowthStat label="שמרו הצעה" week={stats?.quotesLast7d ?? 0} month={stats?.quotesLast30d ?? 0} />
+                  {!clicks.tableMissing && (
+                    <>
+                      <GrowthStat label="נכנסו לאפליקציה" week={clicks.appEntered.last7d} month={clicks.appEntered.last30d} />
+                      <GrowthStat
+                        label="הוציאו הצעה"
+                        week={weekIssued}
+                        month={monthIssued}
+                        hint="PDF וואטסאפ"
+                      />
+                      <GrowthStat label="הורידו תבנית" week={templateClicks.last7d} month={templateClicks.last30d} />
+                    </>
+                  )}
                 </div>
                 {clicks.tableMissing ? (
-                  <div className="rounded-2xl bg-amber-400/15 border border-amber-300/30 text-amber-100 p-4 text-sm">
-                    טבלת הספירה עדיין לא הוגדרה ב־Supabase. הרץ את{' '}
-                    <code className="font-mono text-xs bg-black/20 px-1.5 py-0.5 rounded">supabase-product-events.sql</code>
+                  <div className="mt-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 p-4 text-sm">
+                    ספירת הכניסות, ה-PDF והתבניות עדיין לא פעילה. הרץ את{' '}
+                    <code className="font-mono text-xs">supabase-product-events.sql</code>
                     {' '}ואז רענן את הדף.
                   </div>
                 ) : (
-                  <>
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-3 md:mb-4">
-                      <ClickStat
-                        label="כניסות לאפליקציה"
-                        count={clicks.appEntered}
-                        icon={<MousePointerClick size={18} />}
-                        iconClass="bg-blue-500/20 text-blue-300"
-                      />
-                      <ClickStat
-                        label="הורדת PDF הצעה"
-                        count={clicks.quotePdf}
-                        icon={<Download size={18} />}
-                        iconClass="bg-emerald-500/20 text-emerald-300"
-                      />
-                      <ClickStat
-                        label="שיתוף בוואטסאפ"
-                        count={clicks.quoteWhatsapp}
-                        icon={<MessageCircle size={18} />}
-                        iconClass="bg-green-500/20 text-green-300"
-                      />
-                      <ClickStat
-                        label="הורדות תבניות"
-                        count={templateClicks}
-                        icon={<FileText size={18} />}
-                        iconClass="bg-violet-500/20 text-violet-300"
-                      />
-                    </div>
-                    <div className="grid grid-cols-3 gap-2 md:gap-3">
-                      <div className="rounded-xl bg-white/[0.05] border border-white/10 px-3 py-3 text-right">
-                        <p className="text-slate-400 text-[11px] md:text-xs flex items-center gap-1.5">
-                          <FileText size={13} /> Word
-                        </p>
-                        <p className="text-lg md:text-xl font-black tabular-nums mt-1">
-                          {formatCount(clicks.templateWord.total)}
-                        </p>
-                      </div>
-                      <div className="rounded-xl bg-white/[0.05] border border-white/10 px-3 py-3 text-right">
-                        <p className="text-slate-400 text-[11px] md:text-xs flex items-center gap-1.5">
-                          <FileSpreadsheet size={13} /> Excel
-                        </p>
-                        <p className="text-lg md:text-xl font-black tabular-nums mt-1">
-                          {formatCount(clicks.templateExcel.total)}
-                        </p>
-                      </div>
-                      <div className="rounded-xl bg-white/[0.05] border border-white/10 px-3 py-3 text-right">
-                        <p className="text-slate-400 text-[11px] md:text-xs flex items-center gap-1.5">
-                          <Printer size={13} /> PDF להדפסה
-                        </p>
-                        <p className="text-lg md:text-xl font-black tabular-nums mt-1">
-                          {formatCount(clicks.templatePdf.total)}
-                        </p>
-                      </div>
-                    </div>
-                  </>
+                  <p className="mt-4 text-sm leading-relaxed text-slate-600">
+                    השבוע הורידו {formatCount(templateClicks.last7d)} תבניות והוציאו {formatCount(weekIssued)} הצעות מהכלי.
+                    {' '}
+                    {formatCount(stats?.usersWithQuotes ?? 0)} מתוך {formatCount(stats?.totalUsers ?? 0)} משתמשים שמרו לפחות הצעה אחת
+                    {(stats?.usersWithBasket ?? 0) > 0 ? `, ו־${formatCount(stats?.usersWithBasket ?? 0)} עם סל פתוח` : ''}.
+                  </p>
+                )}
+                {!clicks.tableMissing && (
+                  <p className="mt-2 text-xs leading-relaxed text-slate-500">
+                    תבניות השבוע: Word {formatCount(clicks.templateWord.last7d)} · Excel {formatCount(clicks.templateExcel.last7d)} · PDF {formatCount(clicks.templatePdf.last7d)}
+                    {' '}· סה״כ מאז ומעולם {formatCount(templateClicks.total)}
+                    {' '}· PDF הצעה {formatCount(clicks.quotePdf.total)} · וואטסאפ {formatCount(clicks.quoteWhatsapp.total)}
+                  </p>
                 )}
               </section>
 
-              <h3 className="text-sm font-bold text-slate-500 mb-3 px-0.5">משתמשים</h3>
+              <h3 className="text-sm font-bold text-slate-500 mb-1 px-0.5">משתמשים</h3>
+              <p className="text-xs text-slate-400 mb-3 px-0.5">לחיצה מסננת את הרשימה למטה</p>
               {/* כרטיסי סטטיסטיקות – לחיצה מעבירה לרשימה מסוננת */}
-              <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8" aria-label="סטטיסטיקות משתמשים">
+              <section
+                className="mb-6 md:mb-8"
+                style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(148px, 1fr))', gap: 12 }}
+                aria-label="סטטיסטיקות משתמשים"
+              >
                 <button
                   type="button"
                   onClick={() => setListFilter('all')}
@@ -720,59 +663,30 @@ export default function AdminPage() {
                 </button>
               </section>
 
-              <h3 className="text-sm font-bold text-slate-500 mb-3 px-0.5">הצעות ועסק</h3>
               <section
-                className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8"
-                aria-label="סטטיסטיקות מורחבות"
+                className="rounded-2xl border border-slate-200/80 bg-white px-4 py-4 shadow-sm mb-6 md:mb-8"
+                aria-label="עוד על העסק"
               >
-                <QuietStat
-                  label="הצעות חדשות (7 ימים)"
-                  value={stats?.quotesLast7d ?? 0}
-                  icon={<FileText size={18} />}
-                  iconClass="bg-teal-100 text-teal-700"
-                />
-                <QuietStat
-                  label="הצעות (30 יום)"
-                  value={stats?.quotesLast30d ?? 0}
-                  icon={<BarChart3 size={18} />}
-                  iconClass="bg-cyan-100 text-cyan-700"
-                />
-                <QuietStat
-                  label="סה״כ סכומי הצעות (מע״מ)"
-                  value={formatMoney(stats?.totalRevenue ?? 0)}
-                  icon={<DollarSign size={18} />}
-                  iconClass="bg-green-100 text-green-700"
-                />
-                <QuietStat
-                  label="משתמשים עם הצעות"
-                  value={stats?.usersWithQuotes ?? 0}
-                  icon={<Users size={18} />}
-                  iconClass="bg-indigo-100 text-indigo-700"
-                />
-                <QuietStat
-                  label="סלים לא ריקים"
-                  value={stats?.usersWithBasket ?? 0}
-                  icon={<ShoppingCart size={18} />}
-                  iconClass="bg-orange-100 text-orange-700"
-                />
-                <QuietStat
-                  label="שורות סל (סה״כ)"
-                  value={stats?.totalBasketLineItems ?? 0}
-                  icon={<ShoppingCart size={18} />}
-                  iconClass="bg-slate-200 text-slate-700"
-                />
-                <QuietStat
-                  label="ממוצע הצעות / משתמש פעיל"
-                  value={stats?.avgQuotesPerActiveUser ?? 0}
-                  icon={<Percent size={18} />}
-                  iconClass="bg-violet-100 text-violet-700"
-                />
-                <QuietStat
-                  label="ממוצע סכום / הצעה"
-                  value={formatMoney(stats?.avgRevenuePerQuote ?? 0)}
-                  icon={<DollarSign size={18} />}
-                  iconClass="bg-emerald-100 text-emerald-800"
-                />
+                <h3 className="text-sm font-bold text-slate-500 mb-3">עוד על העסק</h3>
+                <dl
+                  style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px 16px' }}
+                >
+                  {(
+                    [
+                      ['סה״כ סכומי הצעות', formatMoney(stats?.totalRevenue ?? 0)],
+                      ['ממוצע להצעה', formatMoney(stats?.avgRevenuePerQuote ?? 0)],
+                      ['ממוצע הצעות למי ששמר', String(stats?.avgQuotesPerActiveUser ?? 0)],
+                      ['סלים פתוחים', formatCount(stats?.usersWithBasket ?? 0)],
+                      ['שורות בסל', formatCount(stats?.totalBasketLineItems ?? 0)],
+                      ['כניסות לאפליקציה', formatCount(clicks.appEntered.total)],
+                    ] as const
+                  ).map(([label, value]) => (
+                    <div key={label}>
+                      <dt className="text-xs text-slate-500">{label}</dt>
+                      <dd className="mt-0.5 text-base font-bold tabular-nums text-slate-900">{value}</dd>
+                    </div>
+                  ))}
+                </dl>
               </section>
 
               {/* מקצועות מותאמים שמשתמשים יצרו */}

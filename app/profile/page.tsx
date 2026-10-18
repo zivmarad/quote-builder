@@ -24,6 +24,7 @@ import InstallManualGuide from '../components/InstallManualGuide';
 import { markAppInstalled } from '../../lib/install-utils';
 import { recordProductMetric } from '../../lib/product-metrics-client';
 import { savePdfBlob } from '../components/utils/savePdf';
+import { rememberQuoteIssuedAt } from '../../lib/quote-issued-at';
 
 const PENDING_DRAFT_KEY = 'quoteBuilder_pendingDraft';
 
@@ -241,6 +242,7 @@ function ProfileDesk() {
     const quote = quotes.find((q) => q.id === quoteId);
     if (!quote?.items?.length) return;
     loadBasket(quote.items);
+    rememberQuoteIssuedAt(quote.createdAt);
     router.push('/cart');
   };
 
@@ -256,6 +258,7 @@ function ProfileDesk() {
       discountValue: draft.discount?.value != null ? String(draft.discount.value) : '',
     }));
     loadBasket(draft.items, draft.discount);
+    rememberQuoteIssuedAt(draft.savedAt);
     router.push('/cart');
   };
 
@@ -310,7 +313,8 @@ function ProfileDesk() {
         snap?.vatRate ?? vatRate,
         quote.subtotalBeforeDiscount,
         quote.discountAmount,
-        quote.discount
+        quote.discount,
+        quote.createdAt
       );
       setDownloadingId(null);
       const saved = await savePdfBlob(blob, `hatzaat-mechir-${quote.createdAt.slice(0, 10)}.pdf`);
@@ -1098,6 +1102,7 @@ function ProfileDesk() {
           quoteNumber: q.quoteNumber,
           validityDays: snap?.validityDays ?? validityDays,
           vatRate: snap?.vatRate ?? vatRate,
+          issuedAt: q.createdAt,
         });
         return (
           <div

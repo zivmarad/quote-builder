@@ -93,7 +93,8 @@ export async function generateQuotePDFAsBlob(
   vatRate?: number,
   subtotalBeforeDiscount?: number,
   discountAmount?: number,
-  discount?: QuoteDiscount | null
+  discount?: QuoteDiscount | null,
+  issuedAt?: string | null
 ): Promise<Blob> {
   const rate = vatRate ?? 0.18;
   const vatLabel = rate === 0 ? 'עוסק פטור' : `מע"מ (${Math.round(rate * 100)}%)`;
@@ -115,6 +116,7 @@ export async function generateQuotePDFAsBlob(
     subtotalBeforeDiscount,
     discountAmount,
     discount,
+    issuedAt,
   });
   const { profileBlock, notesBlock, footerBlock, items: contentItems, subtotalBeforeDiscount: sub, discountAmount: discAmt, discount: disc } = content;
 

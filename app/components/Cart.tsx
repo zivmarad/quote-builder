@@ -38,6 +38,7 @@ import {
   GUEST_PREVIEW_WATERMARK_LINE,
 } from '../../lib/guest-quote-preview';
 import { trackEvent, AnalyticsEvents } from '../../lib/analytics';
+import { forgetQuoteIssuedAt, readQuoteIssuedAt } from '../../lib/quote-issued-at';
 import { recordProductMetric } from '../../lib/product-metrics-client';
 import type { BasketItem } from '../contexts/QuoteBasketContext';
 import { FREE_QUOTE_CATEGORY } from '../../lib/free-quote';
@@ -312,6 +313,7 @@ export default function Cart() {
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [customerName, setCustomerName] = useState('');
+  const [quoteIssuedAt, setQuoteIssuedAt] = useState<string | null>(null);
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [customerAddress, setCustomerAddress] = useState('');
@@ -403,6 +405,7 @@ export default function Cart() {
       quoteNumber: nextQuoteNumber,
       validityDays: validityDays ?? undefined,
       vatRate,
+      issuedAt: quoteIssuedAt,
     });
     return getQuotePreviewHtml(params);
   }, [
@@ -424,7 +427,18 @@ export default function Cart() {
     nextQuoteNumber,
     validityDays,
     vatRate,
+    quoteIssuedAt,
   ]);
+
+  useEffect(() => {
+    if (!basketLoaded) return;
+    if (items.length === 0) {
+      forgetQuoteIssuedAt();
+      setQuoteIssuedAt(null);
+      return;
+    }
+    setQuoteIssuedAt(readQuoteIssuedAt());
+  }, [basketLoaded, items]);
 
   useEffect(() => {
     if (discount) {
@@ -856,7 +870,8 @@ export default function Cart() {
       vatRate,
       subtotalBeforeDiscount,
       discountAmount,
-      discount
+      discount,
+      quoteIssuedAt
     );
   };
 

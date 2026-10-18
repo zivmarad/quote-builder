@@ -10,6 +10,7 @@ import { useQuoteBasket } from '../contexts/QuoteBasketContext';
 import { useProfile } from '../contexts/ProfileContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { savePdfBlob } from '../components/utils/savePdf';
+import { rememberQuoteIssuedAt } from '../../lib/quote-issued-at';
 
 type TrackFilter = 'all' | 'waiting' | 'approved';
 
@@ -67,6 +68,7 @@ export default function PastQuotesPage() {
       discountValue: quote.discount?.value != null ? String(quote.discount.value) : '',
     }));
     loadBasket(quote.items, quote.discount);
+    rememberQuoteIssuedAt(quote.createdAt);
     router.push('/cart');
   };
 
@@ -95,6 +97,7 @@ export default function PastQuotesPage() {
         quote.subtotalBeforeDiscount,
         quote.discountAmount,
         quote.discount,
+        quote.createdAt,
       );
       setDownloadingId(null);
       await savePdfBlob(blob, `hatzaat-mechir-${quote.createdAt.slice(0, 10)}.pdf`);

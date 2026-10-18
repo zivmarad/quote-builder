@@ -52,6 +52,7 @@ export type CartPreviewInput = {
   quoteNumber?: number | null;
   validityDays?: number | null;
   vatRate?: number;
+  issuedAt?: string | null;
 };
 
 /** ממלא שדות ריקים בדוגמה — רק לאורח; מה שהאורח הקליד נשמר. */

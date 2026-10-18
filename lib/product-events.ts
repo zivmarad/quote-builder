@@ -14,6 +14,7 @@ export type ProductEventName = (typeof PRODUCT_EVENT_NAMES)[number];
 export type ProductEventCount = {
   total: number;
   last7d: number;
+  last30d: number;
 };
 
 export type ProductEventStats = {
@@ -40,7 +41,7 @@ export function isProductEventName(value: unknown): value is ProductEventName {
 }
 
 function emptyCount(): ProductEventCount {
-  return { total: 0, last7d: 0 };
+  return { total: 0, last7d: 0, last30d: 0 };
 }
 
 export function emptyProductEventStats(tableMissing = true): ProductEventStats {
@@ -99,11 +100,13 @@ export async function getProductEventStats(): Promise<ProductEventStats> {
   }
 
   const since7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const since30d = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
   const stats = emptyProductEventStats(false);
   const results = await Promise.all(
     STAT_KEYS.flatMap(([statKey, name]) => [
       countEvent(name).then((r) => ({ statKey, period: 'total' as const, count: r.count })),
       countEvent(name, since7d).then((r) => ({ statKey, period: 'last7d' as const, count: r.count })),
+      countEvent(name, since30d).then((r) => ({ statKey, period: 'last30d' as const, count: r.count })),
     ]),
   );
 
