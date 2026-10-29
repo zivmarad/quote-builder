@@ -10,21 +10,8 @@ import {
   type CustomCatalogData,
   type CustomCategory,
 } from '../../../../lib/custom-catalog-types';
-import { sendCustomProfessionNotificationEmail } from '../../auth/lib/send-email';
+import { getAdminNotifyRecipients, sendCustomProfessionNotificationEmail } from '../../auth/lib/send-email';
 import type { Service } from '../../../../app/service/services';
-
-function getAdminNotifyEmails(): string[] {
-  const notifyEmails: string[] = [];
-  const adminNotify = process.env.NOTIFY_ADMIN_EMAIL?.trim();
-  const smsNotify = process.env.NOTIFY_SMS_EMAIL?.trim();
-  if (adminNotify) notifyEmails.push(adminNotify);
-  if (smsNotify) notifyEmails.push(smsNotify);
-  if (notifyEmails.length === 0) {
-    const envEmail = process.env.EMAIL_USER?.trim();
-    if (envEmail) notifyEmails.push(envEmail);
-  }
-  return notifyEmails;
-}
 
 function serviceSnapshot(services: Service[]) {
   return services.map((s) => ({
@@ -51,7 +38,7 @@ async function notifyNewProfessions(params: {
   const created = params.next.customCategories.filter((c) => !prevIds.has(c.id));
   if (created.length === 0) return;
 
-  const notifyEmails = getAdminNotifyEmails();
+  const notifyEmails = getAdminNotifyRecipients();
 
   for (const category of created) {
     const services = params.next.servicesByCategory[category.id] ?? [];

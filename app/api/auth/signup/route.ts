@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { usernameExists, hashPassword, generateId, createUser } from '../lib/users-store';
+import { getAdminNotifyRecipients, sendNewUserNotificationEmail } from '../lib/send-email';
 import { createSessionToken, setSessionCookie, clearImpersonationCookies } from '../../../../lib/auth-server';
 import { rateLimitResponse } from '../../../../lib/api-helpers';
 import { LIMITS } from '../../../../lib/rate-limit';
@@ -35,6 +36,16 @@ export async function POST(request: Request) {
     const created = await createUser(newUser);
     if (!created) {
       return NextResponse.json({ ok: false, error: 'שגיאה בשמירת המשתמש' }, { status: 500 });
+    }
+
+    try {
+      await sendNewUserNotificationEmail(getAdminNotifyRecipients(), {
+        email: '—',
+        username: newUser.username,
+        createdAt: newUser.createdAt,
+      });
+    } catch (e) {
+      console.warn('Failed to send admin notification email:', e);
     }
 
     const token = await createSessionToken({

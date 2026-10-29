@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { displayNameFromGoogle, findOrCreateGoogleUser, seedProfileContactNameIfEmpty } from '../../lib/users-store';
-import { sendNewUserNotificationEmail } from '../../lib/send-email';
+import { getAdminNotifyRecipients, sendNewUserNotificationEmail, sendWelcomeEmail } from '../../lib/send-email';
 import { createSessionToken, setSessionCookie, clearImpersonationCookies } from '../../../../../lib/auth-server';
 import { resolvePostLoginRedirectPath } from '../../../../../lib/post-login-redirect';
 import { rateLimitResponse, withRequestId, getOrCreateRequestId } from '../../../../../lib/api-helpers';
@@ -25,19 +25,6 @@ function cookieFromRequest(request: Request, name: string): string | null {
   } catch {
     return value || null;
   }
-}
-
-function notifyEmails(): string[] {
-  const out: string[] = [];
-  const adminNotify = process.env.NOTIFY_ADMIN_EMAIL?.trim();
-  const smsNotify = process.env.NOTIFY_SMS_EMAIL?.trim();
-  if (adminNotify) out.push(adminNotify);
-  if (smsNotify) out.push(smsNotify);
-  if (out.length === 0) {
-    const envEmail = process.env.EMAIL_USER?.trim();
-    if (envEmail) out.push(envEmail);
-  }
-  return out;
 }
 
 export async function GET(request: Request) {
@@ -85,14 +72,20 @@ export async function GET(request: Request) {
   }
 
   if (result.created) {
+    const signupEmail = result.user.email ?? info.email;
     try {
-      await sendNewUserNotificationEmail(notifyEmails(), {
-        email: result.user.email ?? info.email,
+      await sendNewUserNotificationEmail(getAdminNotifyRecipients(), {
+        email: signupEmail,
         username: result.user.username,
         createdAt: result.user.createdAt,
       });
     } catch {
       /* admin mail must not block signup */
+    }
+    try {
+      await sendWelcomeEmail(signupEmail);
+    } catch {
+      /* welcome mail must not block signup */
     }
   }
 

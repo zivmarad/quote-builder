@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { emailExists, usernameExists, hashPassword, generateId, createUser } from '../lib/users-store';
 import { checkVerificationCode, consumeVerificationCode } from '../lib/verification-codes-store';
-import { sendNewUserNotificationEmail } from '../lib/send-email';
+import { getAdminNotifyRecipients, sendNewUserNotificationEmail, sendWelcomeEmail } from '../lib/send-email';
 import { createSessionToken, setSessionCookie, clearImpersonationCookies } from '../../../../lib/auth-server';
 import { rateLimitResponse } from '../../../../lib/api-helpers';
 import { LIMITS } from '../../../../lib/rate-limit';
@@ -60,23 +60,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: 'שגיאה בשמירת המשתמש' }, { status: 500 });
     }
 
-    const notifyEmails: string[] = [];
-    const adminNotify = process.env.NOTIFY_ADMIN_EMAIL?.trim();
-    const smsNotify = process.env.NOTIFY_SMS_EMAIL?.trim();
-    if (adminNotify) notifyEmails.push(adminNotify);
-    if (smsNotify) notifyEmails.push(smsNotify);
-    if (notifyEmails.length === 0) {
-      const envEmail = process.env.EMAIL_USER?.trim();
-      if (envEmail) notifyEmails.push(envEmail);
-    }
     try {
-      await sendNewUserNotificationEmail(notifyEmails, {
+      await sendNewUserNotificationEmail(getAdminNotifyRecipients(), {
         email: newUser.email!,
         username: newUser.username,
         createdAt: newUser.createdAt,
       });
     } catch (e) {
       console.warn('Failed to send admin notification email:', e);
+    }
+    try {
+      await sendWelcomeEmail(newUser.email!);
+    } catch (e) {
+      console.warn('Failed to send welcome email:', e);
     }
 
     const token = await createSessionToken({
