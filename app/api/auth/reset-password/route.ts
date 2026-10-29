@@ -3,6 +3,7 @@ import { emailExists, hashPassword, updatePasswordByEmail } from '../lib/users-s
 import { consumeVerificationCode } from '../lib/verification-codes-store';
 import { rateLimitResponse } from '../../../../lib/api-helpers';
 import { LIMITS } from '../../../../lib/rate-limit';
+import { PASSWORD_TOO_SHORT_MESSAGE, isPasswordTooShort } from '../../../../lib/password-policy';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -22,8 +23,8 @@ export async function POST(request: Request) {
     if (!/^\d{6}$/.test(code)) {
       return NextResponse.json({ ok: false, error: 'הקוד חייב להכיל 6 ספרות' }, { status: 400 });
     }
-    if (!newPassword || newPassword.length < 4) {
-      return NextResponse.json({ ok: false, error: 'הסיסמה חייבת להכיל לפחות 4 תווים' }, { status: 400 });
+    if (!newPassword || isPasswordTooShort(newPassword)) {
+      return NextResponse.json({ ok: false, error: PASSWORD_TOO_SHORT_MESSAGE }, { status: 400 });
     }
 
     if (!(await emailExists(email))) {

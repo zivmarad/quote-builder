@@ -352,7 +352,21 @@ export async function deleteUserById(userId: string): Promise<boolean> {
   const user = await getUserById(userId);
   if (!user) return false;
 
-  const tablesByUserId = ['quotes', 'quote_basket', 'quote_drafts', 'quote_history', 'customers', 'user_profile', 'user_settings', 'price_overrides', 'user_custom_catalog', 'custom_profession_events'] as const;
+  const tablesByUserId = [
+    'quotes',
+    'quote_basket',
+    'quote_drafts',
+    'quote_history',
+    'customers',
+    'user_profile',
+    'user_settings',
+    'price_overrides',
+    'user_custom_catalog',
+    'custom_profession_events',
+    'quote_counters',
+    'quote_export_jobs',
+  ] as const;
+  await removeUserStorage(userId);
   for (const table of tablesByUserId) {
     const { error } = await supabaseAdmin.from(table).delete().eq('user_id', userId);
     if (error) console.error(`deleteUserById ${table} error:`, error);
@@ -367,4 +381,20 @@ export async function deleteUserById(userId: string): Promise<boolean> {
     return false;
   }
   return true;
+}
+
+async function removeUserStorage(userId: string): Promise<void> {
+  if (!supabaseAdmin) return;
+  const buckets = ['profile-logos', process.env.QUOTE_EXPORT_BUCKET?.trim() || 'quote-exports'];
+  for (const bucket of buckets) {
+    const { data, error } = await supabaseAdmin.storage.from(bucket).list(userId);
+    if (error || !data?.length) {
+      if (error) console.error(`deleteUserById storage ${bucket}:`, error);
+      continue;
+    }
+    const paths = data.filter((file) => file.name).map((file) => `${userId}/${file.name}`);
+    if (paths.length === 0) continue;
+    const { error: removeError } = await supabaseAdmin.storage.from(bucket).remove(paths);
+    if (removeError) console.error(`deleteUserById storage remove ${bucket}:`, removeError);
+  }
 }

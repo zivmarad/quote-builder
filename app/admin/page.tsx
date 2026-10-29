@@ -416,7 +416,7 @@ export default function AdminPage() {
   });
 
   return (
-    <div className="min-h-screen flex bg-slate-50" dir="rtl">
+    <div className="min-h-screen flex bg-slate-50" dir="rtl" data-clarity-mask="true">
       {/* Overlay מובייל כשהסיידבר פתוח */}
       {sidebarOpen && (
         <button

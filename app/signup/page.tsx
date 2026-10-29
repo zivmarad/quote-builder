@@ -7,6 +7,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { UserPlus, ArrowRight, Mail } from 'lucide-react';
 import { trackEvent, AnalyticsEvents } from '@/lib/analytics';
 import GoogleAuthButton, { AuthMethodDivider, messageForGoogleAuthError } from '../components/GoogleAuthButton';
+import TermsAcceptCheckbox, { useTermsAccepted } from '../components/TermsAcceptCheckbox';
 
 type Step = 'email' | 'code' | 'details';
 
@@ -22,6 +23,7 @@ export default function SignupPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const { accepted: acceptedTerms, setAccepted: setAcceptedTerms } = useTermsAccepted();
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -42,6 +44,10 @@ export default function SignupPage() {
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (!acceptedTerms) {
+      setError('כדי להמשיך יש לאשר את תנאי השימוש ואת מדיניות הפרטיות');
+      return;
+    }
     setLoading(true);
     try {
       const result = await sendVerificationCode(email);
@@ -80,6 +86,10 @@ export default function SignupPage() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (!acceptedTerms) {
+      setError('כדי להמשיך יש לאשר את תנאי השימוש ואת מדיניות הפרטיות');
+      return;
+    }
     if (password !== confirmPassword) {
       setError('הסיסמאות לא תואמות');
       return;
@@ -119,7 +129,16 @@ export default function SignupPage() {
 
           {step === 'email' && (
             <>
-              <GoogleAuthButton from={from} label={t('auth.continueWithGoogle')} hint={t('auth.googleHint')} />
+              <div className="mb-4">
+                <TermsAcceptCheckbox checked={acceptedTerms} onChange={setAcceptedTerms} />
+              </div>
+              <GoogleAuthButton
+                from={from}
+                label={t('auth.continueWithGoogle')}
+                hint={t('auth.googleHint')}
+                disabled={!acceptedTerms}
+                onDisabledClick={() => setError('כדי להמשיך יש לאשר את תנאי השימוש ואת מדיניות הפרטיות')}
+              />
               <AuthMethodDivider label={t('auth.orEmail')} />
               <form onSubmit={handleSendCode} className="space-y-4">
                 <div>
@@ -214,7 +233,7 @@ export default function SignupPage() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="לפחות 4 תווים"
+                  placeholder="לפחות 8 תווים"
                   className="w-full px-4 py-3 min-h-[48px] rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   autoComplete="new-password"
                   dir="ltr"

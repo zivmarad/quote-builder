@@ -375,7 +375,7 @@
     "changePasswordDesc": "הזן סיסמה נוכחית ובחר סיסמה חדשה",
     "currentPassword": "סיסמה נוכחית",
     "newPassword": "סיסמה חדשה",
-    "newPasswordPlaceholder": "לפחות 4 תווים",
+    "newPasswordPlaceholder": "לפחות 8 תווים",
     "confirmNewPassword": "אימות סיסמה חדשה",
     "confirmNewPasswordPlaceholder": "הזן שוב את הסיסמה החדשה",
     "updatePassword": "עדכן סיסמה",
@@ -407,7 +407,7 @@
     "closePreview": "סגור",
     "downloadingQuote": "מוריד את ההצעה...",
     "passwordMismatch": "הסיסמאות לא תואמות",
-    "passwordMinLength": "הסיסמה החדשה חייבת לפחות 4 תווים",
+    "passwordMinLength": "הסיסמה החדשה חייבת לפחות 8 תווים",
     "passwordChangeError": "שגיאה בשינוי סיסמה"
   },
   "serviceWizard": {

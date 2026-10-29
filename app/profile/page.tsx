@@ -61,7 +61,7 @@ function ProfileDesk() {
   const { getBasePrice, setBasePrice } = usePriceOverrides();
   const { getMergedServices, customCategories } = useCustomCatalog();
   const { customers } = useCustomers();
-  const { user: authUser, changePassword } = useAuth();
+  const { user: authUser, changePassword, logout, impersonating } = useAuth();
   const { t, dir } = useLanguage();
   const quoteStatusLabels: Record<QuoteWorkflowStatus, string> = { draft: t(quoteStatusKeys.draft), sent: t(quoteStatusKeys.sent), approved: t(quoteStatusKeys.approved), paid: t(quoteStatusKeys.paid) };
   const quoteBadgeLabels = {
@@ -86,6 +86,9 @@ function ProfileDesk() {
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
+  const [deleteUsername, setDeleteUsername] = useState('');
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [logoUploading, setLogoUploading] = useState(false);
   const [previewQuoteId, setPreviewQuoteId] = useState<string | null>(null);
   const [statusDropdownId, setStatusDropdownId] = useState<string | null>(null);
@@ -401,7 +404,7 @@ function ProfileDesk() {
       setPasswordError(t('profile.passwordMismatch'));
       return;
     }
-    if (newPassword.length < 4) {
+    if (newPassword.length < 8) {
       setPasswordError(t('profile.passwordMinLength'));
       return;
     }
@@ -416,6 +419,50 @@ function ProfileDesk() {
       } else setPasswordError(result.error ?? t('profile.passwordChangeError'));
     } finally {
       setPasswordLoading(false);
+    }
+  };
+
+  const clearLocalAccountData = () => {
+    try {
+      const keys: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('quoteBuilder')) keys.push(key);
+      }
+      keys.forEach((key) => localStorage.removeItem(key));
+      indexedDB.deleteDatabase('QuoteBasketDB');
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const handleDeleteAccount = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setDeleteError(null);
+    if (!authUser || deleteUsername.trim() !== authUser.username) {
+      setDeleteError('יש להקליד את שם המשתמש בדיוק כדי לאשר');
+      return;
+    }
+    setDeleteLoading(true);
+    try {
+      const res = await fetch('/api/auth/delete-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ username: authUser.username }),
+      });
+      const data = (await res.json()) as { ok?: boolean; error?: string };
+      if (!res.ok || !data.ok) {
+        setDeleteError(data.error ?? 'מחיקת החשבון נכשלה');
+        return;
+      }
+      clearLocalAccountData();
+      logout();
+      window.location.href = '/landing';
+    } catch {
+      setDeleteError('מחיקת החשבון נכשלה. בדוק את החיבור ונסה שוב.');
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -984,6 +1031,39 @@ function ProfileDesk() {
                       </button>
                     </form>
                   </div>
+
+                  {!impersonating && (
+                    <div className="mt-10 pt-8 border-t border-slate-200">
+                      <h2 className="text-lg font-black text-slate-900 mb-1">מחיקת חשבון</h2>
+                      <p className="text-slate-500 text-sm mb-4">
+                        נמחקים החשבון, ההצעות, הלקוחות, הפרופיל והקבצים בענן. אי אפשר לשחזר את זה.
+                      </p>
+                      <form onSubmit={handleDeleteAccount} className="space-y-3 max-w-md">
+                        <label htmlFor="delete-username" className="block text-sm font-bold text-slate-700">
+                          להקליד את שם המשתמש {authUser?.username ? `(${authUser.username})` : ''}
+                        </label>
+                        <input
+                          id="delete-username"
+                          type="text"
+                          value={deleteUsername}
+                          onChange={(e) => setDeleteUsername(e.target.value)}
+                          autoComplete="off"
+                          dir="ltr"
+                          className="w-full px-4 py-3 min-h-[48px] rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-red-500"
+                        />
+                        {deleteError && (
+                          <p className="text-sm text-red-600" role="alert">{deleteError}</p>
+                        )}
+                        <button
+                          type="submit"
+                          disabled={deleteLoading}
+                          className="py-3 px-6 rounded-xl font-bold bg-red-600 text-white hover:bg-red-700 disabled:opacity-60"
+                        >
+                          {deleteLoading ? 'מוחק…' : 'מחיקת החשבון'}
+                        </button>
+                      </form>
+                    </div>
+                  )}
 
             </div>
           </section>

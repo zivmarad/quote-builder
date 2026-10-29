@@ -43,8 +43,8 @@ export default function ForgotPasswordPage() {
       setError('הסיסמאות לא תואמות');
       return;
     }
-    if (newPassword.length < 4) {
-      setError('הסיסמה חייבת להכיל לפחות 4 תווים');
+    if (newPassword.length < 8) {
+      setError('הסיסמה חייבת להכיל לפחות 8 תווים');
       return;
     }
     setLoading(true);
@@ -155,7 +155,7 @@ export default function ForgotPasswordPage() {
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="לפחות 4 תווים"
+                  placeholder="לפחות 8 תווים"
                   className="w-full px-4 py-3 min-h-[48px] rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   dir="ltr"
                   required

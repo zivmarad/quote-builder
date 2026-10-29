@@ -134,7 +134,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const changePassword = useCallback(async (currentPassword: string, newPassword: string) => {
     if (!user) return { ok: false, error: 'לא מחובר' };
-    if (!newPassword || newPassword.length < 4) return { ok: false, error: 'הסיסמה החדשה חייבת לפחות 4 תווים' };
+    if (!newPassword || newPassword.length < 8) return { ok: false, error: 'הסיסמה החדשה חייבת לפחות 8 תווים' };
     try {
       const res = await fetch('/api/auth/change-password', {
         method: 'POST',
@@ -159,8 +159,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (trimmed.length < 2) {
       return { ok: false, error: 'שם המשתמש חייב להכיל לפחות 2 תווים' };
     }
-    if (!password || password.length < 4) {
-      return { ok: false, error: 'הסיסמה חייבת להכיל לפחות 4 תווים' };
+    if (!password || password.length < 8) {
+      return { ok: false, error: 'הסיסמה חייבת להכיל לפחות 8 תווים' };
     }
     try {
       const res = await fetch('/api/auth/signup', {
@@ -242,7 +242,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const trimmedUsername = username.trim();
     if (!trimmedEmail || !trimmedCode) return { ok: false, error: 'נא להזין אימייל וקוד' };
     if (!trimmedUsername || trimmedUsername.length < 2) return { ok: false, error: 'שם המשתמש חייב לפחות 2 תווים' };
-    if (!password || password.length < 4) return { ok: false, error: 'הסיסמה חייבת לפחות 4 תווים' };
+    if (!password || password.length < 8) return { ok: false, error: 'הסיסמה חייבת לפחות 8 תווים' };
     try {
       const res = await fetch('/api/auth/signup-with-email', {
         method: 'POST',
@@ -300,7 +300,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const trimmedEmail = email.trim().toLowerCase();
     const trimmedCode = code.trim();
     if (!trimmedEmail || !trimmedCode) return { ok: false, error: 'נא להזין אימייל וקוד' };
-    if (!newPassword || newPassword.length < 4) return { ok: false, error: 'הסיסמה חייבת לפחות 4 תווים' };
+    if (!newPassword || newPassword.length < 8) return { ok: false, error: 'הסיסמה חייבת לפחות 8 תווים' };
     try {
       const res = await fetch('/api/auth/reset-password', {
         method: 'POST',

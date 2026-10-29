@@ -5,6 +5,7 @@ import { getAdminNotifyRecipients, sendNewUserNotificationEmail, sendWelcomeEmai
 import { createSessionToken, setSessionCookie, clearImpersonationCookies } from '../../../../lib/auth-server';
 import { rateLimitResponse } from '../../../../lib/api-helpers';
 import { LIMITS } from '../../../../lib/rate-limit';
+import { PASSWORD_TOO_SHORT_MESSAGE, isPasswordTooShort } from '../../../../lib/password-policy';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -28,8 +29,8 @@ export async function POST(request: Request) {
     if (!username || username.length < 2) {
       return NextResponse.json({ ok: false, error: 'שם המשתמש חייב להכיל לפחות 2 תווים' }, { status: 400 });
     }
-    if (!password || password.length < 4) {
-      return NextResponse.json({ ok: false, error: 'הסיסמה חייבת להכיל לפחות 4 תווים' }, { status: 400 });
+    if (!password || isPasswordTooShort(password)) {
+      return NextResponse.json({ ok: false, error: PASSWORD_TOO_SHORT_MESSAGE }, { status: 400 });
     }
 
     if (!(await checkVerificationCode(email, code))) {

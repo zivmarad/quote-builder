@@ -334,7 +334,7 @@
     "changePasswordDesc": "Введите текущий пароль и новый",
     "currentPassword": "Текущий пароль",
     "newPassword": "Новый пароль",
-    "newPasswordPlaceholder": "Не менее 4 символов",
+    "newPasswordPlaceholder": "Не менее 8 символов",
     "confirmNewPassword": "Подтвердите пароль",
     "confirmNewPasswordPlaceholder": "Повторите новый пароль",
     "updatePassword": "Обновить пароль",
@@ -366,7 +366,7 @@
     "closePreview": "Закрыть",
     "downloadingQuote": "Скачивание сметы...",
     "passwordMismatch": "Пароли не совпадают",
-    "passwordMinLength": "Новый пароль не менее 4 символов",
+    "passwordMinLength": "Новый пароль не менее 8 символов",
     "passwordChangeError": "Ошибка смены пароля"
   },
   "serviceWizard": {

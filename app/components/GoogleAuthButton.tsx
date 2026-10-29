@@ -30,17 +30,27 @@ type GoogleAuthButtonProps = {
   from?: string;
   label: string;
   hint?: string;
+  disabled?: boolean;
+  onDisabledClick?: () => void;
 };
 
 /** כפתור בסגנון Google Identity — לוגו רשמי, טיפוגרפיה בינונית, מסגרת #747775. */
-export default function GoogleAuthButton({ from = '/', label, hint }: GoogleAuthButtonProps) {
+export default function GoogleAuthButton({ from = '/', label, hint, disabled, onDisabledClick }: GoogleAuthButtonProps) {
   const href = `/api/auth/google?from=${encodeURIComponent(from)}`;
   return (
     <div>
       <a
         href={href}
-        onClick={() => trackEvent(AnalyticsEvents.GoogleAuthStarted, { from })}
-        className="w-full min-h-[52px] inline-flex items-center justify-center px-4 rounded-xl bg-white text-[#1f1f1f] border border-[#747775] hover:bg-[#f8f9fa] hover:shadow-[0_1px_2px_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4285F4] focus-visible:ring-offset-2 transition-[background-color,box-shadow] duration-150 active:bg-[#eee]"
+        aria-disabled={disabled || undefined}
+        onClick={(event) => {
+          if (disabled) {
+            event.preventDefault();
+            onDisabledClick?.();
+            return;
+          }
+          trackEvent(AnalyticsEvents.GoogleAuthStarted, { from });
+        }}
+        className={`w-full min-h-[52px] inline-flex items-center justify-center px-4 rounded-xl bg-white text-[#1f1f1f] border border-[#747775] hover:bg-[#f8f9fa] hover:shadow-[0_1px_2px_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4285F4] focus-visible:ring-offset-2 transition-[background-color,box-shadow] duration-150 active:bg-[#eee] ${disabled ? 'opacity-60' : ''}`}
       >
         <span className="inline-flex items-center justify-center gap-3" dir="ltr">
           <GoogleMark className="shrink-0" />

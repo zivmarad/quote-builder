@@ -334,7 +334,7 @@
     "changePasswordDesc": "أدخل كلمة المرور الحالية والجديدة",
     "currentPassword": "كلمة المرور الحالية",
     "newPassword": "كلمة المرور الجديدة",
-    "newPasswordPlaceholder": "4 أحرف على الأقل",
+    "newPasswordPlaceholder": "8 أحرف على الأقل",
     "confirmNewPassword": "تأكيد كلمة المرور",
     "confirmNewPasswordPlaceholder": "أعد إدخال كلمة المرور الجديدة",
     "updatePassword": "تحديث كلمة المرور",
@@ -366,7 +366,7 @@
     "closePreview": "إغلاق",
     "downloadingQuote": "جاري تحميل العرض...",
     "passwordMismatch": "كلمات المرور غير متطابقة",
-    "passwordMinLength": "كلمة المرور الجديدة 4 أحرف على الأقل",
+    "passwordMinLength": "كلمة المرور الجديدة 8 أحرف على الأقل",
     "passwordChangeError": "خطأ في تغيير كلمة المرور"
   },
   "serviceWizard": {

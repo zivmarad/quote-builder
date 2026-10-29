@@ -334,7 +334,7 @@
     "changePasswordDesc": "Enter current password and choose a new one",
     "currentPassword": "Current password",
     "newPassword": "New password",
-    "newPasswordPlaceholder": "At least 4 characters",
+    "newPasswordPlaceholder": "At least 8 characters",
     "confirmNewPassword": "Confirm new password",
     "confirmNewPasswordPlaceholder": "Enter the new password again",
     "updatePassword": "Update password",
@@ -366,7 +366,7 @@
     "closePreview": "Close",
     "downloadingQuote": "Downloading quote...",
     "passwordMismatch": "Passwords do not match",
-    "passwordMinLength": "New password must be at least 4 characters",
+    "passwordMinLength": "New password must be at least 8 characters",
     "passwordChangeError": "Error changing password"
   },
   "serviceWizard": {

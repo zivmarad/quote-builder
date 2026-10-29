@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getUserById, verifyPassword, hashPassword, updatePasswordHash } from '../lib/users-store';
 import { getCurrentUser } from '../../../../lib/auth-server';
+import { PASSWORD_TOO_SHORT_MESSAGE, isPasswordTooShort } from '../../../../lib/password-policy';
 
 /** שינוי סיסמה כשמחובר – דורש סיסמה נוכחית. המשתמש נקבע לפי ה-JWT. */
 export async function POST(request: Request) {
@@ -16,8 +17,8 @@ export async function POST(request: Request) {
     if (!currentPassword || !newPassword) {
       return NextResponse.json({ ok: false, error: 'נא למלא סיסמה נוכחית וסיסמה חדשה' }, { status: 400 });
     }
-    if (newPassword.length < 4) {
-      return NextResponse.json({ ok: false, error: 'הסיסמה החדשה חייבת להכיל לפחות 4 תווים' }, { status: 400 });
+    if (isPasswordTooShort(newPassword)) {
+      return NextResponse.json({ ok: false, error: PASSWORD_TOO_SHORT_MESSAGE }, { status: 400 });
     }
 
     const stored = await getUserById(user.id);

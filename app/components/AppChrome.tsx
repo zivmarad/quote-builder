@@ -54,6 +54,7 @@ export default function AppChrome({ children }: { children: React.ReactNode }) {
   return (
     <UserDataProviders>
       <QuoteBasketWithAuth>
+        <div data-clarity-mask="true">
         <AppHeader />
         <InAppBrowserBanner />
         <div className={`min-h-screen flex flex-col ${calmSurface ? 'bg-[#f3f6fb]' : ''}`}>
@@ -65,6 +66,7 @@ export default function AppChrome({ children }: { children: React.ReactNode }) {
         <SyncFailureBanner />
         <RegisterServiceWorker />
         <InstallAppPrompt />
+        </div>
       </QuoteBasketWithAuth>
     </UserDataProviders>
   );

@@ -49,11 +49,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: false, error: 'תמונה לא תקינה או גדולה מדי' }, { status: 400 });
     }
 
-    const path = `${user.id}/logo.${parsed.ext}`;
+    const path = `${user.id}/${crypto.randomUUID()}.${parsed.ext}`;
 
     const { error: upErr } = await supabaseAdmin.storage.from(BUCKET).upload(path, parsed.buffer, {
       contentType: parsed.contentType,
-      upsert: true,
+      upsert: false,
     });
 
     if (upErr) {
@@ -62,6 +62,15 @@ export async function POST(request: NextRequest) {
         { ok: false, error: upErr.message || 'העלאה נכשלה' },
         { status: upErr.message?.includes('Bucket not found') ? 503 : 500 }
       );
+    }
+
+    const { data: existing } = await supabaseAdmin.storage.from(BUCKET).list(user.id);
+    const stale = (existing ?? [])
+      .map((file) => file.name)
+      .filter((name) => name && `${user.id}/${name}` !== path)
+      .map((name) => `${user.id}/${name}`);
+    if (stale.length > 0) {
+      await supabaseAdmin.storage.from(BUCKET).remove(stale);
     }
 
     const { data: pub } = supabaseAdmin.storage.from(BUCKET).getPublicUrl(path);

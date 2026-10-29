@@ -9,6 +9,7 @@ import { resolvePostLoginRedirectPath } from '../../lib/post-login-redirect';
 import { ArrowRight } from 'lucide-react';
 import { trackEvent, AnalyticsEvents } from '@/lib/analytics';
 import GoogleAuthButton, { AuthMethodDivider, messageForGoogleAuthError } from '../components/GoogleAuthButton';
+import TermsAcceptCheckbox, { useTermsAccepted } from '../components/TermsAcceptCheckbox';
 
 export default function LoginPage() {
   const [from, setFrom] = useState('/');
@@ -17,7 +18,7 @@ export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [rememberUsername, setRememberUsername] = useState(true);
-  const [rememberPassword, setRememberPassword] = useState(false);
+  const { accepted: acceptedTerms, setAccepted: setAcceptedTerms } = useTermsAccepted();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -37,8 +38,7 @@ export default function LoginPage() {
     try {
       const savedUser = localStorage.getItem(SAVED_USERNAME_KEY);
       if (savedUser) setUsername(savedUser);
-      const savedPass = localStorage.getItem(SAVED_PASSWORD_KEY);
-      if (savedPass) setPassword(savedPass);
+      localStorage.removeItem(SAVED_PASSWORD_KEY);
     } catch { /* ignore */ }
   }, []);
 
@@ -51,10 +51,9 @@ export default function LoginPage() {
       if (result.ok) {
         try {
           if (typeof window !== 'undefined') {
+            localStorage.removeItem(SAVED_PASSWORD_KEY);
             if (rememberUsername) localStorage.setItem(SAVED_USERNAME_KEY, username.trim());
             else localStorage.removeItem(SAVED_USERNAME_KEY);
-            if (rememberPassword) localStorage.setItem(SAVED_PASSWORD_KEY, password);
-            else localStorage.removeItem(SAVED_PASSWORD_KEY);
           }
         } catch { /* ignore */ }
         if (typeof window !== 'undefined') {
@@ -85,7 +84,16 @@ export default function LoginPage() {
               {error}
             </div>
           )}
-          <GoogleAuthButton from={from} label={t('auth.continueWithGoogle')} hint={t('auth.googleHint')} />
+          <div className="mb-4">
+            <TermsAcceptCheckbox checked={acceptedTerms} onChange={setAcceptedTerms} />
+          </div>
+          <GoogleAuthButton
+            from={from}
+            label={t('auth.continueWithGoogle')}
+            hint={t('auth.googleHint')}
+            disabled={!acceptedTerms}
+            onDisabledClick={() => setError('כדי להמשיך עם גוגל יש לאשר את תנאי השימוש ואת מדיניות הפרטיות')}
+          />
           <AuthMethodDivider label={t('auth.orPassword')} />
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -134,15 +142,6 @@ export default function LoginPage() {
                   className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                 />
                 {t('login.rememberUsername')}
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer text-sm text-slate-700">
-                <input
-                  type="checkbox"
-                  checked={rememberPassword}
-                  onChange={(e) => setRememberPassword(e.target.checked)}
-                  className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                />
-                {t('login.rememberPassword')}
               </label>
             </div>
             <button
