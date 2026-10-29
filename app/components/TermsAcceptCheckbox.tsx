@@ -1,39 +1,37 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 
 const TERMS_ACCEPTED_KEY = 'quoteBuilder_termsAccepted';
 
+function readAccepted(): boolean {
+  try {
+    return localStorage.getItem(TERMS_ACCEPTED_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function subscribe(onStoreChange: () => void) {
+  window.addEventListener('storage', onStoreChange);
+  return () => window.removeEventListener('storage', onStoreChange);
+}
+
 export function useTermsAccepted() {
-  const [accepted, setAccepted] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    try {
-      return localStorage.getItem(TERMS_ACCEPTED_KEY) === '1';
-    } catch {
-      return false;
-    }
-  });
+  const accepted = useSyncExternalStore(subscribe, readAccepted, () => false);
 
-  useEffect(() => {
-    try {
-      if (localStorage.getItem(TERMS_ACCEPTED_KEY) === '1') setAccepted(true);
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
-  const update = (value: boolean) => {
-    setAccepted(value);
+  const setAccepted = useCallback((value: boolean) => {
     try {
       if (value) localStorage.setItem(TERMS_ACCEPTED_KEY, '1');
       else localStorage.removeItem(TERMS_ACCEPTED_KEY);
     } catch {
       /* ignore */
     }
-  };
+    window.dispatchEvent(new StorageEvent('storage', { key: TERMS_ACCEPTED_KEY }));
+  }, []);
 
-  return { accepted, setAccepted: update };
+  return { accepted, setAccepted };
 }
 
 export default function TermsAcceptCheckbox({
