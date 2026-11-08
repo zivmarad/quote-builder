@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useQuoteBasket } from '../contexts/QuoteBasketContext';
+import { presentQuoteTotals } from '../../lib/money';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -25,7 +26,8 @@ const HIDE_PATHS = [
 ];
 
 export default function FloatingCartButton() {
-  const { itemCount, totalWithVAT } = useQuoteBasket();
+  const { itemCount, discountAmount, totalBeforeVAT, VAT } = useQuoteBasket();
+  const shownTotal = presentQuoteTotals({ discountAmount, totalBeforeVAT, VAT }).total;
   const router = useRouter();
   const pathname = usePathname();
   const { t, dir } = useLanguage();
@@ -94,7 +96,7 @@ export default function FloatingCartButton() {
       >
         <div className="min-w-0 ps-2 text-start">
           <span className="block text-[11px] font-medium leading-tight text-white/70">{jobsLabel}</span>
-          <span className="text-lg font-semibold tabular-nums leading-tight">{formatPrice(totalWithVAT)}</span>
+          <span className="text-lg font-semibold tabular-nums leading-tight">{formatPrice(shownTotal)}</span>
         </div>
         <span className="flex min-h-12 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full bg-white px-4 text-sm font-bold text-blue-900">
           {t('common.continueToQuote', 'המשך להצעה')}

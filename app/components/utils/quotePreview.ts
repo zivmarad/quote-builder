@@ -1,4 +1,5 @@
 import { formatDiscountLabel, type QuoteDiscount } from '../../../lib/quote-discount';
+import { formatShekel, presentQuoteTotals } from '../../../lib/money';
 
 export interface BasketItem {
   id: string;
@@ -58,24 +59,26 @@ export interface QuoteTotalsDisplay {
 
 export function buildSummaryHtml(totals: QuoteTotalsDisplay, vatLabel: string): string {
   const {
-    subtotalBeforeDiscount,
     discountAmount = 0,
     discount,
     totalBeforeVAT,
     VAT,
-    totalWithVAT,
   } = totals;
-  const showDiscount = discountAmount > 0;
-  const subtotal = showDiscount ? (subtotalBeforeDiscount ?? totalBeforeVAT + discountAmount) : totalBeforeVAT;
+  const shown = presentQuoteTotals({
+    discountAmount,
+    totalBeforeVAT,
+    VAT,
+  });
+  const showDiscount = shown.discount > 0;
   const subtotalLabel = showDiscount ? 'סיכום ביניים' : 'סה"כ';
   const discountLabel = discount ? formatDiscountLabel(discount) : 'הנחה';
 
   return `
-    <div class="summary-row subtotal"><span>${subtotalLabel}</span><span class="amount">₪${subtotal.toLocaleString('he-IL')}</span></div>
-    ${showDiscount ? `<div class="summary-row discount"><span>${discountLabel}</span><span class="amount">-₪${discountAmount.toLocaleString('he-IL')}</span></div>` : ''}
-    ${showDiscount ? `<div class="summary-row subtotal"><span>לפני מע"מ</span><span class="amount">₪${totalBeforeVAT.toLocaleString('he-IL')}</span></div>` : ''}
-    <div class="summary-row vat"><span>${vatLabel}</span><span class="amount">₪${VAT.toLocaleString('he-IL')}</span></div>
-    <div class="summary-row total"><span>סה"כ לתשלום</span><span class="amount">₪${totalWithVAT.toLocaleString('he-IL')}</span></div>
+    <div class="summary-row subtotal"><span>${subtotalLabel}</span><span class="amount">₪${formatShekel(shown.subtotal)}</span></div>
+    ${showDiscount ? `<div class="summary-row discount"><span>${discountLabel}</span><span class="amount">-₪${formatShekel(shown.discount)}</span></div>` : ''}
+    ${showDiscount ? `<div class="summary-row subtotal"><span>לפני מע"מ</span><span class="amount">₪${formatShekel(shown.before)}</span></div>` : ''}
+    <div class="summary-row vat"><span>${vatLabel}</span><span class="amount">₪${formatShekel(shown.vat)}</span></div>
+    <div class="summary-row total"><span>סה"כ לתשלום</span><span class="amount">₪${formatShekel(shown.total)}</span></div>
   `;
 }
 
@@ -213,8 +216,8 @@ export function getQuotePreviewHtml(params: {
         <tr>
           <td>${itemNameCellInnerHtml(item)}</td>
           <td style="text-align:center">${escapeHtml(qtyDisplay)}</td>
-          <td class="price-cell">₪${pricePerUnit.toLocaleString('he-IL')}</td>
-          <td class="price-cell">₪${currentPrice.toLocaleString('he-IL')}</td>
+          <td class="price-cell">₪${formatShekel(pricePerUnit)}</td>
+          <td class="price-cell">₪${formatShekel(currentPrice)}</td>
         </tr>
       `;
     })
@@ -402,8 +405,8 @@ export const generateQuotePDF = (
       <tr>
         <td>${itemNameCellInnerHtml(item)}</td>
         <td style="text-align:center">${escapeHtml(qtyDisplay)}</td>
-        <td class="price-cell">₪${pricePerUnit.toLocaleString('he-IL')}</td>
-        <td class="price-cell">₪${currentPrice.toLocaleString('he-IL')}</td>
+        <td class="price-cell">₪${formatShekel(pricePerUnit)}</td>
+        <td class="price-cell">₪${formatShekel(currentPrice)}</td>
       </tr>
     `;
   }).join('');
@@ -531,8 +534,8 @@ export function rowToHtml(item: BasketItem): string {
     <tr>
       <td>${itemNameCellInnerHtml(item)}</td>
       <td style="text-align:center">${escapeHtml(qtyDisplay)}</td>
-      <td class="price-cell">₪${pricePerUnit.toLocaleString('he-IL')}</td>
-      <td class="price-cell">₪${currentPrice.toLocaleString('he-IL')}</td>
+      <td class="price-cell">₪${formatShekel(pricePerUnit)}</td>
+      <td class="price-cell">₪${formatShekel(currentPrice)}</td>
     </tr>
   `;
 }

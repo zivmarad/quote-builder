@@ -17,6 +17,7 @@ import {
 } from '../../lib/free-quote';
 import { trackEvent, AnalyticsEvents } from '@/lib/analytics';
 import { calculateQuoteTotals } from '../../lib/quote-discount';
+import { presentQuoteTotals } from '../../lib/money';
 
 function parseQty(raw: string): number {
   const n = parseFloat(raw.replace(',', '.'));
@@ -209,6 +210,11 @@ function QuickQuoteDesk() {
       draftName.trim() && draftUnit != null ? freeQuoteLineBase(draftUnit, parseQty(draftQty)) : 0;
     return calculateQuoteTotals(subtotalBeforeDiscount + draftLine, vatRate, discount);
   }, [draftName, draftPrice, draftQty, subtotalBeforeDiscount, vatRate, discount]);
+  const shownLive = presentQuoteTotals({
+    discountAmount: liveTotals.discountAmount,
+    totalBeforeVAT: liveTotals.totalBeforeVAT,
+    VAT: liveTotals.VAT,
+  });
 
   useEffect(() => {
     trackEvent(AnalyticsEvents.QuickQuoteOpened);
@@ -393,10 +399,10 @@ function QuickQuoteDesk() {
         }}
       >
         <div className="max-w-lg mx-auto px-4 pt-3 space-y-2">
-          {!keyboardOpen && liveTotals.discountAmount > 0 && (
+          {!keyboardOpen && shownLive.discount > 0 && (
             <div className="flex justify-between text-sm text-green-700">
               <span>{t('quickQuote.discount')}</span>
-              <span className="font-bold">-{formatShekel(liveTotals.discountAmount)}</span>
+              <span className="font-bold">-{formatShekel(shownLive.discount)}</span>
             </div>
           )}
           {!keyboardOpen && (itemCount > 0 || liveTotals.subtotalBeforeDiscount > 0) && (
@@ -406,20 +412,20 @@ function QuickQuoteDesk() {
                   ? t('quickQuote.exempt')
                   : `${t('quickQuote.vat')} (${Math.round(vatRate * 100)}%)`}
               </span>
-              <span className="font-bold text-slate-900">{formatShekel(liveTotals.VAT)}</span>
+              <span className="font-bold text-slate-900">{formatShekel(shownLive.vat)}</span>
             </div>
           )}
           {!keyboardOpen && liveTotals.subtotalBeforeDiscount > 0 && vatRate > 0 && (
             <div className="flex justify-between text-xs text-slate-400">
               <span>{t('quickQuote.subtotal')}</span>
-              <span>{formatShekel(liveTotals.subtotalBeforeDiscount)}</span>
+              <span>{formatShekel(shownLive.subtotal)}</span>
             </div>
           )}
           {!keyboardOpen && (
             <div className="flex justify-between items-baseline">
               <span className="text-sm font-black text-slate-900">{t('quickQuote.total')}</span>
               <span className="text-xl font-black text-blue-600 tabular-nums">
-                {formatShekel(liveTotals.totalWithVAT)}
+                {formatShekel(shownLive.total)}
               </span>
             </div>
           )}
@@ -430,7 +436,7 @@ function QuickQuoteDesk() {
           >
             <span>{t('quickQuote.continue')}</span>
             {keyboardOpen && (
-              <span className="tabular-nums opacity-90">{formatShekel(liveTotals.totalWithVAT)}</span>
+              <span className="tabular-nums opacity-90">{formatShekel(shownLive.total)}</span>
             )}
           </button>
         </div>

@@ -14,6 +14,7 @@ import { categories } from '../service/services';
 import { getCategoryDisplayName } from '../../lib/custom-catalog-types';
 import { saveDraft } from '../../lib/drafts-storage';
 import { formatDiscountLabel } from '../../lib/quote-discount';
+import { presentQuoteTotals } from '../../lib/money';
 import { Trash2, Edit2, Check, X, ShoppingBag, Plus, FileText, Share2, Eye, Loader2, ChevronDown, ChevronUp, Save, UserPlus } from 'lucide-react';
 import { Reorder, useDragControls } from 'framer-motion';
 import { markFirstQuoteCompleted } from '../../lib/first-quote-install';
@@ -679,6 +680,11 @@ export default function Cart() {
 
   const VAT = contextVAT;
   const totalWithVAT = contextTotalWithVAT;
+  const shownTotals = presentQuoteTotals({
+    discountAmount,
+    totalBeforeVAT,
+    VAT,
+  });
 
   const handleStartEdit = (id: string, currentPrice: number) => {
     setEditingId(id);
@@ -1525,7 +1531,7 @@ export default function Cart() {
           <div className="max-w-xs mr-auto space-y-1.5 text-right">
             <div className="flex justify-between text-sm font-medium">
               <span className="text-slate-500">סיכום ביניים</span>
-              <span className="text-slate-900 font-bold">{formatPrice(subtotalBeforeDiscount)}</span>
+              <span className="text-slate-900 font-bold">{formatPrice(shownTotals.subtotal)}</span>
             </div>
             {!showDiscount ? (
               <button
@@ -1580,19 +1586,19 @@ export default function Cart() {
                 )}
               </div>
             )}
-            {discountAmount > 0 && discount && (
+            {shownTotals.discount > 0 && discount && (
               <div className="flex justify-between text-sm font-medium">
                 <span className="text-green-700">{formatDiscountLabel(discount)}</span>
-                <span className="text-green-700 font-bold">-{formatPrice(discountAmount)}</span>
+                <span className="text-green-700 font-bold">-{formatPrice(shownTotals.discount)}</span>
               </div>
             )}
             <div className="flex justify-between text-sm font-medium">
               <span className="text-slate-500">{vatRate === 0 ? 'עוסק פטור' : `מע"מ (${Math.round(vatRate * 100)}%)`}</span>
-              <span className="text-slate-900 font-bold">{formatPrice(VAT)}</span>
+              <span className="text-slate-900 font-bold">{formatPrice(shownTotals.vat)}</span>
             </div>
             <div className="flex justify-between items-center pt-2 mt-1 border-t border-slate-200">
               <span className="text-base font-black text-slate-900">{'סה"כ לתשלום'}</span>
-              <span className="text-xl font-black text-blue-600">{formatPrice(totalWithVAT)}</span>
+              <span className="text-xl font-black text-blue-600">{formatPrice(shownTotals.total)}</span>
             </div>
           </div>
         </div>

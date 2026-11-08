@@ -1,6 +1,7 @@
 import React from 'react';
 import { Document, Page, Text, View, StyleSheet, renderToBuffer } from '@react-pdf/renderer';
 import { formatDiscountLabel, type QuoteDiscount } from './quote-discount';
+import { presentQuoteTotals, roundShekel } from './money';
 
 export interface ServerQuoteItem {
   name: string;
@@ -62,7 +63,12 @@ const styles = StyleSheet.create({
 });
 
 const money = (v: number) =>
-  new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS', maximumFractionDigits: 0 }).format(v);
+  new Intl.NumberFormat('he-IL', {
+    style: 'currency',
+    currency: 'ILS',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(roundShekel(v));
 
 function itemFinalPrice(item: ServerQuoteItem): number {
   if (typeof item.overridePrice === 'number') return item.overridePrice;
@@ -79,6 +85,11 @@ export async function generateServerQuotePdf(snapshot: ServerQuoteSnapshot): Pro
     day: '2-digit',
   });
   const vatLabel = snapshot.vatRate === 0 ? 'עוסק פטור' : `מע"מ (${Math.round(snapshot.vatRate * 100)}%)`;
+  const shown = presentQuoteTotals({
+    discountAmount: snapshot.totals.discountAmount,
+    totalBeforeVAT: snapshot.totals.totalBeforeVAT,
+    VAT: snapshot.totals.vat,
+  });
 
   const doc = (
     <Document>
@@ -127,23 +138,23 @@ export async function generateServerQuotePdf(snapshot: ServerQuoteSnapshot): Pro
         <View style={styles.divider} />
 
         <View style={styles.section}>
-          {(snapshot.totals.discountAmount ?? 0) > 0 && (
+          {shown.discount > 0 && (
             <>
               <View style={styles.row}>
                 <Text style={styles.label}>סיכום ביניים:</Text>
-                <Text style={styles.value}>{money(snapshot.totals.subtotalBeforeDiscount ?? snapshot.totals.totalBeforeVAT + (snapshot.totals.discountAmount ?? 0))}</Text>
+                <Text style={styles.value}>{money(shown.subtotal)}</Text>
               </View>
               <View style={styles.row}>
                 <Text style={[styles.label, { color: '#15803d' }]}>
                   {snapshot.totals.discount ? formatDiscountLabel(snapshot.totals.discount) : 'הנחה'}:
                 </Text>
-                <Text style={[styles.value, { color: '#15803d' }]}>-{money(snapshot.totals.discountAmount ?? 0)}</Text>
+                <Text style={[styles.value, { color: '#15803d' }]}>-{money(shown.discount)}</Text>
               </View>
             </>
           )}
-          <View style={styles.row}><Text style={styles.label}>סה״כ לפני מע״מ:</Text><Text style={styles.value}>{money(snapshot.totals.totalBeforeVAT)}</Text></View>
-          <View style={styles.row}><Text style={styles.label}>{vatLabel}:</Text><Text style={styles.value}>{money(snapshot.totals.vat)}</Text></View>
-          <View style={styles.row}><Text style={styles.label}>סה״כ לתשלום:</Text><Text style={styles.value}>{money(snapshot.totals.totalWithVAT)}</Text></View>
+          <View style={styles.row}><Text style={styles.label}>סה״כ לפני מע״מ:</Text><Text style={styles.value}>{money(shown.before)}</Text></View>
+          <View style={styles.row}><Text style={styles.label}>{vatLabel}:</Text><Text style={styles.value}>{money(shown.vat)}</Text></View>
+          <View style={styles.row}><Text style={styles.label}>סה״כ לתשלום:</Text><Text style={styles.value}>{money(shown.total)}</Text></View>
           <View style={styles.row}><Text style={styles.label}>תוקף הצעה:</Text><Text style={styles.value}>{snapshot.validityDays} ימים</Text></View>
         </View>
 
