@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { CONTRACTOR_LANDING_PATH } from '@/lib/contractor-landing';
 import {
@@ -113,17 +113,18 @@ export default function FirstQuoteCelebration() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('celebrate') === '1') {
-      preview.current = true;
-      setOpen(true);
-      return;
-    }
+    if (params.get('celebrate') === '1') preview.current = true;
     const openIfPending = () => {
-      if (landingOfferPromptPending()) setOpen(true);
+      if (preview.current || landingOfferPromptPending()) setOpen(true);
     };
     openIfPending();
     window.addEventListener(FIRST_QUOTE_CELEBRATION_EVENT, openIfPending);
     return () => window.removeEventListener(FIRST_QUOTE_CELEBRATION_EVENT, openIfPending);
+  }, []);
+
+  const close = useCallback(() => {
+    if (!preview.current) dismissLandingOfferPrompt();
+    setOpen(false);
   }, []);
 
   useEffect(() => {
@@ -133,12 +134,7 @@ export default function FirstQuoteCelebration() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [open]);
-
-  const close = () => {
-    if (!preview.current) dismissLandingOfferPrompt();
-    setOpen(false);
-  };
+  }, [open, close]);
 
   if (!open) return null;
 
