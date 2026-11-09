@@ -296,7 +296,7 @@ export default function Cart() {
     totalWithVAT: contextTotalWithVAT,
   } = useQuoteBasket();
   const { profile } = useProfile();
-  const { addQuote } = useQuoteHistory();
+  const { addQuote, quotes, isLoaded: historyLoaded } = useQuoteHistory();
   const { defaultQuoteTitle, nextQuoteNumber, setNextQuoteNumber, validityDays, vatRate } = useSettings();
   const { t } = useLanguage();
   const { getCategoryById } = useCustomCatalog();
@@ -888,10 +888,13 @@ export default function Cart() {
   ) => {
     trackEvent(AnalyticsEvents.QuoteExported, { method: exportMethod });
     recordProductMetric(exportMethod === 'share' ? 'quote_whatsapp' : 'quote_pdf');
-    const firstQuote = markFirstQuoteCompleted();
-    if (firstQuote) {
-      armLandingOfferPrompt();
-      clearInstallPromptSession();
+    const userId = user?.id;
+    if (userId && historyLoaded) {
+      const firstQuote = markFirstQuoteCompleted(userId, { alreadyHadQuotes: quotes.length > 1 });
+      if (firstQuote) {
+        armLandingOfferPrompt(userId);
+        clearInstallPromptSession();
+      }
     }
     clearBasket();
     setCustomerName('');

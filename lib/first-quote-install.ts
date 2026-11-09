@@ -22,12 +22,25 @@ export function requestOpenInstallPrompt(mode: InstallPromptMode = 'manual'): vo
 
 export { isStandaloneDisplay, markAppInstalled, isAppMarkedInstalled, shouldOfferInstall };
 
-/** מסמן שהושלמה הצעה ראשונה; מפעיל הצגת חלון התקנה בכניסה הבאה לדף. */
-export function markFirstQuoteCompleted(): boolean {
-  if (typeof window === 'undefined') return false;
+function firstQuoteKey(userId: string): string {
+  return `${FIRST_QUOTE_KEY}:${userId}`;
+}
+
+/**
+ * מסמן הצעה ראשונה למשתמש הזה.
+ * מחזיר true רק כשצריך לחגוג. חשבון שכבר יש לו הצעות לא חוגג,
+ * גם אם בדפדפן הזה כבר יצאו הצעות מחשבון אחר.
+ */
+export function markFirstQuoteCompleted(
+  userId: string,
+  options?: { alreadyHadQuotes?: boolean }
+): boolean {
+  if (typeof window === 'undefined' || !userId) return false;
   try {
-    if (localStorage.getItem(FIRST_QUOTE_KEY) === '1') return false;
-    localStorage.setItem(FIRST_QUOTE_KEY, '1');
+    const key = firstQuoteKey(userId);
+    if (localStorage.getItem(key) === '1') return false;
+    localStorage.setItem(key, '1');
+    if (options?.alreadyHadQuotes) return false;
     sessionStorage.setItem(SHOW_INSTALL_PROMPT_KEY, '1');
     return true;
   } catch {
