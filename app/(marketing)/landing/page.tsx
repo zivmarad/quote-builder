@@ -20,20 +20,20 @@ import LandingSampleQuotes from './LandingSampleQuotes';
 import LandingJsonLd from './LandingJsonLd';
 
 export const metadata: Metadata = withSiteMetadata('/landing', {
-  title: 'בונה הצעות מחיר לקבלנים ושיפוצניקים | הצעת מחיר לדוגמא',
+  title: 'בונה הצעות מחיר לעצמאים ולקבלנים | הצעת מחיר לדוגמא',
   description:
-    'בונה הצעות מחיר לקבלנים ושיפוצניקים – בנה הצעה מקצועית ב-60 שניות מהשטח. תמחור דינמי, הרשמה חינמית לייצוא PDF ושליחה בוואטסאפ.',
+    'בונה הצעות מחיר לכל עצמאי. לקבלנים ושיפוצניקים יש מחירון מוכן, ולכל עסק אחר כותבים עבודה ומחיר. PDF עם הלוגו ושליחה בוואטסאפ.',
   openGraph: {
-    title: 'בונה הצעות מחיר לקבלנים ושיפוצניקים',
+    title: 'בונה הצעות מחיר לעצמאים ולקבלנים',
     description:
-      'הצעת מחיר מקצועית ב-60 שניות. הרשמה חינמית ל-PDF ממותג ושליחה בוואטסאפ – נסה עכשיו.',
+      'הצעת מחיר מקצועית ב-60 שניות. מחירון מוכן לקבלנים, והצעה חופשית לכל עצמאי.',
   },
 });
 
 const steps = [
   {
     title: 'בוחרים ענף',
-    text: 'צבע, אינסטלציה, חשמל, מיזוג, גבס, דלתות ועוד – כל התחומים במקום אחד.',
+    text: 'לקבלנים יש מחירון מוכן: צבע, אינסטלציה, חשמל, מיזוג, גבס ועוד. אין את התחום שלך? כותבים עבודה ומחיר.',
     img: '/landing/step-1-categories.png',
     imgAlt: 'בונה הצעות מחיר – בחירת תחום עבודה',
   },
@@ -65,7 +65,7 @@ const painSolutionCards = [
   {
     icon: Ruler,
     title: 'תמחור מדויק',
-    text: 'מחירונים לענפי הבנייה – בסיס + תוספות בשקיפות בשטח.',
+    text: 'מחירון מוכן לקבלנים ולשיפוצניקים. לכל עצמאי אחר כותבים מחיר, והסכום מתעדכן.',
   },
 ];
 
@@ -73,7 +73,7 @@ const features = [
   {
     icon: LayoutGrid,
     title: 'תחומים רבים',
-    text: 'צבע, אינסטלציה, חשמל, ריצוף, מיזוג, נגרות, גבס, דלתות ועוד.',
+    text: 'מחירון מוכן לקבלנים ולשיפוצניקים. לכל עצמאי אחר כותבים את העבודה ואת המחיר.',
   },
   {
     icon: Zap,
@@ -93,7 +93,7 @@ const features = [
   {
     icon: Smartphone,
     title: 'עובד בדפדפן',
-    text: 'אפשר להוסיף למסך הבית ולעבוד מהשטח.',
+    text: 'אפשר להוסיף למסך הבית ולעבוד מהנייד או מהמחשב.',
   },
   {
     icon: CheckCircle2,
@@ -134,11 +134,11 @@ export default function LandingPage() {
           <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-10 sm:pb-16">
             <div className="flex flex-col items-center text-center lg:items-start lg:text-right max-w-xl mx-auto lg:mx-0 lg:max-w-none">
               <h1 className="text-3xl sm:text-4xl lg:text-[2.65rem] font-black text-[#0F172A] leading-tight mb-4 w-full">
-                בונה הצעות מחיר לקבלנים ושיפוצניקים
+                בונה הצעות מחיר לעצמאים ולקבלנים
               </h1>
               <p className="text-base sm:text-lg text-slate-600 mb-6 leading-relaxed w-full">
-                צור הצעת מחיר מקצועית ב-60 שניות – ישר מהשטח. תפסיק לבזבז שעות על אקסלים בערב ותתחיל
-                להרוויח יותר.
+                הצעה מקצועית ב-60 שניות, עם הלוגו שלך. לקבלנים ושיפוצניקים יש מחירון מוכן. לכל
+                עצמאי אחר כותבים עבודה ומחיר.
               </p>
               <HeroCtas />
             </div>
@@ -213,6 +213,26 @@ export default function LandingPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="pb-14 sm:pb-20 bg-[#F8FAFC]" aria-labelledby="business-page-heading">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6">
+            <div className="rounded-3xl border border-slate-200 bg-white px-6 py-8 sm:px-10 sm:py-10 text-center">
+              <h2 id="business-page-heading" className="text-2xl sm:text-3xl font-bold text-[#0F172A] mb-3">
+                צריך גם דף שיביא לקוחות?
+              </h2>
+              <p className="text-slate-600 leading-relaxed mb-6">
+                עמוד אחד לעסק, עם מה שאתם מציעים וכפתור לוואטסאפ. מתאים לכל עצמאי, וגם לקבלנים
+                ולשיפוצניקים שרוצים מקום אחד לשלוח אליו אנשים.
+              </p>
+              <Link
+                href="/website"
+                className="inline-flex items-center justify-center px-6 py-3 rounded-xl font-bold text-[#2563eb] bg-blue-50 hover:bg-blue-100 transition-colors"
+              >
+                לבניית דף נחיתה או אתר לעסק
+              </Link>
             </div>
           </div>
         </section>

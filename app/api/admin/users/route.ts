@@ -16,12 +16,16 @@ export async function GET(request: Request) {
 
   try {
     const quoteCountByUser: Record<string, number> = {};
+    const lastQuoteByUser: Record<string, string> = {};
     if (supabaseAdmin) {
-      const { data: quoteRows } = await supabaseAdmin.from('quotes').select('user_id');
+      const { data: quoteRows } = await supabaseAdmin.from('quotes').select('user_id, created_at');
       if (quoteRows) {
         for (const row of quoteRows) {
           const uid = typeof row?.user_id === 'string' ? row.user_id : '';
-          if (uid) quoteCountByUser[uid] = (quoteCountByUser[uid] ?? 0) + 1;
+          if (!uid) continue;
+          quoteCountByUser[uid] = (quoteCountByUser[uid] ?? 0) + 1;
+          const at = typeof row.created_at === 'string' ? row.created_at : '';
+          if (at && at > (lastQuoteByUser[uid] ?? '')) lastQuoteByUser[uid] = at;
         }
       }
     }
@@ -41,8 +45,7 @@ export async function GET(request: Request) {
           ? new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString()
           : undefined;
 
-    if (sort === 'top_quotes') {
-      // כבוי לעומס: מצב "לפי הצעות" עדיין עובד אבל כולל מיון בצד שרת על כל הרשימה
+    if (sort === 'top_quotes' || sort === 'last_quote') {
       const users = await getUsersList();
       let list = users.map((u) => ({
         id: u.id,
@@ -50,6 +53,7 @@ export async function GET(request: Request) {
         email: u.email ?? '—',
         createdAt: u.createdAt,
         quoteCount: quoteCountByUser[u.id] ?? 0,
+        lastQuoteAt: lastQuoteByUser[u.id] ?? null,
       }));
       if (sinceIso) {
         const sinceTs = new Date(sinceIso).getTime();
@@ -59,7 +63,16 @@ export async function GET(request: Request) {
         const q = search.toLowerCase();
         list = list.filter((u) => u.username.toLowerCase().includes(q) || (u.email && u.email.toLowerCase().includes(q)));
       }
-      list.sort((a, b) => b.quoteCount - a.quoteCount);
+      if (sort === 'last_quote') {
+        list.sort((a, b) => {
+          const at = a.lastQuoteAt ?? '';
+          const bt = b.lastQuoteAt ?? '';
+          if (at !== bt) return at ? (bt ? bt.localeCompare(at) : -1) : 1;
+          return b.quoteCount - a.quoteCount;
+        });
+      } else {
+        list.sort((a, b) => b.quoteCount - a.quoteCount);
+      }
       const total = list.length;
       const totalPages = Math.max(1, Math.ceil(total / pageSize));
       const from = (page - 1) * pageSize;
@@ -74,6 +87,7 @@ export async function GET(request: Request) {
       email: u.email ?? '—',
       createdAt: u.createdAt,
       quoteCount: quoteCountByUser[u.id] ?? 0,
+      lastQuoteAt: lastQuoteByUser[u.id] ?? null,
     }));
     const totalPages = Math.max(1, Math.ceil(total / pageSize));
     return NextResponse.json({ users: usersPage, total, page, pageSize, totalPages });

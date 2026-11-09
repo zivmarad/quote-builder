@@ -7,6 +7,7 @@ export const PRODUCT_EVENT_NAMES = [
   'template_word',
   'template_excel',
   'template_pdf',
+  'website_view',
 ] as const;
 
 export type ProductEventName = (typeof PRODUCT_EVENT_NAMES)[number];
@@ -68,9 +69,18 @@ function isMissingTableError(error: { code?: string; message?: string } | null):
   );
 }
 
-export async function insertProductEvent(name: ProductEventName): Promise<void> {
+export async function insertProductEvent(name: ProductEventName, source?: string | null): Promise<void> {
   if (!supabaseAdmin) return;
-  const { error } = await supabaseAdmin.from('product_events').insert({ name });
+  const cleanSource = typeof source === 'string' ? source.trim().slice(0, 120) : '';
+  const row = cleanSource ? { name, source: cleanSource } : { name };
+  const { error } = await supabaseAdmin.from('product_events').insert(row);
+  if (error && cleanSource && /source|column/i.test(error.message ?? '')) {
+    const retry = await supabaseAdmin.from('product_events').insert({ name });
+    if (retry.error && !isMissingTableError(retry.error)) {
+      console.error('insert product_events:', retry.error);
+    }
+    return;
+  }
   if (error && !isMissingTableError(error)) {
     console.error('insert product_events:', error);
   }
@@ -114,4 +124,55 @@ export async function getProductEventStats(): Promise<ProductEventStats> {
     stats[row.statKey][row.period] = row.count;
   }
   return stats;
+}
+
+export type WebsiteSourceCount = { source: string; count: number };
+
+export type WebsiteViewStats = {
+  tableMissing: boolean;
+  total: number;
+  last7d: number;
+  last30d: number;
+  sources: WebsiteSourceCount[];
+};
+
+export async function getWebsiteViewStats(): Promise<WebsiteViewStats> {
+  const empty: WebsiteViewStats = { tableMissing: true, total: 0, last7d: 0, last30d: 0, sources: [] };
+  if (!supabaseAdmin) return empty;
+
+  const since7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const since30d = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const [total, week, month] = await Promise.all([
+    countEvent('website_view'),
+    countEvent('website_view', since7d),
+    countEvent('website_view', since30d),
+  ]);
+  if (total.missing) return empty;
+
+  const grouped = new Map<string, number>();
+  const { data, error } = await supabaseAdmin
+    .from('product_events')
+    .select('source')
+    .eq('name', 'website_view')
+    .order('created_at', { ascending: false })
+    .limit(2000);
+  if (!error && data) {
+    for (const row of data) {
+      const source = typeof row.source === 'string' && row.source.trim() ? row.source.trim() : 'ישיר';
+      grouped.set(source, (grouped.get(source) ?? 0) + 1);
+    }
+  }
+
+  const sources = [...grouped.entries()]
+    .map(([source, count]) => ({ source, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 8);
+
+  return {
+    tableMissing: false,
+    total: total.count,
+    last7d: week.count,
+    last30d: month.count,
+    sources,
+  };
 }

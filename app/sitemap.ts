@@ -15,6 +15,7 @@ const PUBLIC_PATHS: SitemapEntry[] = [
   { path: '/guides', changeFrequency: 'weekly', priority: 0.8 },
   { path: '/pricing', changeFrequency: 'weekly', priority: 0.9 },
   { path: '/templates', changeFrequency: 'monthly', priority: 0.8 },
+  { path: '/website', changeFrequency: 'monthly', priority: 0.6 },
   { path: '/contact', changeFrequency: 'monthly', priority: 0.5 },
   { path: '/terms', changeFrequency: 'yearly', priority: 0.3 },
   { path: '/privacy', changeFrequency: 'yearly', priority: 0.3 },

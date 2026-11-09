@@ -7,6 +7,7 @@ import {
   type SeoFaq,
 } from '@/lib/seo-content';
 import { resolvePriceRowHref } from '@/lib/seo-price-links';
+import { CONTRACTOR_LANDING_PATH } from '@/lib/contractor-landing';
 
 /** סעיפי תוכן מעמיקים (H2 + פסקאות + רשימה אופציונלית). */
 export function ContentSections({ sections }: { sections: ContentSection[] }) {
@@ -317,4 +318,22 @@ export function buildPriceListJsonLd(
       },
     })),
   };
+}
+
+/** שורה שקטה בסוף כתבות גוגל. בלי מחיר ובלי כרטיס, כדי לא להתחרות בכפתור הצעת המחיר. */
+export function LandingPageMention() {
+  return (
+    <aside className="my-12 border-r-2 border-[#0F172A] pr-5" aria-label="דף נחיתה לעסק">
+      <p className="text-lg leading-8 text-slate-700">
+        אם חוץ מהצעת מחיר חסר מקום לשלוח אליו לקוחות,{' '}
+        <Link
+          href={CONTRACTOR_LANDING_PATH}
+          className="font-semibold text-[#0F172A] underline decoration-slate-300 underline-offset-4 transition-colors hover:decoration-[#0F172A]"
+        >
+          אפשר לבנות דף נחיתה לעסק
+        </Link>
+        .
+      </p>
+    </aside>
+  );
 }

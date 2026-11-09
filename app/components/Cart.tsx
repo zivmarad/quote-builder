@@ -17,7 +17,8 @@ import { formatDiscountLabel } from '../../lib/quote-discount';
 import { presentQuoteTotals } from '../../lib/money';
 import { Trash2, Edit2, Check, X, ShoppingBag, Plus, FileText, Share2, Eye, Loader2, ChevronDown, ChevronUp, Save, UserPlus } from 'lucide-react';
 import { Reorder, useDragControls } from 'framer-motion';
-import { markFirstQuoteCompleted } from '../../lib/first-quote-install';
+import { clearInstallPromptSession, markFirstQuoteCompleted } from '../../lib/first-quote-install';
+import { armLandingOfferPrompt } from '../../lib/landing-offer-prompt';
 import ConfirmDialog from './ConfirmDialog';
 import GoogleAuthButton, { AuthMethodDivider } from './GoogleAuthButton';
 import CartNotesEditor from './CartNotesEditor';
@@ -887,7 +888,11 @@ export default function Cart() {
   ) => {
     trackEvent(AnalyticsEvents.QuoteExported, { method: exportMethod });
     recordProductMetric(exportMethod === 'share' ? 'quote_whatsapp' : 'quote_pdf');
-    markFirstQuoteCompleted();
+    const firstQuote = markFirstQuoteCompleted();
+    if (firstQuote) {
+      armLandingOfferPrompt();
+      clearInstallPromptSession();
+    }
     clearBasket();
     setCustomerName('');
     setCustomerPhone('');

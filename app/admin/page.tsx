@@ -17,6 +17,7 @@ import {
   Smartphone,
   Loader2,
   LayoutDashboard,
+  MousePointerClick,
   Search,
   Check,
   ExternalLink,
@@ -98,7 +99,86 @@ type UserRow = {
   email: string;
   createdAt: string;
   quoteCount: number;
+  lastQuoteAt?: string | null;
 };
+
+type AdminTab = 'overview' | 'quotes' | 'users' | 'professions';
+
+type RecentQuote = {
+  id: string;
+  userId: string;
+  username: string;
+  customerName: string;
+  total: number | null;
+  status: string;
+  createdAt: string;
+};
+
+type WebsiteActivity = {
+  tableMissing: boolean;
+  total: number;
+  last7d: number;
+  last30d: number;
+  sources: { source: string; count: number }[];
+};
+
+function quoteStatusLabel(status: string) {
+  if (status === 'download') return 'PDF';
+  if (status === 'whatsapp') return 'וואטסאפ';
+  if (status === 'email') return 'מייל';
+  if (status === 'draft') return 'טיוטה';
+  return 'נשמרה';
+}
+
+function formatWhen(iso: string) {
+  if (!iso) return '—';
+  try {
+    return new Date(iso).toLocaleString('he-IL', { dateStyle: 'short', timeStyle: 'short' });
+  } catch {
+    return iso;
+  }
+}
+
+function QuotesPanel({
+  quotes,
+  onOpenUser,
+}: {
+  quotes: RecentQuote[];
+  onOpenUser: (userId: string) => void;
+}) {
+  if (quotes.length === 0) {
+    return <p className="text-sm text-slate-500">עדיין אין הצעות שמורות.</p>;
+  }
+  return (
+    <ul className="divide-y divide-slate-100">
+      {quotes.map((quote) => (
+        <li key={`${quote.userId}-${quote.id}`}>
+          <button
+            type="button"
+            onClick={() => quote.userId && onOpenUser(quote.userId)}
+            className="w-full text-right py-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between hover:bg-slate-50 px-1"
+          >
+            <div className="min-w-0">
+              <p className="font-bold text-slate-900 truncate">{quote.customerName}</p>
+              <p className="text-sm text-slate-500 truncate">
+                {quote.username}
+                {' · '}
+                {quoteStatusLabel(quote.status)}
+              </p>
+            </div>
+            <div className="shrink-0 text-sm text-slate-600 sm:text-left">
+              <span className="font-bold tabular-nums text-slate-900">
+                {quote.total != null ? formatMoney(quote.total) : '—'}
+              </span>
+              <span className="mx-2 text-slate-300">·</span>
+              {formatWhen(quote.createdAt)}
+            </div>
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 type ProfessionEvent = {
   id: number;
@@ -137,10 +217,17 @@ export default function AdminPage() {
   const [professionEvents, setProfessionEvents] = useState<ProfessionEvent[]>([]);
   const [professionsTotal, setProfessionsTotal] = useState(0);
   const [professionsTableMissing, setProfessionsTableMissing] = useState(false);
+  const [tab, setTab] = useState<AdminTab>('overview');
+  const [website, setWebsite] = useState<WebsiteActivity | null>(null);
+  const [recentQuotes, setRecentQuotes] = useState<RecentQuote[]>([]);
 
   const PAGE_SIZE = 25;
 
   const closeSidebar = () => setSidebarOpen(false);
+  const openTab = (next: AdminTab) => {
+    setTab(next);
+    setSidebarOpen(false);
+  };
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -177,15 +264,16 @@ export default function AdminPage() {
     usersUrl.searchParams.set('pageSize', String(PAGE_SIZE));
     if (q.trim()) usersUrl.searchParams.set('search', q.trim());
     usersUrl.searchParams.set('filter', filter);
-    usersUrl.searchParams.set('sort', filter === 'top_quotes' ? 'top_quotes' : 'recent');
+    usersUrl.searchParams.set('sort', filter === 'top_quotes' ? 'top_quotes' : 'last_quote');
     Promise.all([
       fetch('/api/admin/stats', { headers: { 'X-Admin-Key': key } }),
       fetch(usersUrl.toString(), { headers: { 'X-Admin-Key': key } }),
       fetch('/api/admin/custom-professions?page=1&pageSize=20', {
         headers: { 'X-Admin-Key': key },
       }),
+      fetch('/api/admin/activity', { headers: { 'X-Admin-Key': key } }),
     ])
-      .then(async ([statsRes, usersRes, professionsRes]) => {
+      .then(async ([statsRes, usersRes, professionsRes, activityRes]) => {
         if (statsRes.status === 401 || usersRes.status === 401) {
           sessionStorage.removeItem(ADMIN_KEY_STORAGE);
           setSavedKey(null);
@@ -194,10 +282,11 @@ export default function AdminPage() {
         }
         if (!statsRes.ok) throw new Error('שגיאה בטעינת סטטיסטיקות');
         if (!usersRes.ok) throw new Error('שגיאה בטעינת משתמשים');
-        const [statsData, usersData, professionsData] = await Promise.all([
+        const [statsData, usersData, professionsData, activityData] = await Promise.all([
           statsRes.json(),
           usersRes.json(),
           professionsRes.ok ? professionsRes.json() : Promise.resolve(null),
+          activityRes.ok ? activityRes.json() : Promise.resolve(null),
         ]);
         setStats(statsData);
         if (Array.isArray(usersData?.users)) setUsers(usersData.users);
@@ -208,6 +297,8 @@ export default function AdminPage() {
           setProfessionsTotal(typeof professionsData.total === 'number' ? professionsData.total : 0);
           setProfessionsTableMissing(Boolean(professionsData.tableMissing));
         }
+        if (activityData?.website) setWebsite(activityData.website);
+        if (Array.isArray(activityData?.recentQuotes)) setRecentQuotes(activityData.recentQuotes);
       })
       .catch((e) => setListError(e.message ?? 'שגיאה'))
       .finally(() => {
@@ -325,7 +416,7 @@ export default function AdminPage() {
         ? 'משתמשים חדשים (30 יום)'
         : listFilter === 'top_quotes'
           ? 'משתמשים לפי מספר הצעות'
-          : 'כל המשתמשים';
+          : 'לפי הצעה אחרונה';
 
   // ——— כניסה ———
   if (savedKey === null) {
@@ -457,10 +548,26 @@ export default function AdminPage() {
           </button>
         </div>
         <nav className="p-3 flex-1 overflow-auto">
-          <div className="flex items-center gap-3 px-4 py-3 min-h-[48px] rounded-xl bg-white/10 text-white font-medium mb-1">
-            <BarChart3 size={20} className="text-blue-300" />
-            <span>דשבורד</span>
-          </div>
+          {(
+            [
+              ['overview', 'סקירה', BarChart3],
+              ['quotes', 'הצעות', FileText],
+              ['users', 'משתמשים', Users],
+              ['professions', 'מקצועות', Briefcase],
+            ] as const
+          ).map(([id, label, Icon]) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => openTab(id)}
+              className={`w-full flex items-center gap-3 px-4 py-3 min-h-[48px] rounded-xl font-medium mb-1 text-right ${
+                tab === id ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white'
+              }`}
+            >
+              <Icon size={20} className={tab === id ? 'text-blue-300' : ''} />
+              <span>{label}</span>
+            </button>
+          ))}
           <Link
             href="/"
             target="_blank"
@@ -522,8 +629,18 @@ export default function AdminPage() {
               <header className="sticky top-0 z-30 -mx-4 px-4 py-3 md:py-0 md:static md:mx-0 md:px-0 bg-slate-50/95 md:bg-transparent backdrop-blur md:backdrop-blur-none mb-6 md:mb-8 flex items-start justify-between gap-4">
                 <div>
                   <p className="text-slate-500 text-xs font-medium mb-0.5">{todayLabel}</p>
-                  <h2 className="text-xl md:text-2xl font-black text-slate-900">דשבורד מנהלים</h2>
-                  <p className="text-slate-500 text-sm mt-0.5">מה זז השבוע, כדי לראות אם האתר גדל</p>
+                  <h2 className="text-xl md:text-2xl font-black text-slate-900">
+                    {tab === 'quotes' ? 'הצעות שיצאו' : tab === 'users' ? 'משתמשים' : tab === 'professions' ? 'מקצועות' : 'סקירה'}
+                  </h2>
+                  <p className="text-slate-500 text-sm mt-0.5">
+                    {tab === 'overview'
+                      ? 'השבוע, דף הנחיתה, וההצעות האחרונות'
+                      : tab === 'quotes'
+                        ? 'ההצעות האחרונות שנשמרו, מהחדשה לישנה'
+                        : tab === 'users'
+                          ? 'מי שפעיל לאחרונה מופיע למעלה'
+                          : 'מקצועות שמשתמשים הוסיפו בעצמם'}
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -535,6 +652,8 @@ export default function AdminPage() {
                 </button>
               </header>
 
+              {tab === 'overview' && (
+              <>
               <section
                 className="rounded-3xl border border-slate-200/80 bg-white p-5 md:p-6 mb-6 md:mb-8 shadow-sm"
                 aria-label="השבוע"
@@ -585,8 +704,60 @@ export default function AdminPage() {
                 )}
               </section>
 
-              <h3 className="text-sm font-bold text-slate-500 mb-1 px-0.5">משתמשים</h3>
-              <p className="text-xs text-slate-400 mb-3 px-0.5">לחיצה מסננת את הרשימה למטה</p>
+              <section className="rounded-3xl border border-slate-200/80 bg-white p-5 md:p-6 mb-6 shadow-sm" aria-label="דף נחיתה">
+                <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                  <MousePointerClick size={18} className="text-blue-600" />
+                  דף הנחיתה לעסק
+                </h3>
+                <p className="mt-3 text-4xl font-black tabular-nums leading-none text-slate-900">{formatCount(website?.last7d ?? 0)}</p>
+                <p className="mt-2 text-sm text-slate-500">כניסות ב־7 הימים האחרונים</p>
+                <p className="mt-1 text-sm text-slate-600">
+                  30 יום {formatCount(website?.last30d ?? 0)} · סה״כ {formatCount(website?.total ?? 0)}
+                </p>
+                {website?.tableMissing ? (
+                  <p className="mt-3 text-sm text-amber-800 bg-amber-50 rounded-xl p-3">
+                    הספירה עדיין לא פעילה. הריצו שוב את <code className="font-mono text-xs">supabase-product-events.sql</code> ואז רעננו.
+                  </p>
+                ) : (website?.sources.length ?? 0) === 0 ? (
+                  <p className="mt-3 text-sm text-slate-500">
+                    עדיין אין כניסות שמורות. אם הדף כבר נפתח ועדיין מופיע 0, הריצו את{' '}
+                    <code className="font-mono text-xs">supabase-product-events.sql</code> בסופאבייס.
+                  </p>
+                ) : (
+                  <ul className="mt-4 space-y-2">
+                    {website?.sources.map((row) => (
+                      <li key={row.source} className="flex items-center justify-between gap-3 text-sm">
+                        <span className="truncate text-slate-800" dir="ltr">{row.source}</span>
+                        <span className="font-bold tabular-nums text-slate-900">{formatCount(row.count)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+
+              <section className="rounded-3xl border border-slate-200/80 bg-white p-5 md:p-6 mb-6 shadow-sm">
+                <div className="flex items-center justify-between gap-3 mb-2">
+                  <h3 className="text-lg font-black text-slate-900">הצעות אחרונות</h3>
+                  <button type="button" onClick={() => openTab('quotes')} className="text-sm font-medium text-blue-600 hover:underline">
+                    כל ההצעות
+                  </button>
+                </div>
+                <QuotesPanel quotes={recentQuotes.slice(0, 6)} onOpenUser={(id) => router.push(`/admin/user/${id}`)} />
+              </section>
+              </>
+              )}
+
+              {tab === 'quotes' && (
+                <section className="rounded-3xl border border-slate-200/80 bg-white p-5 md:p-6 shadow-sm">
+                  <h3 className="text-lg font-black text-slate-900 mb-2">40 ההצעות האחרונות</h3>
+                  <QuotesPanel quotes={recentQuotes} onOpenUser={(id) => router.push(`/admin/user/${id}`)} />
+                </section>
+              )}
+
+              {tab === 'users' && (
+              <>
+              <h3 className="text-sm font-bold text-slate-500 mb-1 px-0.5">סינון</h3>
+              <p className="text-xs text-slate-400 mb-3 px-0.5">ברירת המחדל: מי שהוציא הצעה לאחרונה למעלה</p>
               {/* כרטיסי סטטיסטיקות – לחיצה מעבירה לרשימה מסוננת */}
               <section
                 className="mb-6 md:mb-8"
@@ -662,7 +833,10 @@ export default function AdminPage() {
                   </div>
                 </button>
               </section>
+              </>
+              )}
 
+              {tab === 'overview' && (
               <section
                 className="rounded-2xl border border-slate-200/80 bg-white px-4 py-4 shadow-sm mb-6 md:mb-8"
                 aria-label="עוד על העסק"
@@ -688,8 +862,9 @@ export default function AdminPage() {
                   ))}
                 </dl>
               </section>
+              )}
 
-              {/* מקצועות מותאמים שמשתמשים יצרו */}
+              {tab === 'professions' && (
               <section className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden mb-6 md:mb-8">
                 <div className="px-4 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
                   <div>
@@ -752,8 +927,9 @@ export default function AdminPage() {
                   </ul>
                 )}
               </section>
+              )}
 
-              {/* רשימת משתמשים + Breadcrumb */}
+              {tab === 'users' && (
               <section className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
                 <div className="px-4 sm:px-6 py-4 border-b border-slate-100 flex flex-col gap-3">
                   <div className="flex flex-wrap items-center gap-2 text-sm">
@@ -831,7 +1007,7 @@ export default function AdminPage() {
                               <span className="inline-flex items-center gap-1">
                                 <FileText size={14} /> {u.quoteCount} הצעות
                               </span>
-                              <span>{formatDate(u.createdAt)}</span>
+                              <span>{u.lastQuoteAt ? formatWhen(u.lastQuoteAt) : 'בלי הצעה'}</span>
                             </div>
                           </div>
                           <div className="flex flex-col gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
@@ -864,7 +1040,8 @@ export default function AdminPage() {
                           <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">שם משתמש</th>
                           <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">אימייל</th>
                           <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider w-20">הצעות</th>
-                          <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">תאריך</th>
+                          <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">הצעה אחרונה</th>
+                          <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">נרשם</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -909,6 +1086,7 @@ export default function AdminPage() {
                                 <FileText size={14} /> {u.quoteCount}
                               </span>
                             </td>
+                            <td className="px-4 py-3 text-slate-500 text-sm">{u.lastQuoteAt ? formatWhen(u.lastQuoteAt) : '—'}</td>
                             <td className="px-4 py-3 text-slate-500 text-sm">{formatDate(u.createdAt)}</td>
                           </tr>
                         ))}
@@ -968,6 +1146,7 @@ export default function AdminPage() {
                 )}
                 </div>
               </section>
+              )}
             </>
           )}
         </div>

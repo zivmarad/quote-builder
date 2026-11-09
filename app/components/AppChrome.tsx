@@ -11,6 +11,7 @@ import Footer from './Footer';
 import RegisterServiceWorker from './RegisterServiceWorker';
 import InAppBrowserBanner from './InAppBrowserBanner';
 import InstallAppPrompt from './InstallAppPrompt';
+import FirstQuoteCelebration from './FirstQuoteCelebration';
 import SeoHeader from '../(marketing)/landing/SeoHeader';
 import MarketingFooter from '../(marketing)/landing/MarketingFooter';
 
@@ -24,7 +25,9 @@ function isMarketingSeoPage(pathname: string): boolean {
     pathname.startsWith('/guides') ||
     pathname.startsWith('/pricing') ||
     pathname.startsWith('/price-quote') ||
-    pathname.startsWith('/templates')
+    pathname.startsWith('/templates') ||
+    pathname === '/website' ||
+    pathname.startsWith('/website/')
   );
 }
 
@@ -40,11 +43,12 @@ export default function AppChrome({ children }: { children: React.ReactNode }) {
   }
 
   if (isMarketingSeoPage(pathname)) {
+    const showCatalogFooter = pathname !== '/website' && !pathname.startsWith('/website/');
     return (
       <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
         <SeoHeader />
         {children}
-        <MarketingFooter />
+        {showCatalogFooter && <MarketingFooter />}
       </div>
     );
   }
@@ -66,6 +70,7 @@ export default function AppChrome({ children }: { children: React.ReactNode }) {
         <SyncFailureBanner />
         <RegisterServiceWorker />
         <InstallAppPrompt />
+        <FirstQuoteCelebration />
         </div>
       </QuoteBasketWithAuth>
     </UserDataProviders>

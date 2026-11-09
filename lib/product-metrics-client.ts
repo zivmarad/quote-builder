@@ -3,9 +3,9 @@ import type { ProductEventName } from './product-events';
 /**
  * שולח אירוע קליק לדשבורד המנהל. לא חוסם את המשתמש אם הרשת נכשלת.
  */
-export function recordProductMetric(name: ProductEventName): void {
+export function recordProductMetric(name: ProductEventName, source?: string): void {
   try {
-    const body = JSON.stringify({ name });
+    const body = JSON.stringify(source ? { name, source } : { name });
     if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
       const blob = new Blob([body], { type: 'application/json' });
       if (navigator.sendBeacon('/api/metrics', blob)) return;

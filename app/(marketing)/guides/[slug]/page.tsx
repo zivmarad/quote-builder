@@ -10,6 +10,7 @@ import {
   SeoCta,
   SeoHeroCta,
   SeoStartByTrade,
+  LandingPageMention,
   JsonLd,
   buildBreadcrumbJsonLd,
   buildFaqJsonLd,
@@ -147,6 +148,8 @@ export default async function GuidePage({ params }: PageProps) {
             <h2 className="text-2xl font-bold text-[#0F172A] mb-6">שאלות נפוצות</h2>
             <SeoFaqList items={page.faq} />
           </div>
+
+          <LandingPageMention />
 
           <div className="rounded-2xl border border-slate-200 bg-white p-6">
             <p className="text-slate-700 font-medium mb-4 text-center">מחירונים פופולריים</p>

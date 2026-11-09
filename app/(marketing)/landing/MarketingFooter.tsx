@@ -67,6 +67,11 @@ export default function MarketingFooter() {
             <h3 className="font-bold text-slate-900 mb-3 text-sm">מדריכים וטפסים</h3>
             <ul className="space-y-2 text-sm text-slate-600">
               <li>
+                <Link href="/website" className="hover:text-slate-900 transition-colors">
+                  דף נחיתה לעסק
+                </Link>
+              </li>
+              <li>
                 <Link href="/templates" className="hover:text-slate-900 transition-colors">
                   טופס הצעת מחיר להורדה
                 </Link>

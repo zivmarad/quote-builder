@@ -7,9 +7,9 @@ import { GUIDE_PAGES } from '@/lib/seo-content';
 import { Breadcrumbs, JsonLd, SeoHeroCta, SeoStartByTrade, buildBreadcrumbJsonLd } from '../_seo/SeoComponents';
 
 export const metadata: Metadata = withSiteMetadata('/guides', {
-  title: 'מדריכים להצעות מחיר לבעלי מקצוע | בונה הצעות מחיר',
+  title: 'מדריכים להצעות מחיר לעצמאים ולקבלנים | בונה הצעות מחיר',
   description:
-    'מדריכים מעשיים לכתיבת הצעת מחיר מקצועית: הצעת מחיר לשיפוץ, טופס הצעת מחיר ואיך לתמחר נכון. כולל כלי חינמי לבניית הצעות.',
+    'מדריכים לכתיבת הצעת מחיר: לכל עצמאי, וגם לקבלנים ולשיפוצניקים. טופס, שיפוץ, ואיך לתמחר נכון. כולל כלי חינמי.',
 });
 
 export default function GuidesHubPage() {
@@ -29,8 +29,8 @@ export default function GuidesHubPage() {
             מדריכים להצעות מחיר
           </h1>
           <p className="text-base sm:text-lg text-slate-600 leading-relaxed mb-5">
-            כל מה שצריך לדעת כדי לכתוב הצעת מחיר מקצועית שסוגרת עסקאות – ודרך מהירה לבנות אותה
-            ב-60 שניות.
+            איך כותבים הצעת מחיר שסוגרת עסקה, לכל עצמאי. לקבלנים יש כאן גם דוגמאות לפי ענף, ואפשר
+            לבנות את ההצעה עצמה ב-60 שניות.
           </p>
 
           <SeoHeroCta />

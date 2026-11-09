@@ -17,11 +17,14 @@ export async function POST(request: Request) {
     } catch {
       return NextResponse.json({ ok: true });
     }
-    const name = body && typeof body === 'object' && 'name' in body ? (body as { name: unknown }).name : null;
+    const record = body && typeof body === 'object' ? (body as { name?: unknown; source?: unknown }) : {};
+    const name = record.name ?? null;
     if (!isProductEventName(name)) {
       return NextResponse.json({ ok: false, error: 'אירוע לא תקין' }, { status: 400 });
     }
-    await insertProductEvent(name);
+    const source =
+      name === 'website_view' && typeof record.source === 'string' ? record.source.slice(0, 120) : undefined;
+    await insertProductEvent(name, source);
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ ok: true });

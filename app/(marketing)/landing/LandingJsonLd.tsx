@@ -30,7 +30,7 @@ export default function LandingJsonLd() {
       priceCurrency: 'ILS',
     },
     description:
-      'בונה הצעות מחיר לקבלנים ושיפוצניקים בישראל – יצירת PDF ממותג, תמחור דינמי ושליחה בוואטסאפ.',
+      'בונה הצעות מחיר לעצמאים ולקבלנים בישראל. מחירון מוכן לענפי הבנייה, הצעה חופשית לכל עסק, PDF ממותג ושליחה בוואטסאפ.',
     ...(landingUrl ? { url: landingUrl } : {}),
     ...(ogImage ? { image: ogImage } : {}),
   };
